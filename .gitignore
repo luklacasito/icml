@@ -17,6 +17,10 @@ __pycache__/
 venv/
 ENV/
 
+# Local experiment artifacts
+data/
+wandb/
+
 # Tooling
 .mypy_cache/
 .pytest_cache/

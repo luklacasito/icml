@@ -883,7 +883,7 @@ Write \(u_i=\sqrt{\bar q^*}\,v_i\), where \((v_1,v_2)\) are standard Gaussians w
 G(c)\;\equiv\;\mathbb E\!\Big[\phi\!\big(\sqrt{\bar q^*}\,v_1\big)\,\phi\!\big(\sqrt{\bar q^*}\,v_2\big)\Big].
 \end{equation}
 %
-Price's theorem gives
+Price's theorem \cite{Price1958GaussianInputs} gives
 %
 \begin{equation}
 \frac{\mathrm d}{\mathrm dc}G(c) \;=\; \mathbb E\!\left[ \frac{\partial^2}{\partial v_1\,\partial v_2} \Big( \phi\!\big(\sqrt{\bar q^*}\,v_1\big)\, \phi\!\big(\sqrt{\bar q^*}\,v_2\big) \Big) \right].
@@ -985,7 +985,7 @@ ResNets modify depth dynamics in a complementary way: skip connections can chang
 \subsection{Rank Collapse and Rank-Flow Tie-Breaking}
 \label{app:rank_flow}
 
-The mean-field propagation objective is invariant under permutations of the depth profile \(h_\ell\), so it fixes the amount of dropout but not its ordering. Rank collapse supplies one beyond-mean-field tie-breaker. In pure self-attention, for token representations \(X_\ell\in\mathbb R^{n\times d}\), and ignoring residual connections, \(X_{\ell+1}=A_\ell X_\ell\). Hence
+The mean-field propagation objective is invariant under permutations of the depth profile \(h_\ell\), so it fixes the amount of dropout but not its ordering. Rank collapse supplies one beyond-mean-field tie-breaker \cite{dong2021attention,noci2022signalpropagation,daneshmand2020batch}. In pure self-attention, for token representations \(X_\ell\in\mathbb R^{n\times d}\), and ignoring residual connections, \(X_{\ell+1}=A_\ell X_\ell\). Hence
 %
 \begin{equation}
 \operatorname{rank}(X_{\ell+1}) \;\leq\; \min\{\operatorname{rank}(A_\ell),\operatorname{rank}(X_\ell)\}.
@@ -1212,7 +1212,7 @@ For kinked activations, this logic fails: the map remains smooth for \(c<1\), bu
 We illustrate this explicitly for the \relu{} activation \(\phi(x)=\max(0,x)\). To keep formulas compact we set \(\sigma_b = 0\)
 throughout this subsection and use the same inverted-dropout convention as before, with masks drawn independently across inputs.
 
-The mean-field correlation map for \relu{} admits a closed form. Writing \(c\in[-1,1]\) for the preactivation correlation at some depth,
+The mean-field correlation map for \relu{} admits the standard arc-cosine closed form \cite{ChoSaul2009ArcCosine,poole2016exponentialexpressivitydeepneural}. Writing \(c\in[-1,1]\) for the preactivation correlation at some depth,
 %
 \begin{align}
 F_{\ReLU}(c) &= \frac{1}{\pi} \Bigl[ \sqrt{1-c^{2}} + \bigl(\pi-\cos^{-1}c\bigr)c \Bigr].
@@ -1377,7 +1377,7 @@ In a continuum-depth approximation \(m_{\ell+1}-m_\ell\to \partial_\ell m\), we 
 \label{eq:kink_relax_sol}
 \end{equation}
 %
-which reproduces the characteristic \(1-c_\ell\sim \ell^{-2}\) relaxation of \relu{} activations at the edge-of-chaos and gives \(\theta_{\rm rel}=2\).
+which reproduces the characteristic \(1-c_\ell\sim \ell^{-2}\) relaxation of \relu{} activations at the edge-of-chaos \cite{hayou2019impact} and gives \(\theta_{\rm rel}=2\).
 
 
 
@@ -1398,7 +1398,7 @@ F_{\ReLU}(1-m) = 1-m+\kappa\,m^{3/2}+{\cal O}(m^{2}), \qquad \kappa=\frac{2\sqrt
 \label{eq:app_relu_expand}
 \end{align}
 %
-starting from the closed form \relu{} correlation map
+starting from the closed form \relu{} correlation map \cite{ChoSaul2009ArcCosine,poole2016exponentialexpressivitydeepneural}
 %
 \begin{align}
 F_{\ReLU}(c) &= \frac{1}{\pi} \Bigl[ \sqrt{1-c^{2}} + \bigl(\pi-\cos^{-1}c\bigr)c \Bigr], \qquad c\in[-1,1].
@@ -1558,7 +1558,7 @@ We define the fixed-point rescaled activation
 f(z) \equiv \phi(\sqrt{q^*}\,z).
 \end{equation}
 %
-Assuming $\phi$ is weakly differentiable with $f \in H^1(Dz)$, Price's theorem yields the correlation susceptibility \cite{schoenholz2017deepinformationpropagation}
+Assuming $\phi$ is weakly differentiable with $f \in H^1(Dz)$, Price's theorem \cite{Price1958GaussianInputs} yields the correlation susceptibility used in deep information propagation \cite{schoenholz2017deepinformationpropagation}
 %
 \begin{equation}
 \chi \equiv F'(1) = \frac{\sigma_w^2}{q^*}\int Dz\,\bigl(f'(z)\bigr)^2 .
@@ -1636,7 +1636,7 @@ and the eigenfunctions form a complete orthonormal basis. Under the unit-norm co
 \subsection{Hermite basis and diagonal correlation propagation}
 \label{sec:hermite}
 
-A natural orthonormal eigenbasis of \eqref{eq:OU-eigenvalue} is given by the normalized Hermite polynomials
+A natural orthonormal eigenbasis of \eqref{eq:OU-eigenvalue} is given by the normalized Hermite polynomials; this is the usual Hermite/Ornstein--Uhlenbeck diagonalization of Gaussian channels used in infinite-width analyses \cite{roberts2022principlesdeeplearningtheory,bahri2024leshoucheslecturesdeep}.
 %
 \begin{equation}
 h_n(z) \equiv \frac{1}{\sqrt{2^n n!}}\,H_n\!\left(\frac{z}{\sqrt{2}}\right), \qquad \langle h_n,h_m\rangle = \delta_{nm},

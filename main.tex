@@ -119,7 +119,7 @@ We develop a mean-field theory of dropout as a perturbation of critical signal p
 
 Mean-field analyses of randomly initialized deep networks reveal an order-to-chaos phase diagram that controls both signal propagation and gradient penetration with depth \cite{poole2016exponentialexpressivitydeepneural,schoenholz2017deepinformationpropagation,Bahri2020StatMechDeepLearning,bahri2024leshoucheslecturesdeep,Halverson:2024hax}. In this work, we give a holistic exploration of how this picture is modified by dropout. Dropout is a relevant perturbation: it displaces the critical fixed point and grows under representation-group (coarse-graining) flow \cite{roberts2022principlesdeeplearningtheory,bahri2024leshoucheslecturesdeep}, pushing the dynamics away from criticality and determining the macroscopic phase. Concretely, dropout deforms the correlation map \cite{schoenholz2017deepinformationpropagation} by adding a correlation-independent shift at perfect alignment, so that perfect correlation between inputs is no longer a fixed point for any nonzero dropout. Thus, even at the edge-of-chaos \cite{sompolinsky1988chaos,packard1988adaptation,bertschinger2004real}, the depth correlation length is finite. We interpret this shift as an equation of state for the decorrelation order parameter $m \equiv 1-c^\ast$ (with $c^\ast$ the asymptotic inter-signal correlation), derive the resulting scaling laws, and show that smooth and kinked (ReLU-type) activations exhibit the same qualitative phase diagram but different critical scaling in the presence of dropout.
 
-Additionally, we show that the two control parameters (dropout strength and distance to criticality) admit a scaling collapse into a single universal form,\footnote{This idea is directly borrowed from the scaling behavior of one particle irreducible vertex functions in quantum field theory, which exhibit a similar scaling collapse in the massless limit.} and we illustrate how these predictions compare with mean-field recursions. 
+Additionally, we show that the two control parameters (dropout strength and distance to criticality) admit a scaling collapse into a single universal form,\footnote{This idea is directly borrowed from the scaling behavior of one-particle-irreducible vertex functions, or equivalently connected \(n\)-point functions, in critical quantum field theory: in the massless limit they obey homogeneous scaling forms after the appropriate field and distance rescalings \cite{ZinnJustin2002QFTCritical}.} and we illustrate how these predictions compare with mean-field recursions. 
 
 This analysis yields three main conceptual contributions. First, rather than destroying the mean-field fixed-point structure as previously believed \cite{schoenholz2017deepinformationpropagation}, dropout displaces the perfect-alignment point to a nontrivial $c^\ast<1$ fixed point. This keeps the correlation length recursion and yields a Landau equation of state for $m=1-c^\ast$ together with a two-parameter scaling collapse. Second, we show that universality classes and scaling laws are set by activation smoothness: smooth and kinked activations have distinct critical exponents (Table~\ref{tab:critical_exponents}), a distinction reflected in their Hermite spectral structure (App.~\ref{sec:var-opt-act}). Since the same Gaussian activation kernels arise beyond MLPs, including CNNs and residual branches (App.~\ref{app:cnn_extension}), we expect the qualitative smooth/kinked split to be a well-motivated heuristic. Third, we treat dropout as a depth-dependent dynamical field, and optimizing the effective correlation length functional with respect to this field yields first-principles dropout schedules that we validate experimentally at fixed budget. Treating classically fixed hyperparameters as fields that can change through the network opens a new dimension for hyperparameter optimization across depth, and potentially over training time.
 
@@ -202,9 +202,9 @@ y^{(\ell)}_j \;\mapsto\; \tilde y^{(\ell)}_j \equiv \frac{p^{(\ell)}_{j}}{\rho}\
 \]
 i.e.\ the standard inverted-dropout convention in which $\mathbb E_p[\tilde y^{(\ell)}_j]=y^{(\ell)}_j$, and hence $\mathbb E_p[\tilde z^\ell_i\mid W,b]=z^\ell_i$, so the mean preactivation is invariant to the dropout rate \cite{schoenholz2017deepinformationpropagation}. Throughout, $\rho$ is the keep probability. When comparing two inputs, we draw the dropout masks independently for each input\footnote{Correlated dropout masks can alleviate this detuning: independent dropout masks across datapoints inject sample-specific multiplicative noise \cite{bishop1995noise} that destroys the \(c=1\) fixed point. Instead, if the same mask is shared across the batch, the fixed point structure is preserved and near critical scaling can be recovered by retuning, but the noise becomes batch coupled and the regularization is correspondingly weaker and more structured. We leave detailed analysis of correlated masks to future work.}; this independence is the source of the decorrelation effect analyzed below.
 
-We establish that activation smoothness partitions networks into distinct universality classes, which govern their asymptotic scaling near the edge-of-chaos and determine how dropout cuts off the depth correlation length. This distinction was motivated by a variational problem for the correlation length: in the near-critical Gaussian channel, Hermite polynomials form a natural basis, and common activations such as $\tanh$ or ReLU admit a Hermite decomposition whose coefficients control how strongly the activation perturbs long-range correlation propagation. The smoking gun is that kinks produce algebraic (power-law) tails in the Hermite spectrum, spreading weight across many degrees and thus many effective scales, whereas smooth (more precisely, analytic) activations have rapidly decaying coefficients, with spectral weight concentrated in low-order modes and an essentially exponential falloff. The details of these computations can be found in App.~\ref{sec:var-opt-act}.
+We would also like to shine some light on the reason this distinction first appeared for us: we asked a simple variational question: among activations of fixed scale, which functions make the correlation length of the near-critical Gaussian channel as large as possible? Extremizing the correlation length functional shows that the natural eigenfunctions of this problem are Hermite polynomials. When standard nonlinearities are decomposed in that basis, two qualitatively different spectra emerge. Smooth, analytic activations such as $\tanh$ have exponentially decaying Hermite coefficients, so their effect is dominated by the first few modes. Kinked activations such as ReLU have power-law tails instead: the kink keeps exciting higher Hermite modes, leaving a broader spectrum in the correlation map. This spectral split was the original diagnostic for the smooth/kinked universality classes, which later reappears in the dropout scaling laws. The details of these computations can be found in App.~\ref{sec:var-opt-act}.
 
-Our classification is orthogonal to the scale-invariant vs. non-scale-invariant distinction of \cite{roberts2022principlesdeeplearningtheory}: the multi-scale Hermite spectrum highlighted above is controlled primarily by analytic regularity (kinks and other non-analytic structure), not by scale invariance per se. The criterion is based on two facts: (a) near-critical scaling laws differ between smooth and kinked activations, and (b) the Hermite spectral weight of non-analytic activations decays as a power law, in contrast to the exponential decay characteristic of smooth activations.
+Our classification is orthogonal to the scale-invariant vs. non-scale-invariant distinction of \cite{roberts2022principlesdeeplearningtheory}: the multi-scale Hermite spectrum highlighted above is controlled primarily by analytic regularity (kinks and other non-analytic structure), not by scale invariance per se. The criterion is based on two facts: (a) near-critical scaling laws differ between smooth and kinked activations, and (b) the Hermite spectral weight of non-analytic activations decays as a power law, in contrast to the exponential decay characteristic of smooth activations (Apps.~\ref{ap:exponent_derivations} and~\ref{sec:var-opt-act}).
 
 It is in this context that we seek a sharper analytical understanding of how dropout deforms the edge-of-chaos. Extending mean-field propagation to include dropout, one finds that for a single input dropout largely acts as a renormalization of the effective weight variance, $\sigma_w^2\mapsto \sigma_w^2/\rho$, but for two inputs the perfect-alignment fixed point at $c^*=1$ is lost for any $\rho<1$ when the two dropout masks are chosen independently \cite{schoenholz2017deepinformationpropagation}. In other words, dropout acts as an explicit symmetry-breaking ``field'' for alignment: even if two inputs are perfectly aligned at some depth, the next layer produces $\bar c_{ab}<1$, cutting off the divergence of the depth correlation length at the edge.
 
@@ -259,7 +259,7 @@ By construction, $
 \rho<1
 \Rightarrow
 h>0,$
-so the fixed point at $c^*=1$ is immediately spoiled: even if two inputs are perfectly aligned at some depth, the next layer produces $\bar c_{ab}=1-h<1$. Since we focus on weak dropout, it is useful to record the small-\(\delta\rho\) expansion. Writing $\delta\rho\equiv 1-\rho$ with $\delta\rho\ll 1$, we have
+so the fixed point at $c^*=1$ is immediately spoiled: even if two inputs are perfectly aligned at some depth, the next layer produces $\bar c_{ab}=1-h<1$. Since we focus on weak dropout, it is useful to perform the small-\(\delta\rho\) expansion. Writing $\delta\rho\equiv 1-\rho$ with $\delta\rho\ll 1$, we have
 $\bar q^*=q^*+\mathcal O(\delta\rho)$, so to leading order we have
 \begin{equation}
   h
@@ -271,7 +271,7 @@ $\bar q^*=q^*+\mathcal O(\delta\rho)$, so to leading order we have
   \label{eq:Delta_weakdrop}
 \end{equation}
 
-The same dropout asymmetry appears in the backward pass. Let \(\delta^\ell_{j,a}\) denote the backpropagated preactivation gradient for input \(a\). With inverted dropout the local backward recursion contains the same mask derivative,
+The backward pass has the same source of asymmetry. Let \(\delta^\ell_{j,a}\) be the backpropagated preactivation gradient for input \(a\). With inverted dropout,
 \[
 \delta^\ell_{j,a}
 =
@@ -279,7 +279,7 @@ The same dropout asymmetry appears in the backward pass. Let \(\delta^\ell_{j,a}
 \phi'(u^\ell_{j,a})
 \sum_i W^{\ell+1}_{ij}\delta^{\ell+1}_{i,a},
 \]
-up to the harmless convention-dependent shift in layer indices. If \(G^\ell_{ab}\equiv \mathbb E[\delta^\ell_a\delta^\ell_b]\) denotes the two-input gradient covariance in the wide-limit recursion, then
+up to convention-dependent layer indexing. If \(G^\ell_{ab}\equiv \mathbb E[\delta^\ell_a\delta^\ell_b]\) denotes the two-input gradient covariance, the wide-limit recursion contains
 \[
 G^\ell_{ab}
 =
@@ -290,7 +290,7 @@ G^\ell_{ab}
 \right]
 G^{\ell+1}_{ab}.
 \]
-Without dropout this is propagated by the same local susceptibility that controls forward correlations \cite{schoenholz2017deepinformationpropagation}. With independent dropout masks, however, the diagonal channel has \(\mathbb E[(p_a)^2]/\rho^2=1/\rho\), while for \(a\neq b\), \(\mathbb E[p_a p_b]/\rho^2=1\). Thus dropout inflates the single-sample backward variance while leaving the cross-sample channel uninflated, exactly mirroring the forward variance/covariance asymmetry that produced the field \(h\). After normalization, perfect alignment of backward signals is displaced away from \(1\) by a dropout-controlled field \(h_\nabla(\rho)\). The microscopic map from \(\rho\) to \(h_\nabla\) differs from the forward map, but the local equation-of-state structure is the same, so the dropout cutoff of the backward trainable depth has the same critical exponents as the forward correlation length.
+Thus independent masks give a diagonal factor \(\mathbb E[p_a^2]/\rho^2=1/\rho\) but an off-diagonal factor \(\mathbb E[p_a p_b]/\rho^2=1\). Dropout inflates single-sample gradient variance without similarly inflating cross-sample covariance, mirroring the forward asymmetry that produced \(h\). After normalization this suggests a backward field \(h_\nabla(\rho)\) that moves perfect gradient alignment below one. We do not identify it with the forward field: the backward kernel is built from \(\phi'\), not \(\phi\), and for ReLU \(\phi'\) is discontinuous. A full dropout-deformed backward critical theory, including finite-width gradient susceptibilities and training-time mask correlations, is left for future work.
 
 \subsection{Landau theory and critical exponents}
 
@@ -307,7 +307,7 @@ The fields \((m,t,h)\) are chosen to mirror statistical-mechanics notation: \(t\
 
 We assume inverted dropout with keep probability \(\rho\in(0,1]\), with masks drawn i.i.d.\ across units and
 independently across inputs. Let \(\bar q^*\) denote the dropout variance fixed point \eqref{eq:qstar-dropout}.
-For a smooth normalizable activation \(\phi\in C^2\), repeated application of Price’s theorem gives the first two
+For an activation for which Price's theorem applies and \(\phi',\phi''\in L^2(\mathcal N(0,\bar q^\ast))\)---for instance, \(\phi\in C^2\) with sufficient Gaussian integrability---repeated application of Price's theorem gives the first two
 derivatives of the correlation map at perfect alignment,\footnote{The \(\rho\)-dependence is implicit
 through \(\bar q^*\). The full computation is given in App.~\ref{app:price_dropout}.}
 \begin{align}
@@ -323,8 +323,9 @@ through \(\bar q^*\). The full computation is given in App.~\ref{app:price_dropo
   \bar F_\rho''(1)
   =
   \sigma_w^2\,\bar q^{*}\!\int Dz\,\big[\phi''(\sqrt{\bar q^{*}}\,z)\big]^2.
-  \label{eq:g_dropout}
+\label{eq:g_dropout}
 \end{align}
+In the smooth-class analysis below we assume \(g_\rho>0\). If \(g_\rho=0\), as for a linear activation, the quadratic Landau term is absent and the leading nonzero term determines a degenerate case rather than the generic smooth universality class.
 For kinked activations (ReLU-type) \(\bar F_\rho''(1)\) is not finite and the analytic expansion below is not the
 correct organizing principle; we treat that universality class separately.
 
@@ -370,23 +371,39 @@ $\gamma$ & $\chi_M \equiv \left. \frac{\partial m}{\partial h} \right|_{h \to 0}
 $\alpha$ & $C \equiv -\frac{\partial^2 f}{\partial t^2} \sim |t|^{-\alpha}$ \\
 $\nu_t$ & $\xi \sim |t|^{-\nu_t} \quad (h=0)$ \\
 $\nu_\rho$ & $\xi \sim |h|^{-\nu_\rho} \quad (t=0)$ \\
-$p$ & $m \sim \ell^{-p} \quad (t=0,\, h=0)$ \\
+$\theta_{\rm rel}$ & $m \sim \ell^{-\theta_{\rm rel}} \quad (t=0,\, h=0)$ \\
 \bottomrule
 \end{tabular}
 \caption{Definitions of critical exponents in the thermodynamic limit ($t \to 0$, $h \to 0$).}
 \label{tab:math_exponents}
 \end{table}
 
-This square-root power law is our first encounter with a larger family of critical exponents familiar in the physics literature, defined in Table~\ref{tab:math_exponents}. The key exponents for our analysis are those governing the depth correlation length $\xi_{c,\rho}$, as it sets the characteristic depth scale over which distinct inputs remain distinguishable and therefore provides an effective upper bound on the depth over which the network can reliably propagate information (and learn). Their derivations are straightforward but cumbersome, so we collect them in App.~\ref{ap:exponent_derivations} and simply quote the resulting exponent values in Table~\ref{tab:critical_exponents}. For reference, we also list the standard mean-field (Landau) exponents of the Ising universality class \cite{Ising1925,LandauLifshitzStatPhys} and the corresponding mean-field exponents of spin-glass theory \cite{EdwardsAnderson1975,Parisi1979PRL,Parisi1980JPA,Parisi1983PRL}, since spin-glass models provide one of the closest statistical mechanics analogues of neural-network models \cite{Hopfield1982,AmitGutfreundSompolinsky1985,Amit1989}, something we will see reflected in the scaling exponents. The exponents quoted in Table~\ref{tab:critical_exponents} can be found in \cite{MezardParisiVirasoro1987,Parisi1983RMP,sherrington1975sk}.
+For the \(\alpha\) column we define the singular Landau potential \(f_{\rm sing}\) through the equation of state. In the smooth case,
+\[
+\frac{\partial f_{\rm sing}}{\partial m}
+=
+-h-tm+\frac{g_\rho}{2}m^2,
+\]
+and in the kinked case,
+\[
+\frac{\partial f_{\rm sing}}{\partial m}
+=
+-h-tm+\kappa m^{3/2}.
+\]
+Evaluating \(f_{\rm sing}\) on the stable branch at \(h=0\) gives \(f_{\rm sing}\sim |t|^3\) for the smooth class and \(f_{\rm sing}\sim |t|^5\) for the kinked class, hence \(\alpha=-1\) and \(\alpha=-3\), respectively.
+
+This square-root power law is our first encounter with a larger family of critical exponents familiar in the physics literature, defined in Table~\ref{tab:math_exponents}. The key exponents for our analysis are those governing the depth correlation length $\xi_{c,\rho}$, as it sets the characteristic depth scale over which distinct inputs remain distinguishable and therefore provides an effective upper bound on the depth over which the network can reliably propagate information (and learn). Their derivations are straightforward but cumbersome, so we collect them in App.~\ref{ap:exponent_derivations} and simply quote the resulting exponent values in Table~\ref{tab:critical_exponents}. For reference, we also list the standard mean-field (Landau) exponents of the Ising universality class \cite{Ising1925,LandauLifshitzStatPhys} and the corresponding mean-field exponents of spin-glass theory \cite{EdwardsAnderson1975,Parisi1979PRL,Parisi1980JPA,Parisi1983PRL}. The SK row is meant as structural motivation--an order parameter without a simple \(\mathbb Z_2\) symmetry and a cubic effective interaction--not as a claim of shared universality: the smooth class shares the static entries \((\beta,\gamma,\delta,\alpha)\) in this convention, but not the correlation-length or relaxation exponents, while the kinked class is separated more sharply. The exponents quoted in Table~\ref{tab:critical_exponents} can be found in \cite{MezardParisiVirasoro1987,Parisi1983RMP,sherrington1975sk}.
 
 
 
 \begin{table}[h]
 \centering
+\small
+\setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{1.25}
 \begin{tabular}{@{} l ccccccc @{}}
 \toprule
-\textbf{Universality Class} & $\boldsymbol{\nu_t}$ & $\boldsymbol{\beta}$ & $\boldsymbol{p}$ & $\boldsymbol{\gamma}$ & $\boldsymbol{\delta}$ & $\boldsymbol{\nu_\rho}$ & $\boldsymbol{\alpha}$ \\
+\textbf{Universality Class} & $\boldsymbol{\nu_t}$ & $\boldsymbol{\beta}$ & $\boldsymbol{\theta}_{\rm rel}$ & $\boldsymbol{\gamma}$ & $\boldsymbol{\delta}$ & $\boldsymbol{\nu_\rho}$ & $\boldsymbol{\alpha}$ \\
 \midrule
 \textbf{Smooth activation}  & $1$ & $1$ & $1$ & $1$ & $2$ & $\frac{1}{2}$ & $-1$ \\[6pt]
 \textbf{Kinked activation}  & $1$ & $2$ & $2$ & $1$ & $\frac{3}{2}$ & $\frac{1}{3}$ & $-3$ \\[6pt]
@@ -394,7 +411,7 @@ This square-root power law is our first encounter with a larger family of critic
 \textbf{Ising-like}   & $\frac{1}{2}$ & $\frac{1}{2}$ & $1$ & $1$ & $3$ & $\frac{1}{3}$ & $0$ \\
 \bottomrule
 \end{tabular}
-\caption{Critical exponents for neural network initialization across different universality classes. }
+\caption{Critical exponents for neural network initialization across different universality classes. The kinked \(\nu_\rho\) is a normal-form field exponent; ordinary bias-free ReLU dropout follows the constrained path \(t=-h\) but has the same leading \(\xi\sim h^{-1/3}\) law (App.~\ref{ap:exponent_derivations}).}
 \label{tab:critical_exponents}
 \end{table}
 
@@ -409,7 +426,7 @@ Figure~\ref{fig:dropout_scaling} summarizes these power laws from direct mean-fi
 
 \begin{figure*}[ht]
     \centering
-    \includegraphics[width=1.0 \textwidth]{figures/theory/critical_exponents.png}
+    \includegraphics[width=1.0 \textwidth]{figures/theory/critical_exponents.pdf}
 \caption{
 Critical scaling for smooth (tanh) and kinked (ReLU) activation functions, comparing tuning at zero dropout to tuning at the edge-of-chaos using a dropout field. The top row compares the different critical exponents at zero dropout and probes critical detuning decay, while the bottom row explores on critical networks with non-zero dropout. As the variables grow, higher-order effects become comparable and the linearized theory departs from the full recursion.}
     \label{fig:dropout_scaling}
@@ -434,8 +451,8 @@ Critical scaling for smooth (tanh) and kinked (ReLU) activation functions, compa
 
 
 \subsection{Scaling collapse and crossover region}
-Dropout and subcritical detuning exhibit an exact theoretical correspondence, allowing the equation of state \eqref{eq:EoS_correct} to admit a single-variable scaling collapse. This is expected from the point of view of statistical mechanics where universal scaling collapse is a hallmark of criticality. 
-In practice, experiments are rarely tuned exactly to the correlation edge \(t=0\) while simultaneously taking the dropout field to zero, \(h\to 0\). The correct near-critical description is therefore a two-parameter scaling function.
+At leading normal-form order, dropout and detuning enter the same local equation of state. The collapse below is exact for the truncated Landau normal form, while the full mean-field recursion receives higher-order corrections such as \(\mathcal O(m^3)\) in the smooth case, \(\mathcal O(m^2)\) in the kinked case, and corrections from the nonlinear microscopic map \(h=\Delta(\rho)\). These corrections become visible away from the asymptotic near-critical regime. From the field-theory point of view, the resulting collapse is the standard signature of criticality: in the massless limit, connected \(n\)-point functions become homogeneous scaling functions of their separations, so the data collapse after rescaling by the appropriate critical dimensions \cite{ZinnJustin2002QFTCritical}.
+In practice, experiments are rarely tuned exactly to the correlation edge \(t=0\) while simultaneously taking the dropout field to zero, \(h\to 0\). The useful near-critical description is therefore a two-parameter scaling function.
 
 For smooth activations, the order parameter \(m\equiv 1-c^*\) obeys \eqref{eq:EoS_correct},
 \begin{equation}
@@ -446,14 +463,7 @@ h
 t \equiv \chi_\rho - 1.
 \label{eq:eos_smooth_correct}
 \end{equation}
-This implies the explicit crossover solution
-\begin{equation}
-m(t,h)
-=
-\frac{t+\sqrt{t^2+2g_\rho h}}{g_\rho}.
-\label{eq:m_smooth_crossover_correct}
-\end{equation}
-Define rescaled variables
+The explicit crossover solution is the physical branch in \eqref{eq:m_smooth_solution}. Define rescaled variables
 \begin{equation}
 \tilde m \equiv m \sqrt{\frac{g_\rho}{2h}}, \qquad \tilde t \equiv \frac{t}{\sqrt{2g_\rho h}}.
 \label{eq:rescaled_vars_smooth}
@@ -508,18 +518,18 @@ The associated crossover scale is
 |t| \sim \kappa^{2/3} h^{1/3},
 \label{eq:crossover_scale_kink}
 \end{equation}
-showing that kinked activations lie in a distinct universality class from smooth activations.
+showing that kinked activations lie in a distinct universality class from smooth activations. For literal bias-free ReLU with standard inverted dropout, the microscopic path locks \(t=\rho-1=-h\), so the \(t=0,h>0\) direction is a normal-form field direction rather than a directly independent ReLU knob. This path nevertheless satisfies \(t/(\kappa^{2/3}h^{1/3})\to0\), hence it enters the same field-dominated regime and retains the leading constrained-path law \(\xi\sim h^{-1/3}\); App.~\ref{ap:exponent_derivations} gives the short derivation and the nonzero-bias caveat.
 
 \begin{figure*}[ht]
     \centering
-    \includegraphics[width=1.0\textwidth]{figures/theory/smooth_scaling_collapse.png}
+    \includegraphics[width=1.0\textwidth]{figures/theory/smooth_scaling_collapse.pdf}
     \caption{
         Two-parameter crossover and scaling collapse of the dropout-deformed equation of state for the smooth universality class (tanh). Plots obtained using MFT recursion relations. The figure displays the relationship between different variables collapsing into a universal function as $\bar \tau$ increases. The kinked counterpart is shown in Fig.~\ref{fig:kinked_collapse}.}
     \label{fig:uni_scaling}
 \end{figure*}
 
 
-Figure~\ref{fig:uni_scaling} shows this collapse for smooth activations. Practically, smooth activations preserve longer correlation lengths at weak dropout, while kinked activations have a wider crossover window and are more forgiving to imperfect tuning; neither class is uniformly preferable.
+Figure~\ref{fig:uni_scaling} shows this collapse for smooth activations. This also clarifies the tanh/ReLU dichotomy observed in ResNet mean-field theory \cite{yang2017meanfieldresnets}: tanh belongs to the smooth class, where the analytic \(m^2\) term makes weak fields especially important and long correlation lengths are preserved when dropout is kept small; ReLU belongs to the kinked class, where the \(m^{3/2}\) branch point broadens the crossover window and makes the dynamics more forgiving to imperfect tuning. In short, smooth channels reward keeping the dropout field very weak, while kinked channels tolerate detuning over a wider range; neither class is uniformly preferable.
 
 
 
@@ -566,6 +576,14 @@ We now fix a total dropout budget and local bounds,
 \qquad
 0 \le h_\ell \le h_{\max}.
 \end{equation}
+The budget above is a budget in the dropout field \(h_\ell\), not directly in the raw dropout probability \(p_{\mathrm{drop},\ell}=1-\rho_\ell\). For weak dropout,
+\[
+\begin{aligned}
+h_\ell &= a\,p_{\mathrm{drop},\ell} + \mathcal O(p_{\mathrm{drop},\ell}^2),\\
+a&=\frac{\sigma_w^2}{q^\ast}\int Dz\,\phi^2(\sqrt{q^\ast}z),
+\end{aligned}
+\]
+so a fixed \(h\)-budget and a fixed dropout-probability budget agree to leading order. For larger dropout, the nonlinear map \(h_\ell=\Delta(\rho_\ell)\) should be used explicitly.
 Maximizing $\xi_{\rm eff}$ is equivalent to minimizing $\xi_{\rm eff}^{-1}$, so in the continuum limit ($x=\ell/L$) we obtain the constrained variational problem
 \begin{equation}
 \min_{h}\int_0^1 h(x)^{1/2}\,dx
@@ -573,17 +591,17 @@ Maximizing $\xi_{\rm eff}$ is equivalent to minimizing $\xi_{\rm eff}^{-1}$, so 
 {\rm s.t.}\qquad
 \int_0^1 h(x)\,dx=\bar h.
 \end{equation}
-Since $h^{1/2}$ is concave, Jensen's inequality implies that any constant schedule maximizes $\int h^{1/2}$ at fixed mean; hence any minimizer must saturate the box constraint and is step-like. Equivalently, any schedule that takes values in $\{0,h_{\max}\}$ with active fraction $f=\bar h/h_{\max}$ is optimal. A convenient representative is a step schedule,
+Since $h^{1/2}$ is concave, Jensen's inequality implies that any constant schedule maximizes $\int h^{1/2}$ at fixed mean; hence any minimizer must saturate the box constraint and is step-like. Equivalently, any schedule that takes values in \(\{0,h_{\max}\}\) with active fraction \(f=\bar h/h_{\max}\) is optimal for the mean-field functional. A front-loaded representative, selected below by the rank-flow tie-breaker, is
 \begin{equation}
 h(x)=
 \begin{cases}
-0,& x<1-f,\\
-h_{\max},& x\ge 1-f,
+h_{\max}, & 0\le x\le f,\\
+0, & f<x\le 1,
 \end{cases}
 \qquad
 f=\frac{\bar h}{h_{\max}},
 \end{equation}
-for which uniform dropout yields $\xi_{\rm eff}\sim \bar h^{-1/2}$ while the step schedule gives
+where \(x=0\) denotes the input side. All permutations of this saturated set give the same \(\xi_{\rm eff}\) in the mean-field objective; the ordering is fixed only after the beyond-mean-field tie-breaker is introduced. For this representative, uniform dropout yields $\xi_{\rm eff}\sim \bar h^{-1/2}$ while the step schedule gives
 \begin{equation}
 \frac{\xi_{\rm eff,step}}{\xi_{\rm eff,uniform}}
 =
@@ -591,98 +609,52 @@ for which uniform dropout yields $\xi_{\rm eff}\sim \bar h^{-1/2}$ while the ste
 \;\ge\;
 1.
 \end{equation}
-For kinked activations at $t=0$, one has $\xi^{-1}\propto h^{1/3}$, so the objective becomes $\int_0^1 h(x)^{1/3}dx$, which is also concave and therefore leads to the same step-like allocation.
+For kinked activations at $t=0$, one has $\xi^{-1}\propto h^{1/3}$, so the objective becomes $\int_0^1 h(x)^{1/3}dx$, which is also concave and therefore the same conclusion immediately follows. 
 
 At the level of mean-field correlation dynamics, $\xi_{\rm eff}$ depends on $\{h_\ell\}$ only through symmetric sums (e.g. \eqref{eff_corr}), and is therefore invariant under permutations of the depth profile. Mean field fixes the optimal allocation in magnitude (step-like), but cannot by itself select which layers should receive the concentrated dropout.
 
-\textbf{Practical recipe.}
-Choose a mean field budget $\bar h$ and a local cap $h_{\max}$, set the active fraction $f=\bar h/h_{\max}$, and allocate dropout at the cap on approximately an $f$ fraction of layers. Correlation dynamics alone leaves the depth ordering unresolved; in regimes where early coadaptation or rank collapse is expected, front-load it. In residual or transformer-like models, a linearly decreasing schedule is a smoother version of the same bias and can be preferable empirically.
+In practice, this suggests a simple construction. Choose a mean-field budget $\bar h$ and a local cap $h_{\max}$, set the active fraction \(f=\bar h/h_{\max}\), and put dropout at the cap on roughly an \(f\) fraction of the layers. The correlation calculation fixes the amount of dropout but not the ordering in depth. When early coadaptation or rank collapse is the main concern, the natural tie-break is to put more of the budget near the input. In residual or transformer-like models, a linearly decreasing schedule is a smoother version of the same idea and can be preferable empirically.
 
-A tie-breaker arises from representation dynamics beyond the mean-field closure. One concrete mechanism is rank collapse \cite{dong2021attention,noci2022signalpropagation}. In pure self-attention, for token representations $X^\ell\in\mathbb{R}^{n\times d}$ one has (in the absence of residual connections)
-\begin{equation}
-\mathrm{rank}\!\left(X^{\ell+1}\right)
-\;\leq\;
-\mathrm{rank}\!\left(A^\ell\right)\,\mathrm{rank}\!\left(X^\ell\right),
-\end{equation}
-where $A^\ell$ is the attention matrix. Since $A^\ell$ contracts geometrically toward the rank-one projector $\mathbf{1}\mathbf{1}^\top/n$, an effective-rank proxy collapses doubly exponentially with depth,
-\begin{equation}
-R(\ell)
-\;\lesssim\;
-R(0)\,\exp\!\left(-c\,2^\ell\right),
-\end{equation}
-for an architecture-dependent constant $c>0$. In wide MLPs, rank proxies typically decay exponentially with depth (e.g. at a rate set by a Lyapunov gap),
-\begin{equation}
-R(\ell)-1
-\;\sim\;
-\bigl(R(0)-1\bigr)\exp\!\left(-2(\lambda_1-\lambda_2)\,\ell\right),
-\end{equation}
-where $\lambda_1>\lambda_2$ are the top Lyapunov exponents governing singular-value growth. In both cases, the dominant loss of diversity occurs early in depth, especially in attention-dominated models.
+The remaining tie-breaker comes from representation dynamics beyond the mean-field closure. Rank collapse gives one concrete mechanism \cite{dong2021attention,noci2022signalpropagation}: token diversity in pure attention, and analogous rank-diversity proxies in wide MLPs, tend to decay with depth. Dropout pushes in the opposite direction at the level of second moments by inflating diagonal variance and shrinking normalized correlations, thereby increasing a participation-ratio effective rank (App.~\ref{app:rank_flow}). This mechanism is preventative rather than reparative: once the representation has collapsed to an essentially one-dimensional signal subspace, inverted dropout mostly adds training-time diagonal noise rather than constructing new task-relevant modes. Thus rank flow breaks the permutation symmetry of \(\xi_{\rm eff}\) by favoring concentrated dropout where collapse is fastest; in regularization- and rank-collapse-limited regimes, this means front-loading the dropout budget.
 
-Dropout counteracts this collapse by shrinking within-layer normalized correlations. With keep probability $\rho_\ell\in(0,1]$, inverted dropout acts as
-\begin{equation}
-\tilde y_{\ell,i}
-\;=\;
-\frac{p_{\ell,i}}{\rho_\ell}\,y_{\ell,i},
-\qquad
-p_{\ell,i}\sim \mathrm{Bernoulli}(\rho_\ell),
-\end{equation}
-with the $p_{\ell,i}$ independent across $i$. Let the (uncentered) second moment at depth $\ell$ be
-\begin{equation}
-\Sigma_\ell
-\;\equiv\;
-\mathbb{E}\!\left[y_\ell y_\ell^\top\right],
-\end{equation}
-and define $\tilde\Sigma_\ell$ analogously for $\tilde y_\ell$. Averaging over the dropout mask gives the exact second-moment update
-\begin{equation}
-\tilde\Sigma_\ell
-\;=\;
-\Sigma_\ell
-+
-\left(\frac{1}{\rho_\ell}-1\right)\mathrm{diag}(\Sigma_\ell),
-\label{eq:dropout_second_moment}
-\end{equation}
-so off-diagonal second moments are unchanged while the diagonal is inflated. Writing
-\begin{equation}
-D_\ell
-\;\equiv\;
-\mathrm{diag}(\Sigma_\ell),
-\qquad
-C_\ell
-\;\equiv\;
-D_\ell^{-1/2}\Sigma_\ell D_\ell^{-1/2},
-\end{equation}
-one obtains the normalized-correlation shrinkage identity
-\begin{equation}
-\tilde C_\ell
-\;=\;
-\rho_\ell\,C_\ell + (1-\rho_\ell)\,I,
-\label{eq:dropout_corr_shrinkage}
-\end{equation}
-which explicitly suppresses off-diagonal correlations and pushes the spectrum toward isotropy. A convenient quantitative proxy is the participation-ratio effective rank
-\begin{equation}
-R_{\mathrm{eff}}(\Sigma)
-\;\equiv\;
-\frac{\bigl(\mathrm{tr}\,\Sigma\bigr)^2}{\mathrm{tr}\!\left(\Sigma^2\right)}.
-\end{equation}
-Combining \eqref{eq:dropout_second_moment} with trace identities yields the closed form
-\begin{equation}
-R_{\mathrm{eff}}\!\left(\tilde\Sigma_\ell\right)
-\;=\;
-\frac{\bigl(\mathrm{tr}\,\Sigma_\ell\bigr)^2}{
-\rho_\ell^2\,\mathrm{tr}\!\left(\Sigma_\ell^2\right)
-+
-\left(1-\rho_\ell^2\right)\mathrm{tr}\!\left(\mathrm{diag}(\Sigma_\ell)^2\right)},
-\end{equation}
-and since $\mathrm{tr}(\Sigma_\ell^2)\ge \mathrm{tr}(\mathrm{diag}(\Sigma_\ell)^2)$ for any PSD $\Sigma_\ell$, it follows that
-\begin{equation}
-R_{\mathrm{eff}}\!\left(\tilde\Sigma_\ell\right)\;\ge\;R_{\mathrm{eff}}(\Sigma_\ell),
-\end{equation}
-with equality only when $\Sigma_\ell$ is diagonal. Thus dropout increases effective rank at the level of second moments by injecting entropy and suppressing correlation buildup.
-Independent additive noise would also inflate the diagonal and break perfect alignment; dropout is the multiplicative Bernoulli realization for which the effective field is directly controlled by $\rho_\ell$. Thus the Landau form can describe a broader class of sample-wise noise sources, with different microscopic maps to $h$.
+To test these predictions, we deliberately work in controlled regimes where mean-field assumptions remain valid (width $\gg$ depth, moderate dropout) rather than pursuing benchmark performance. We evaluate MLPs and Vision Transformers \cite{dosovitskiy2021vit} using CIFAR-10/100 \cite{krizhevsky2009cifar} (full details in App.~\ref{app:experimental_info}), where finite-width corrections and extensive data augmentation do not obscure the signal-propagation effects central to our analysis. Across architectures, early step-like schedules consistently outperform constant dropout (e.g., ViT on CIFAR-100: linearly decreasing achieves $49.38\%$ vs $48.69\%$ constant, $p < 0.05$), confirming that the scheduling principle transfers beyond the MLP setting in which it was derived. The appendices check that this is not a single-run effect: the gains persist across \(\bar h\)-sweeps and large-width sweeps for kinked ReLU MLPs (App.~\ref{app:sweeps}, Fig.~\ref{fig:mlp_sweeps}), across the smooth GELU activation class (App.~\ref{app:sweeps}, Fig.~\ref{fig:gelu_h_sweep}), and across transformer schedules and component ablations (Figs.~\ref{fig:dropout_regimes_transformer} and~\ref{fig:ablations}). Table~\ref{tab:loss_improvements} summarizes the final-epoch gains. The advantage weakens only at high dropout or in overly narrow networks, precisely where the theory exits its regime of validity.
 
-This mechanism is inherently preventative: if the representation has already collapsed to an essentially one-dimensional signal subspace $\Sigma_\ell\approx vv^\top$, then \eqref{eq:dropout_second_moment} primarily adds diagonal variance rather than constructing new task-relevant modes, and under inverted dropout this injected variance is absent at inference. Consequently, at fixed dropout budget the mean-field propagation objective prefers step-like schedules but does not care about ordering, while rank flow breaks the permutation symmetry by favoring concentrated dropout where collapse is fastest.  In regularization and rank-collapse limited regimes (especially in attention-dominated models), front-loading dropout acts as an entropic buffer that preserves higher-rank representations through the early layers, after which later layers can compress and refine a richer set of task-relevant features.
-
-To test these predictions, we deliberately work in controlled regimes where mean-field assumptions remain valid (width $\gg$ depth, moderate dropout) rather than pursuing benchmark performance. We evaluate MLPs and Vision Transformers \cite{dosovitskiy2021vit} using CIFAR-10/100 \cite{krizhevsky2009cifar} (full details in App.~\ref{app:experimental_info}), where finite-width corrections and extensive data augmentation do not obscure the signal-propagation effects central to our analysis. Across architectures, early step-like schedules consistently outperform constant dropout (e.g., ViT on CIFAR-100: linearly decreasing achieves $49.38\%$ vs $48.69\%$ constant, $p < 0.05$), confirming that the scheduling principle transfers beyond the MLP setting in which it was derived. Appendix~\ref{app:sweeps} adds sweeps over $\bar h$, width, and activation class, including kinked ReLU and smooth GELU MLPs: the advantage persists over the perturbative dropout range and weakens only at high dropout or in overly narrow networks, precisely where the theory exits its regime of validity.
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}L{0.27\textwidth}L{0.23\textwidth}rrr@{}}
+\toprule
+\textbf{Experiment} & \textbf{Schedule} & \(\Delta\) acc. (pp) & Acc. gain & Loss reduction \\
+\midrule
+MLP overfitting, Fig.~\ref{fig:dropout_regimes_overfit}
+& Step (early)
+& \(+0.83\) & \(+2.0\%\) & \(+17.9\%\) \\
+\addlinespace[1pt]
+MLP budget controls, Fig.~\ref{fig:triple_dropout}
+& Big step (1/3)
+& \(+1.08\) & \(+2.6\%\) & \(+22.6\%\) \\
+\addlinespace[1pt]
+ReLU \(h\)-sweep at \(\bar h=0.1\), Fig.~\ref{fig:mlp_sweeps}
+& Big step (1/3)
+& \(+2.04\) & \(+5.0\%\) & \(+35.4\%\) \\
+\addlinespace[1pt]
+GELU \(h\)-sweep at \(\bar h=0.1\), Fig.~\ref{fig:gelu_h_sweep}
+& Big step (1/3)
+& \(+0.62\) & \(+1.5\%\) & \(+29.8\%\) \\
+\addlinespace[1pt]
+ViT CIFAR-100, Fig.~\ref{fig:dropout_regimes_transformer}
+& Linear (decreasing)
+& \(+0.66\) & \(+1.4\%\) & \(+4.2\%\) \\
+\addlinespace[1pt]
+ViT CIFAR-10 ablations, Fig.~\ref{fig:ablations}
+& Both blocks, step (early)
+& \(+0.52\) & \(+0.7\%\) & \(+6.3\%\) \\
+\bottomrule
+\end{tabular}
+\caption{Final-epoch improvements over the corresponding constant-dropout baseline. Accuracy gains are shown both as percentage-point differences and as relative percent improvements over the baseline final accuracy. Loss reductions are relative reductions in cross-entropy.}
+\label{tab:loss_improvements}
+\end{table*}
 
 
 
@@ -694,19 +666,17 @@ To test these predictions, we deliberately work in controlled regimes where mean
 
 
 \section{Conclusions and further scope for research}
-By extending mean-field signal propagation to include multiplicative dropout, we established that activation non-analyticity fundamentally dictates universality. This formalism yields a Landau equation of state for the decorrelation order parameter, a universal two-parameter scaling collapse, and distinct critical exponents for smooth versus kinked channels. As a demonstration that the framework has practical predictive power, we derived dropout schedules from the theory and tested them experimentally; the predicted front-loaded schedules consistently outperform constant dropout. Extending this mean-field analysis to attention mechanisms and incorporating finite-width corrections are natural directions for future work.
+By extending mean-field signal propagation to include multiplicative dropout, we established that activation non-analyticity fundamentally dictates universality. This formalism yields a Landau equation of state for the decorrelation order parameter, a universal two-parameter scaling collapse, and distinct critical exponents for smooth versus kinked channels. As a demonstration that the framework has practical predictive power, we derived dropout schedules from the theory and tested them experimentally; in the controlled regimes we test, the predicted front-loaded schedules outperform constant dropout. Extending this mean-field analysis to attention mechanisms and incorporating finite-width corrections are natural directions for future work.
 
 \section{Limitations}
 Mean-field theory gives the leading description of MLPs at large width, with finite-width corrections controlled perturbatively by the depth-to-width ratio \(L/N\). Our experiments are deliberately carried out in this regime, but the present analysis does not compute these corrections explicitly. Although such corrections are not expected to change the smooth/kinked universality classification, they can accumulate with depth and may induce subleading changes to the optimal dropout profile.
 
-A second limitation is architectural scope. App.~\ref{app:cnn_extension} explains why infinite-channel CNNs and residual branches should inherit the same local smooth-versus-kinked mechanism, but we do not derive the full spatial-mode CNN Landau theory, run CNN experiments, or give a dropout-deformed ResNet treatment. Residual architectures are subtler because skip connections modify large-depth propagation while preserving the local activation channel. Extending the analysis to include residual-branch strength as an additional control parameter would put the Transformer experiments on firmer theoretical footing.
+A second limitation is architectural scope. We analyze dropout most explicitly in MLP mean-field theory, leaving full treatments of CNNs, RNNs, ResNets, Transformers, and normalization layers to future work. Still, the recursion relation is the qualitative engine behind the universality result, and analogous local Gaussian kernels appear in several wider architectures. App.~\ref{app:cnn_extension} explains why infinite-channel CNNs and residual branches should inherit much of the same smooth/kinked split, although we do not derive the full spatial-mode CNN Landau theory, run CNN experiments, or give a dropout-deformed ResNet treatment. Residual architectures are subtler because skip connections modify large-depth propagation while preserving the local activation channel. Extending the analysis to include residual-branch strength as an additional control parameter would put the Transformer experiments on firmer theoretical footing.
 
 Third, the theory still focuses primarily on forward correlation dynamics. The main text gives the leading wide-limit backward covariance recursion and shows that dropout creates the same diagonal/off-diagonal asymmetry for gradients, but we do not develop the full dropout-deformed backward theory, including finite-width gradient susceptibilities, training-time mask correlations, or feature-learning effects. Finally, the framework is an initialization theory rather than a full theory of training dynamics: it does not model how the relevant observables evolve after feature learning substantially reshapes the representation, for instance in large-learning-rate regimes where catapult dynamics can appear \cite{zhu2024quadraticcatapult}. Extending the same approach to training-time regularizers, dropout warm-up, adaptive schedules, other regularization fields such as \(L^2\) penalties, or broader scaling-law questions \cite{Bahri2024ExplainingScalingLaws} is a natural direction for future work.
 
 \section*{Impact statement}
 The main practical benefit is lower training cost at fixed performance; we do not anticipate additional ethical risks.
-
-\textbf{Conflict of Interest Disclosure.} The author has no financial conflicts of interest to disclose.
 
 \bibliography{bibliography}
 \bibliographystyle{icml2026}
@@ -721,12 +691,39 @@ The main practical benefit is lower training cost at fixed performance; we do no
 
 \section{Mean-Field Background and Dropout Recursions}
 
+\subsection{Notation guide}
+\label{app:notation}
+
+The same few letters carry several nearby meanings, so we collect the main conventions here.
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Symbol & Meaning \\
+\midrule
+\(\rho_\ell\) & keep probability in layer \(\ell\) \\
+\(p_{\mathrm{drop},\ell}=1-\rho_\ell\) & raw dropout probability \\
+\(p_j^{(\ell)}\) & Bernoulli dropout mask variable \\
+\(m=1-c^\ast\) & decorrelation order parameter at the fixed point \\
+\(m_\ell=1-c_\ell\) & depth-dependent decorrelation used in relaxation laws \\
+\(\chi_\perp\), \(\chi_1\) & no-dropout angular susceptibility at \(c=1\) \\
+\(\chi_\rho\) & dropout-deformed angular susceptibility \(\bar F_\rho'(1)\) \\
+\(\chi_M\) & response susceptibility \(\partial m/\partial h\) \\
+\(\chi\), \(\chi_q\) & generic Hermite/angle susceptibility and variance-channel susceptibility \\
+\(\theta_{\rm rel}\) & relaxation exponent, \(m_\ell\sim \ell^{-\theta_{\rm rel}}\) \\
+\bottomrule
+\end{tabular}
+\caption{Notation used across the main text and appendices.}
+\label{tab:notation_guide}
+\end{table}
+
 \subsection{Mean-Field Theory Primer}
 \label{app:mft_primer}
 
 Here we briefly review the mean-field formalism of deep information propagation (DIP) \cite{schoenholz2017deepinformationpropagation}, with broader background in the Les Houches and TASI lecture notes \cite{bahri2024leshoucheslecturesdeep,Halverson:2024hax}, which will serve as the baseline for what follows. The context is a fully-connected MLP at random initialization, studied in the wide limit, where preactivations are well-approximated as Gaussian random variables with self-consistently determined covariances. In the strict $N_l\to\infty$ limit this Gaussian description closes, while at large but finite width deviations from Gaussianity can be organized perturbatively in the depth-to-width aspect ratio (schematically $L/N$), as emphasized in \cite{roberts2022principlesdeeplearningtheory}.
 
-We consider a depth-$L$ network with $N_l$ Neurons in layer $l$, and an activation $\phi:\mathbb{R}\to\mathbb{R}$ (e.g.\ $\tanh$, ReLU, \emph{etc.}). We use the standard i.i.d.\ Gaussian initialization
+We consider a depth-$L$ network with $N_l$ neurons in layer $l$, and an activation $\phi:\mathbb{R}\to\mathbb{R}$ (e.g.\ $\tanh$, ReLU, \emph{etc.}). We use the standard i.i.d.\ Gaussian initialization
 \begin{equation}
 W^{l}_{ij}\sim \mathcal{N}\!\left(0,\frac{\sigma_{w}^{2}}{N_{l}}\right),
 \qquad
@@ -765,7 +762,7 @@ q^{*}\equiv\lim_{l\to\infty} q^{\,l}_{aa}.
 \end{equation}
 For bounded activations (e.g.\ $\tanh$) the fixed point exists for any $\sigma_{w}^{2},\sigma_{b}^{2}$. For unbounded activations (e.g.\ ReLU) it exists only in part of parameter space; outside that region the recursion can run away and the typical preactivation scale diverges with depth.
 
-We now consider the correlations between two distinct inputs $a,b$. Mean-field predicts that different Neurons decorrelate at leading order, so we define
+We now consider the correlations between two distinct inputs $a,b$. Mean-field predicts that different neurons decorrelate at leading order, so we define
 \begin{equation}
 \mathbb{E}\!\left[z^{\,l}_{i;a}z^{\,l}_{j;b}\right]
 =
@@ -873,7 +870,7 @@ Heuristically, $\xi_{c}$ controls how far distinctions between different inputs 
 
 In this sense, the edge-of-chaos is primarily about $\xi_{c}$ rather than $\xi_{q}$, except in special cases. For ReLU, $\phi''=0$ away from the origin (so the curvature contribution vanishes in the Gaussian averages), and one has $r_{q}=\chi_{1}$. In that case $\xi_{q}$ and $\xi_{c}$ essentially coincide and both diverge as $\chi_{1}\to 1$, provided a finite $q^{*}$ exists. This is one concrete reason why ReLU-style near-critical initializations are comparatively forgiving in practice.
 
-MFT provides a good approximation in very wide networks, especially through the first few layers. At large but finite width, deviations from Gaussian mean-field behavior can be organized perturbatively in the depth-to-width aspect ratio \(L/N\). Accordingly, in our experiments we work in a controlled regime with \(L/N \ll 1\) (i.e., \(N \gg L\)). Near criticality, the correlation length becomes large, which slows relaxation to the fixed point and typically amplifies sensitivity to finite-width and other non-Gaussian corrections. Hence, when probing critical power laws while maintaining dropout, we keep the dropout rate parametrically small but non-negligible: taking dropout to be infinitesimal would require prohibitively deep networks to obtain precise estimates of the correlation length and related quantities, making the experiments computationally expensive.
+MFT provides a good approximation in very wide networks, especially through the first few layers. At large but finite width, deviations from Gaussian mean-field behavior can be organized perturbatively in the depth-to-width aspect ratio \(L/N\). Accordingly, in our experiments we work in a controlled regime with \(L/N \ll 1\) (i.e., \(N \gg L\)). Near criticality, the correlation length becomes large, which slows relaxation to the fixed point and typically amplifies sensitivity to finite-width and other non-Gaussian corrections. Hence, when probing critical power laws while maintaining dropout, we keep the latter parametrically small but non-negligible: taking dropout to be infinitesimal would require prohibitively deep networks to obtain precise estimates of the correlation length and related quantities, making the experiments computationally expensive.
 
 \subsection{Derivation of Correlation Map and Derivatives with Dropout}\label{app:price_dropout}
 
@@ -1019,6 +1016,92 @@ For example, the same local channel which appears in MLPs re-emerges in infinite
 
 ResNets modify depth dynamics in a complementary way: skip connections can change exponential convergence to subexponential or polynomial behavior, and norms may drift rather than relax to a fixed point \cite{yang2017meanfieldresnets}. Still, the residual branch evaluates the same nonlinear Gaussian channel \(V_\phi\), so the local analytic distinction is unchanged. The tanh/ReLU asymptotic split observed in \cite{yang2017meanfieldresnets} is consistent with our smooth/kinked classes; a dropout-deformed ResNet theory would additionally track residual-branch strength and norm drift.
 
+\subsection{Rank Collapse and Rank-Flow Tie-Breaking}
+\label{app:rank_flow}
+
+The mean-field propagation objective is invariant under permutations of the depth profile \(h_\ell\), so it fixes the amount of dropout but not its ordering. Rank collapse supplies one beyond-mean-field tie-breaker. In pure self-attention, for token representations \(X_\ell\in\mathbb R^{n\times d}\), and ignoring residual connections, \(X_{\ell+1}=A_\ell X_\ell\). Hence
+\begin{equation}
+\operatorname{rank}(X_{\ell+1})
+\;\leq\;
+\min\{\operatorname{rank}(A_\ell),\operatorname{rank}(X_\ell)\}.
+\end{equation}
+As \(A_\ell\) contracts toward the rank-one projector \(\mathbf 1\mathbf 1^\top/n\), a rank-diversity proxy normalized so that \(R=1\) at complete token collapse obeys
+\begin{equation}
+R(\ell)-1
+\;\lesssim\;
+\bigl(R(0)-1\bigr)\exp\!\left(-c\,2^\ell\right),
+\end{equation}
+for an architecture-dependent constant \(c>0\). In wide MLPs, analogous rank-diversity proxies typically decay exponentially with depth, e.g.
+\begin{equation}
+R(\ell)-1
+\;\sim\;
+\bigl(R(0)-1\bigr)\exp\!\left(-2(\lambda_1-\lambda_2)\,\ell\right),
+\end{equation}
+where $\lambda_1>\lambda_2$ are the top Lyapunov exponents governing singular-value growth. In both cases, the dominant loss of diversity occurs early in depth, especially in attention-dominated models.
+
+Dropout counteracts this collapse by shrinking within-layer normalized correlations. With keep probability $\rho_\ell\in(0,1]$, inverted dropout acts as
+\begin{equation}
+\tilde y_{\ell,i}
+\;=\;
+\frac{p_{\ell,i}}{\rho_\ell}\,y_{\ell,i},
+\qquad
+p_{\ell,i}\sim \mathrm{Bernoulli}(\rho_\ell),
+\end{equation}
+with the $p_{\ell,i}$ independent across $i$. Let the uncentered second moment at depth $\ell$ be
+\begin{equation}
+\Sigma_\ell
+\;\equiv\;
+\mathbb{E}\!\left[y_\ell y_\ell^\top\right],
+\end{equation}
+and define $\tilde\Sigma_\ell$ analogously for $\tilde y_\ell$. Averaging over the dropout mask gives
+\begin{equation}
+\tilde\Sigma_\ell
+\;=\;
+\Sigma_\ell
++
+\left(\frac{1}{\rho_\ell}-1\right)\mathrm{diag}(\Sigma_\ell),
+\label{eq:dropout_second_moment}
+\end{equation}
+so off-diagonal second moments are unchanged while the diagonal is inflated. Writing
+\begin{equation}
+D_\ell
+\;\equiv\;
+\mathrm{diag}(\Sigma_\ell),
+\qquad
+C_\ell
+\;\equiv\;
+D_\ell^{-1/2}\Sigma_\ell D_\ell^{-1/2},
+\end{equation}
+one obtains
+\begin{equation}
+\tilde C_\ell
+\;=\;
+\rho_\ell\,C_\ell + (1-\rho_\ell)\,I.
+\label{eq:dropout_corr_shrinkage}
+\end{equation}
+This identity suppresses off-diagonal correlations and moves the eigenvalues of the normalized correlation matrix \(C_\ell\) toward one. The statement is about the normalized correlation matrix; the raw covariance \(\tilde\Sigma_\ell\) can still have heterogeneous diagonal variances.
+
+A convenient quantitative proxy is the participation-ratio effective rank
+\begin{equation}
+R_{\mathrm{eff}}(\Sigma)
+\;\equiv\;
+\frac{\bigl(\mathrm{tr}\,\Sigma\bigr)^2}{\mathrm{tr}\!\left(\Sigma^2\right)}.
+\end{equation}
+Combining \eqref{eq:dropout_second_moment} with trace identities yields
+\begin{equation}
+R_{\mathrm{eff}}\!\left(\tilde\Sigma_\ell\right)
+\;=\;
+\frac{\bigl(\mathrm{tr}\,\Sigma_\ell\bigr)^2}{
+\rho_\ell^2\,\mathrm{tr}\!\left(\Sigma_\ell^2\right)
++
+\left(1-\rho_\ell^2\right)\mathrm{tr}\!\left(\mathrm{diag}(\Sigma_\ell)^2\right)}.
+\end{equation}
+Since $\mathrm{tr}(\Sigma_\ell^2)\ge \mathrm{tr}(\mathrm{diag}(\Sigma_\ell)^2)$ for any PSD $\Sigma_\ell$,
+\begin{equation}
+R_{\mathrm{eff}}\!\left(\tilde\Sigma_\ell\right)\;\ge\;R_{\mathrm{eff}}(\Sigma_\ell),
+\end{equation}
+with equality iff \(\rho_\ell=1\) or \(\Sigma_\ell\) is diagonal (equivalently, for any nontrivial dropout \(0<\rho_\ell<1\), iff all off-diagonal entries vanish). Independent additive noise would also inflate the diagonal and break perfect alignment; dropout is the multiplicative Bernoulli realization for which the effective field is directly controlled by $\rho_\ell$.
+
 \section{Critical Exponents and Non-Analyticity}
 \label{ap:exponent_derivations}
 
@@ -1058,6 +1141,12 @@ For \(\lambda\simeq 1\) with \(\lambda>0\), the depth correlation length satisfi
 \]
 Thus \(\xi_{c,\rho}(t,0)\sim |t|^{-1}\) and \(\nu_t=1\), while \(\xi_{c,\rho}(0,h)\sim h^{-1/2}\) and \(\nu_\rho=1/2\).
 Equivalently, \(y_t=1/\nu_t=1\) and \(y_\rho=1/\nu_\rho=2\), so dropout is the more relevant perturbation of the correlation edge.
+
+At the marginal point \(t=h=0\), the same smooth normal form gives the depth relaxation law:
+\[
+m_{\ell+1}-m_\ell\simeq-\frac{g_\rho}{2}m_\ell^2.
+\]
+In a continuum-depth approximation this gives \(m(\ell)\sim \ell^{-1}\), hence \(\theta_{\rm rel}=1\) for the smooth class.
 
 \vspace{0.25em}
 \noindent
@@ -1099,6 +1188,8 @@ Collecting exponents for the smooth universality class:
 \qquad
 \nu_\rho=\frac{1}{2},
 \qquad
+\theta_{\rm rel}=1,
+\qquad
 \alpha=-1.
 \]
 For comparison, standard Ising-like Landau mean-field theory (with \(m\to -m\) symmetry and a quartic interaction) has
@@ -1129,7 +1220,7 @@ g_\rho \propto \int Dz\,\bigl[\phi''(\sqrt{\bar q^{*}}\,z)\bigr]^2.
 \]
 For kinked activations, this logic fails: the map remains smooth for \(c<1\), but as it approaches \(c\to 1\), it is governed by a branch point, and the leading nonlinear correction is non-analytic in \(m\). This changes the scaling of the dropout deformation.
 
-We illustrate this explicitly for the ReLU activation \(\phi(x)=\max(0,x)\). To keep formulas compact we set$ \sigma_b = 0$
+We illustrate this explicitly for the ReLU activation \(\phi(x)=\max(0,x)\). To keep formulas compact we set \(\sigma_b = 0\)
 throughout this subsection and use the same inverted-dropout convention as before, with masks drawn independently across inputs.
 
 The mean-field correlation map for ReLU admits a closed form. Writing \(c\in[-1,1]\) for the preactivation correlation at some depth,
@@ -1175,6 +1266,7 @@ In the present \(\sigma_b=0\) setting, this field is exactly
 \end{equation}
 independent of the activation, since at \(c=1\) the only source of mismatch is the independence of the two dropout masks.
 We write the fixed point as \(c^*=1-m^*\) with \(m^*>0\) and impose \(c^*=\bar F_\rho(c^*)\).
+For the literal bias-free ReLU map, \(\bar F_\rho(c)=\rho F_{\mathrm{ReLU}}(c)\), so \(\chi_\rho=\rho\) and \(t=\rho-1=-h\). Thus the \(t=0,h>0\) direction below is the kinked normal-form field direction, while standard ReLU dropout follows a constrained path through the same scaling function.
 
 Near \(m^*\ll 1\), the kinked analogue of the Landau equation of state is obtained by combining the shift \(\bar F_\rho(1)=1-h\), the linear slope \(\chi_\rho=1+t\), and the non-analytic term \eqref{eq:relu_expand}:
 \begin{equation}
@@ -1185,7 +1277,7 @@ Near \(m^*\ll 1\), the kinked analogue of the Landau equation of state is obtain
   t\equiv \chi_\rho-1.
   \label{eq:eos_kink_correct}
 \end{equation}
-Along the critical isotherm \(t=0\), this gives
+Along the normal-form critical isotherm \(t=0\), this gives
 \begin{equation}
 m^*
 \;\sim\;
@@ -1223,6 +1315,29 @@ h^{-1/3},
 \label{eq:kink_nu}
 \end{equation}
 to be compared with the smooth result \(\xi_{c,\rho}(0,h)\sim h^{-1/2}\).
+For ordinary bias-free ReLU dropout, substituting the constrained path \(t=-h\) into \eqref{eq:eos_kink_correct} gives
+\[
+h=\kappa m^{3/2}+hm+\mathcal O(m^2).
+\]
+Since the leading solution has \(m\sim h^{2/3}\), the \(hm\) term is subleading. Moreover,
+\[
+1-\lambda\simeq h+\frac{3\kappa}{2}\sqrt m\sim h^{1/3},
+\]
+so the same \(\nu_{\rho,\mathrm{kink}}=1/3\) survives as a constrained-path exponent.
+
+The remaining kinked exponents follow from the same equation of state. At \(h=0\) and \(t>0\),
+\[
+\kappa m^{3/2}=tm
+\qquad\Rightarrow\qquad
+m=\left(\frac{t}{\kappa}\right)^2,
+\]
+so \(\beta_{\rm kink}=2\). On the subcritical side \(t<0\), the small-field balance is \(h\simeq |t|m\), giving \(\chi_M\sim |t|^{-1}\) and therefore \(\gamma_{\rm kink}=1\). Substituting the zero-field branch into \eqref{eq:kink_slope} gives \(1-\lambda\propto t\), so \(\xi_{c,\rho}(t,0)\sim t^{-1}\) and \(\nu_{t,\rm kink}=1\).
+
+Adding nonzero ReLU bias variance does not restore a finite-\(q^*\) critical isotherm. With inverted dropout,
+\[
+\bar q_{\ell+1}=\frac{\sigma_w^2}{2\rho}\bar q_\ell+\sigma_b^2,
+\]
+so finite variance requires \(a\equiv\sigma_w^2/(2\rho)<1\), while angular criticality requires \(\chi_\rho=\sigma_w^2/2=1\), incompatible with \(\rho<1\). Equivalently, \(h=a(1-\rho)\) and \(t=\rho a-1=-h-(1-a)\), so finite variance adds a subcritical detuning that cuts off the asymptotic dropout law unless one takes the singular double scaling \(1-a\ll h^{1/3}\).
 
 
 
@@ -1285,7 +1400,7 @@ In a continuum-depth approximation \(m_{\ell+1}-m_\ell\to \partial_\ell m\), we 
 m(\ell)\sim \ell^{-2},
 \label{eq:kink_relax_sol}
 \end{equation}
-which reproduces the characteristic \(1-c_\ell\sim \ell^{-2}\) relaxation of ReLU activations at the edge-of-chaos.
+which reproduces the characteristic \(1-c_\ell\sim \ell^{-2}\) relaxation of ReLU activations at the edge-of-chaos and gives \(\theta_{\rm rel}=2\).
 
 \subsection{Non-Analytic Expansion of the ReLU Correlation Map near $c=1$}
 \label{app:relu_non-analytic}
@@ -1617,7 +1732,7 @@ In our scale-fixed convention \eqref{eq:chi-factorization}, ReLU has $\mathcal{Q
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.7\linewidth]{figures/theory/hermite_decomposition.png}
+    \includegraphics[width=0.7\linewidth]{figures/theory/hermite_decomposition.pdf}
     \caption{Magnitude of Hermite coefficients $|a_n|$ for ReLU versus $\tanh$. ReLU exhibits a slow (power-law) decay, reflecting multi-scale support across Hermite degrees, while $\tanh$ decays rapidly and concentrates most spectral mass in the lowest modes.}
     \label{fig:hermite-decomposition}
 \end{figure}
@@ -1677,7 +1792,7 @@ Parity gives \(a_{2k}(s)=0\). There is no simple closed form for general \(s\), 
 
 \section{Experimental Details and Additional Figures}
 \label{app:experimental_info}
-This appendix collects the experimental details and additional figures supporting the scheduling predictions. Code for the experiments and figure generation is available at \url{https://github.com/luklacasito/dropout-mft-experiments}.
+This appendix collects the experimental details and additional figures supporting the scheduling predictions. Code for the experiments and figure generation is available at \url{https://github.com/luklacasito/dropout-mft-experiments/tree/55da5ad6bec6f2d93b40d65b56ec4e1b33bc53ec}.
 \subsection{Mean-Field Fits and Scaling Collapse}
 Table~\ref{tab:mf_vs_fit_exponents} reports exponents extracted from iterated MFT recursions \eqref{variancerecursion}.
 \begin{table}[ht]
@@ -1689,8 +1804,8 @@ Exponent & Iterated recursion & Linear approximation  \\
 $\nu$ & $1.0190 \pm 0.0014$ & $1$ \\
 $\beta_{\mathrm{tanh}}$ & $0.9879 \pm 0.0007$ & $1$ \\
 $\beta_{\mathrm{ReLU}}$ & $1.9642 \pm 0.0019$ & $2$ \\
-$p_{\mathrm{tanh}}$ & $1.0048 \pm 0.0000$ & $1$ \\
-$p_{\mathrm{ReLU}}$ & $1.9870 \pm 0.0001$ & $2$ \\
+$\theta_{\mathrm{rel,tanh}}$ & $1.0048 \pm 0.0000$ & $1$ \\
+$\theta_{\mathrm{rel,ReLU}}$ & $1.9870 \pm 0.0001$ & $2$ \\
 $1/\delta_{\mathrm{tanh}}$ & $0.5171 \pm 0.0007$ & $1/2$ \\
 $1/\delta_{\mathrm{ReLU}}$ & $0.6656 \pm 0.0001$ & $2/3$ \\
 $\nu_{\rho,\mathrm{tanh}}$ & $0.4716 \pm 0.0014$ & $1/2$ \\
@@ -1704,7 +1819,7 @@ $\nu_{\rho,\mathrm{ReLU}}$ & $0.3528 \pm 0.0010$ & $1/3$ \\
 The same scaling-collapse diagnostic can be carried out for the kinked universality class, using ReLU as the representative activation. 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=1.0\linewidth]{figures/theory/kinked_scaling_collapse.png}
+    \includegraphics[width=1.0\linewidth]{figures/theory/kinked_scaling_collapse.pdf}
     \caption{Kinked counterpart to Fig.~\ref{fig:dropout_scaling}, showing the corresponding universal scaling collapse.}
     \label{fig:kinked_collapse}
 \end{figure}
@@ -1716,9 +1831,9 @@ The scheduling experiments below test Sec.~\ref{subsec:optimal_dropout}: MLP sch
 
 \subsection{MLPs}
 
-Finite-width experiments support these spatial scheduling predictions. The main finding is that concentrating dropout in early layers, where coadaptation and rank collapse are most severe, yields the best generalization. The theoretically motivated schedules improve over constant dropout at no extra computational cost.
+Finite-width experiments support these spatial scheduling predictions. The main finding is that concentrating dropout in early layers, where coadaptation and rank-diversity loss are expected to matter most, yields the best generalization. The theoretically motivated schedules improve over constant dropout at no extra computational cost.
 
-To test this prediction in a controlled finite-width setting, we design an experiment in the overfitting regime, where information propagation and regularization are both important factors in determining performance. In the effective-theory treatment of \cite{roberts2022principlesdeeplearningtheory}, deviations from Gaussian mean-field behavior \cite{neal1996bayesian,lee2018deep} generate corrections to the correlation recursions that are suppressed by $1/N$ (with $N$ the layer width) and accumulate across depth as $L/N$. At the same time, deep information propagation suggests that trainable depth extends only to a modest multiple of the correlation length; empirically, one often finds successful learning out to $\mathcal{O}(6)\,\xi$ \cite{schoenholz2017deepinformationpropagation}.
+To test this prediction in a controlled finite-width setting, we design an experiment in the overfitting regime, where information propagation and regularization are both important factors in determining performance. In the effective-theory treatment of \cite{roberts2022principlesdeeplearningtheory}, deviations from Gaussian mean-field behavior \cite{neal1996bayesian,Lee2018DNNasGP} generate corrections to the correlation recursions that are suppressed by $1/N$ (with $N$ the layer width) and accumulate across depth as $L/N$. At the same time, deep information propagation suggests that trainable depth extends only to a modest multiple of the correlation length; empirically, one often finds successful learning out to $\mathcal{O}(6)\,\xi$ \cite{schoenholz2017deepinformationpropagation}.
 
 We train on 5000 CIFAR-10 images with width 256 and depth $2\xi$, using a batch size of 75 to ensure the regularizing effect of dropout through injected stochastic noise. We initialize close to the edge-of-chaos at $\sigma_w^2 = 1.98$ and $\sigma_b^2 = 0.02$, near standard He initialization but avoiding the instabilities due to the divergence of the variance fixed point $q^\ast$ as $\sigma_w^2 \to 2$.
 
@@ -1726,7 +1841,7 @@ We compare six depth profiles at fixed mean dropout budget: (i) no dropout, (ii)
 
 \begin{figure*}[ht]
     \centering
-    \includegraphics[width=0.8\textwidth]{figures/experiments/mlp/dropout_schedules_overfit.png}
+    \includegraphics[width=0.8\textwidth]{figures/experiments/mlp/dropout_schedules_overfit.pdf}
     \caption{Finite-width MLP training and test curves at fixed mean dropout budget $\overline{h}$ (with $0 \le h_\ell \le h_{\max}$). We compare uniform dropout, linear ramps (increasing/decreasing with depth), and step schedules that concentrate dropout in either
     the first or last half of the network, together with the no-dropout baseline.}
     \label{fig:dropout_regimes_overfit}
@@ -1756,7 +1871,7 @@ A natural objection to the above results is that the improved performance of ear
 To disentangle allocation from total dropout strength, we compare constant schedules with fields $\bar h,2\bar h,3\bar h$ against step schedules using $2\bar h$ in the first half or $3\bar h$ in the first third of the network (Fig.~\ref{fig:triple_dropout}, Tab.~\ref{tab:triple_summary}).
  \begin{figure}[h]
      \centering
-     \includegraphics[width=1.0\linewidth]{figures/experiments/mlp/dropout_budget_comparison.png}
+     \includegraphics[width=1.0\linewidth]{figures/experiments/mlp/dropout_budget_comparison.pdf}
      \caption{Matched-budget controls comparing front-loaded step schedules against constant dropout fields at $\bar h$, $2\bar h$, and $3\bar h$.}
      \label{fig:triple_dropout}
  \end{figure}
@@ -1808,6 +1923,8 @@ Triple ($3\bar{h}$) & $2.22$   & $2.70$ & $33.94 \pm 0.22$ \\
         Learning Rate & $1 \times 10^{-4}$ \\
         LR Schedule & Decay to minimum $1 \times 10^{-7}$ \\
         Mean Dropout Field ($\bar{h}$) & 0.1 \\
+        Max Dropout Field ($h_{\max}$) & 0.2 (Step); 0.3 (Big step) \\
+        Step Active Fraction ($f$) & $1/2$ (Step); $1/3$ (Big step) \\
         \midrule
         \multicolumn{2}{l}{\textit{General Setup}} \\
         \midrule
@@ -1833,10 +1950,10 @@ To test whether scheduling is tied to one budget, width, or activation, we ran C
 \begin{figure*}[t]
     \centering
     \subfigure[Sweep over mean dropout field at width \(N=256\).]{
-        \includegraphics[width=0.45\textwidth]{figures/experiments/sweeps/h_sweep_schedule_comparison.png}
+        \includegraphics[width=0.45\textwidth]{figures/experiments/sweeps/h_sweep_schedule_comparison.pdf}
     }
     \subfigure[Schedule advantage over constant dropout at \(\bar h=0.1\).]{
-        \includegraphics[width=0.45\textwidth]{figures/experiments/sweeps/width_sweep_baseline_advantage.png}
+        \includegraphics[width=0.45\textwidth]{figures/experiments/sweeps/width_sweep_baseline_advantage.pdf}
     }
     \caption{Robustness sweeps for depth-6 near-critical ReLU MLPs on CIFAR-10. Early schedules improve over constant dropout throughout the large-width regime, while \(N=64\) illustrates the expected finite-width boundary.}
     \label{fig:mlp_sweeps}
@@ -1854,13 +1971,13 @@ To test whether scheduling is tied to one budget, width, or activation, we ran C
 Table~\ref{tab:vit_config} and Fig.~\ref{fig:dropout_regimes_transformer} detail the architectural parameters and corresponding test dynamics for the CIFAR-100 Vision Transformer evaluation \cite{dosovitskiy2021vit,krizhevsky2009cifar}; Table~\ref{tab:schedule_comparison_cifar_100} reports the schedule comparison. 
 \begin{figure*}[h]
     \centering
-    \includegraphics[width=0.95\textwidth]{figures/experiments/transformer/dropout_schedules_cropped.png}
+    \includegraphics[width=0.95\textwidth]{figures/experiments/transformer/dropout_schedules_cropped.pdf}
     \caption{Finite-width Vision Transformer training and test curves at fixed mean dropout budget $\overline{h}$. We compare the no-dropout baseline, uniform dropout, decreasing linear ramps, and early step schedules. The cropped view shows epochs 20--75 for readability; the full curve is also in App.~\ref{app:experimental_info}.}
     \label{fig:dropout_regimes_transformer}
 \end{figure*}
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.95\linewidth]{figures/experiments/transformer/dropout_schedules_full.png}
+    \includegraphics[width=0.95\linewidth]{figures/experiments/transformer/dropout_schedules_full.pdf}
     \caption{Extended training curves for Figure~\ref{fig:dropout_regimes_transformer}, showing the full 75 epochs.}
     \label{fig:transformer_full}
 \end{figure}
@@ -1907,7 +2024,7 @@ Table~\ref{tab:vit_config} and Fig.~\ref{fig:dropout_regimes_transformer} detail
 
 Accuracy curves are shown in Fig.~\ref{fig:dropout_regimes_transformer}, with explicit results in Table~\ref{tab:schedule_comparison_cifar_100}. All reported errors are SEM. On CIFAR-100 (and similarly on CIFAR-10), concentrating dropout earlier consistently improved accuracy and reduced overfitting. Interestingly, linear decreasing schedules, which put more dropout in early layers, often performed especially well in transformers; we suspect residual connections \cite{he2016resnet} ease information propagation enough that distributing regularization early can dominate the propagation cost, though both early weighted and step-like schedules outperformed the constant baseline.
 
-We focus on controlled regimes rather than ImageNet-scale benchmarking because our central claims are mechanistic and derived in a mean-field initialization framework, which is most cleanly tested when finite-width corrections remain subdominant. The experimental validation is designed to test the theory in settings where MFT predictions apply cleanly, rather than to establish state-of-the-art performance. ImageNet \cite{imagenet} training introduces substantial confounders from augmentation and extensive hyperparameter tuning that can obscure MFT effects; we leave ImageNet evaluation as future work. Overall, the predicted schedules consistently outperform constant dropout, illustrating the practical utility of the mean-field framework.
+We focus on controlled regimes rather than ImageNet-scale benchmarking because our central claims are mechanistic and derived in a mean-field initialization framework, which is most cleanly tested when finite-width corrections remain subdominant. The experimental validation is designed to test the theory in settings where MFT predictions apply cleanly, rather than to establish state-of-the-art performance. ImageNet \cite{imagenet} training introduces substantial confounders from augmentation and extensive hyperparameter tuning that can obscure MFT effects; we leave ImageNet evaluation as future work. In these controlled runs, the predicted schedules outperform constant dropout, illustrating the practical utility of the mean-field framework.
 
 \begin{table}[h]
     \centering
@@ -1932,7 +2049,7 @@ To isolate the effect of dropout scheduling on distinct transformer components, 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\linewidth]{figures/experiments/transformer/component_ablations.png}
+    \includegraphics[width=1\linewidth]{figures/experiments/transformer/component_ablations.pdf}
     \caption{Component ablations applying dropout schedules to the attention block, MLP block, or both. The figure compares no dropout, constant dropout, and step-like dropout.}
     \label{fig:ablations}
 \end{figure}
@@ -1999,68 +2116,6 @@ To isolate the effect of dropout scheduling on distinct transformer components, 
     \caption{Component-level ablations on CIFAR-10, comparing Constant and Step-like dropout schedules applied exclusively to the MLP block, Attention block, or both. The Step (early) schedule consistently outperforms the Constant schedule across all configurations.}
     \label{tab:ablation_results}
 \end{table}
-
-\subsection{Loss Improvements}
-\label{subsec:loss_improvements}
-
-Table~\ref{tab:loss_improvements} summarizes the corresponding test-loss gains. All entries are computed relative to the constant-dropout baseline in the same experiment, using the saved per-seed test-loss curves. We report both the final-epoch loss reduction and the reduction in the best test loss attained during training; positive numbers indicate lower loss than constant dropout.
-
-\begin{table*}[t]
-\centering
-\scriptsize
-\begin{tabular}{@{}L{0.18\textwidth}L{0.33\textwidth}L{0.18\textwidth}L{0.18\textwidth}@{}}
-\toprule
-\textbf{Experiment} & \textbf{Dataset and architecture} & \textbf{Final test loss reduction} & \textbf{Best test loss reduction} \\
-\midrule
-MLP schedule sweep, Fig.~\ref{fig:dropout_regimes_overfit}
-&
-CIFAR-10 subset with 5,000 training images; near-critical ReLU MLP with width 256 and depth \(2\xi\).
-&
-Step (early): \(17.9\%\)
-&
-Step (early): \(1.4\%\)
-\\
-\addlinespace[1pt]
-MLP budget controls, Fig.~\ref{fig:triple_dropout}
-&
-Same CIFAR-10 near-critical ReLU MLP setup; compares spatial allocation against larger uniform dropout budgets.
-&
-Double: \(24.3\%\)
-&
-Big step: \(2.1\%\)
-\\
-\addlinespace[1pt]
-ViT schedule sweep, Fig.~\ref{fig:dropout_regimes_transformer}
-&
-Full CIFAR-100; 12-layer ViT with embedding dimension 128, 16 heads, MLP ratio 4, and patch size 4.
-&
-Linear (decreasing): \(4.2\%\)
-&
-Step (early): \(2.2\%\)
-\\
-\addlinespace[1pt]
-ViT component ablations, Fig.~\ref{fig:ablations}
-&
-Full CIFAR-10; same 12-layer ViT, with dropout applied to attention only, MLP only, or both blocks.
-&
-Both blocks, step (early): \(6.3\%\)
-&
-Both blocks, step (early): \(0.9\%\)
-\\
-\addlinespace[1pt]
-GELU MLP smooth check
-&
-CIFAR-10 subset with 5,000 training images; smooth-activation MLP with width 256, depth 6, and \(\bar h=0.1\).
-&
-Big step: \(29.8\%\)
-&
-Big step: \(2.5\%\)
-\\
-\bottomrule
-\end{tabular}
-\caption{Summary of test-loss improvements over the corresponding constant-dropout baseline. ``Final'' uses the last recorded epoch, while ``best'' uses the minimum test loss attained by each run before averaging.}
-\label{tab:loss_improvements}
-\end{table*}
 
 \end{document}
 

@@ -1532,9 +1532,9 @@ where $r$ is continuous and has no slope jump at $u=0$. The remainder $r$ contri
 \section{Hermite and Variational Perspective}
 \label{sec:var-opt-act}
 
-Hermite polynomials are the natural basis for the Gaussian variational problem. In this basis, activation coefficients directly expose the tradeoff between nonlinear expressivity and correlation depth. Concentrating spectral weight in low Hermite degrees makes correlations more stable with depth (smaller $\chi$) but yields nearly linear features, whereas populating higher degrees increases non-linearity at the cost of larger susceptibilities and hence shorter depth scales unless the initialization is retuned.
+For this Gaussian problem, Hermite polynomials give the convenient coordinates. Expanding an activation in this basis shows which Hermite degrees the nonlinearity actually uses. Weight concentrated in low degrees keeps the correlation map close to the linear channel and makes $\chi$ smaller. Weight in higher degrees makes the activation less linear, but it also increases the derivative energy, so the correlation length shortens unless $\sigma_w^2$ is adjusted.
 
-We also address the scale redundancy $\phi \mapsto a\,\phi$, which can be compensated by $\sigma_w^2 \mapsto \sigma_w^2/a^2$ without changing the mean-field fixed point. To isolate shape dependence, we fix a variance fixed point $q^*$ and the bias variance $\sigma_b^2$, and treat $\sigma_w^2$ as determined by the fixed-point condition. With this convention, the remaining freedom is the shape of a function $f \in L^2(Dz)$ with Gaussian inner product
+There is also a trivial scale freedom: $\phi \mapsto a\,\phi$ can be absorbed by $\sigma_w^2 \mapsto \sigma_w^2/a^2$ without changing the mean-field fixed point. To focus on shape rather than scale, we fix a variance fixed point $q^*$ and the bias variance $\sigma_b^2$, and determine $\sigma_w^2$ from the fixed-point condition. With this convention, the remaining freedom is the shape of a function $f \in L^2(Dz)$ with Gaussian inner product
 %
 \begin{equation}
 Dz \equiv \frac{e^{-z^2/2}}{\sqrt{2\pi}}\,dz, \qquad \langle f,g\rangle \equiv \int Dz\, f(z)\,g(z).
@@ -1699,7 +1699,7 @@ For completeness, the variance-channel susceptibility $\chi_q \equiv \partial q^
 %
 Thus $\chi$ depends only on the distribution $\{a_n^2\}$ across Hermite degrees, whereas $\chi_q$ is additionally sensitive to relative signs/phases within each parity subsector through the $a_n a_{n+2}$ couplings.
 
-Pure modes $f\propto h_n$ are stationary points with $\mathcal{Q}[h_n]=n$. Excluding the degenerate constant mode, or imposing \(\langle f\rangle=0\), the $n=1$ mode is the lowest eigenmode, though this reduces our MLP to a linear network. Any genuine non-linearity necessarily populates higher degrees and increases $\mathcal{Q}[f]$, shortening the correlation depth scale unless $\sigma_w^2$ is reduced accordingly. The Hermite coefficients $\{a_n\}$ therefore provide a concrete parametrization of the expressivity--trainability tradeoff.
+Pure modes $f\propto h_n$ are stationary points with $\mathcal{Q}[h_n]=n$. Excluding the degenerate constant mode, or imposing \(\langle f\rangle=0\), the $n=1$ mode is the lowest eigenmode, but by itself it gives a linear network. Nonlinear activations necessarily mix in higher Hermite degrees. Those modes raise $\mathcal{Q}[f]$, so at fixed \(q^*\) and \(\sigma_b^2\) they shorten the correlation depth unless $\sigma_w^2$ is reduced accordingly.
 
 
 

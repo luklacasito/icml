@@ -35,6 +35,7 @@
 \usepackage{amsthm}
 
 \DeclareMathOperator{\ReLU}{ReLU}
+\newcommand{\relu}{\ensuremath{\ReLU}}
 
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 
@@ -115,7 +116,7 @@
 % \printAffiliationsAndNotice{\icmlEqualContribution}
 
 \begin{abstract}
-We develop a mean-field theory of dropout as a perturbation of critical signal propagation at the edge of chaos. Dropout shifts the perfect-alignment fixed point, making the depth scale for information propagation finite even at critical initialization. We derive critical and crossover scaling laws for correlation decay and establish that smooth activations and kinked, ReLU-like activations constitute distinct universality classes, with different critical exponents and a universal two-parameter scaling collapse in detuning and dropout strength. The distinction traces to the analytic structure of the correlation map: smooth activations admit a Taylor expansion near perfect alignment, while kinked activations develop a branch point with universal non-analyticity. As a corollary, the framework yields principled dropout schedules that maximize effective correlation length under fixed budget, giving higher held-out test accuracy and lower held-out test loss at no extra computational cost. We test the predictions in MLPs and Vision Transformers and discuss CNN/ResNet extensions.
+We develop a mean-field theory of dropout as a perturbation of critical signal propagation at the edge of chaos. Dropout shifts the perfect-alignment fixed point, making the depth scale for information propagation finite even at critical initialization. We derive critical and crossover scaling laws for correlation decay and establish that smooth activations and kinked, \relu{}-like activations constitute distinct universality classes, with different critical exponents and a universal two-parameter scaling collapse in detuning and dropout strength. The distinction traces to the analytic structure of the correlation map: smooth activations admit a Taylor expansion near perfect alignment, while kinked activations develop a branch point with universal non-analyticity. As a corollary, the framework yields principled dropout schedules that maximize effective correlation length under fixed budget, giving higher held-out test accuracy and lower held-out test loss at no extra computational cost. We test the predictions in MLPs and Vision Transformers and discuss CNN/ResNet extensions.
 \end{abstract}
 
 
@@ -129,12 +130,11 @@ We develop a mean-field theory of dropout as a perturbation of critical signal p
 
 \section{Introduction}
 
-Mean-field analyses of randomly initialized deep networks reveal an order-to-chaos phase diagram that controls both signal propagation and gradient penetration with depth \cite{poole2016exponentialexpressivitydeepneural,schoenholz2017deepinformationpropagation,Bahri2020StatMechDeepLearning,bahri2024leshoucheslecturesdeep,Halverson:2024hax}. In this work, we give a holistic exploration of how this picture is modified by dropout. In the language of representation-group (coarse-graining) flow \cite{roberts2022principlesdeeplearningtheory,bahri2024leshoucheslecturesdeep}, dropout is a relevant perturbation: it displaces the critical fixed point and grows under depth coarse-graining, pushing the dynamics away from criticality and determining the macroscopic phase. Concretely, dropout deforms the correlation map \cite{schoenholz2017deepinformationpropagation} by adding a correlation-independent shift at perfect alignment, so that perfect correlation between inputs is no longer a fixed point for any nonzero dropout. Thus, even at the edge-of-chaos \cite{sompolinsky1988chaos,packard1988adaptation,bertschinger2004real}, the depth correlation length is finite. We interpret this shift as an equation of state for the decorrelation order parameter $m \equiv 1-c^\ast$ (with $c^\ast$ the asymptotic inter-signal correlation), derive the resulting scaling laws, and show that smooth and kinked, ReLU-like activations exhibit the same qualitative phase diagram but different critical scaling in the presence of dropout.
+Mean-field analyses of randomly initialized deep networks reveal an order-to-chaos phase diagram that controls both signal propagation and gradient penetration with depth \cite{poole2016exponentialexpressivitydeepneural,schoenholz2017deepinformationpropagation,Bahri2020StatMechDeepLearning,bahri2024leshoucheslecturesdeep}. In this work, we give a holistic exploration of how this picture is modified by dropout. In the language of representation-group (coarse-graining) flow \cite{roberts2022principlesdeeplearningtheory,bahri2024leshoucheslecturesdeep}, dropout is a relevant perturbation: it displaces the critical fixed point and grows under depth coarse-graining, pushing the dynamics away from criticality and determining the macroscopic phase. Concretely, dropout deforms the correlation map \cite{schoenholz2017deepinformationpropagation} by adding a correlation-independent shift at perfect alignment, so that perfect correlation between inputs is no longer a fixed point for any nonzero dropout. Thus, even at the edge-of-chaos \cite{sompolinsky1988chaos,packard1988adaptation,bertschinger2004real}, the depth correlation length is finite. We interpret this shift as an equation of state for the decorrelation order parameter $m \equiv 1-c^\ast$ (with $c^\ast$ the asymptotic inter-signal correlation), derive the resulting scaling laws, and show that smooth and kinked, \relu{}-like activations exhibit the same qualitative phase diagram but different critical scaling in the presence of dropout.
 
 Additionally, we show that the two control parameters (dropout strength and distance to criticality) admit a scaling collapse into a single universal form,\footnote{This is analogous to the homogeneous scaling of connected correlation functions near a critical point; related scaling forms hold for one-particle-irreducible vertex functions after the usual Legendre transform \cite{ZinnJustin2002QFTCritical}.} and we illustrate how these predictions compare with mean-field recursions. 
 
-This analysis yields three main conceptual contributions. First, rather than destroying the mean-field fixed-point structure as previously believed \cite{schoenholz2017deepinformationpropagation}, dropout displaces the perfect-alignment point to a nontrivial $c^\ast<1$ fixed point. This keeps the correlation length recursion and yields a Landau equation of state for $m=1-c^\ast$ together with a two-parameter scaling collapse. Second, we show that universality classes and scaling laws are set by activation smoothness: smooth and kinked activations have distinct critical exponents (Table~\ref{tab:critical_exponents}), a distinction reflected in their Hermite spectral structure (App.~\ref{sec:var-opt-act}). Since the same Gaussian activation kernels arise beyond MLPs, including CNNs and residual branches (App.~\ref{app:cnn_extension}), we expect the qualitative smooth/kinked split to be a well-motivated heuristic. Third, we treat dropout as a depth-dependent dynamical field, and optimizing the effective correlation length functional with respect to this field yields first-principles dropout schedules that we validate experimentally at fixed budget. Treating classically fixed hyperparameters as fields that can change through the network opens a new dimension for hyperparameter optimization across depth, and potentially over training time.
-
+This analysis yields three main conceptual contributions. First, rather than destroying the mean-field fixed-point structure as previously believed \cite{schoenholz2017deepinformationpropagation}, dropout displaces the perfect-alignment point to a nontrivial $c^\ast<1$ fixed point. This keeps the correlation length recursion and yields a Landau equation of state for $m=1-c^\ast$ together with a two-parameter scaling collapse. Second, we show that universality classes and scaling laws are set by activation smoothness: smooth and kinked activations have distinct critical exponents (Table~\ref{tab:critical_exponents}), a distinction reflected in their Hermite spectral structure (App.~\ref{sec:var-opt-act}). Since the same Gaussian activation kernels arise beyond MLPs, including CNNs and residual branches (App.~\ref{app:cnn_extension}), we expect the qualitative smooth/kinked split to be a well-motivated heuristic. Third, we treat dropout as a depth-dependent dynamical field, and optimizing the effective correlation length functional with respect to this field yields first-principles dropout schedules that we validate experimentally at fixed budget. Treating classically fixed hyperparameters as fields that can change through the network opens a new dimension for hyperparameter optimization across depth, and potentially over training time. This work can be mathematically dense at times, and so we hope if you are to get anything out of this contribution, is these three main ideas.  
 
 This work complements prior studies of depth-dependent regularization: stochastic depth drops whole residual blocks with increasing probability \cite{huang2016deep}, curriculum dropout anneals dropout over training time \cite{morerio2017curriculum}, and LayerDrop removes transformer layers for efficiency \cite{fan2019reducing}. Our schedules are spatial depth profiles, so they are complementary to temporal curricula and layer-dropping mechanisms. A distinction in the topology of the critical surface for kinked and smooth activations was previously observed in \cite{hayou2019impact}; here we extract the scaling exponents and identify the corresponding universality classes.
 
@@ -149,9 +149,9 @@ This work complements prior studies of depth-dependent regularization: stochasti
 
 \section{Mean-field theory background}
 \label{sec:mft_background}
-We first state the mean-field assumptions for MLPs, which provide the baseline for the dropout analysis \cite{poole2016exponentialexpressivitydeepneural,schoenholz2017deepinformationpropagation,Bahri2020StatMechDeepLearning,bahri2024leshoucheslecturesdeep,Halverson:2024hax}. We consider fully-connected MLPs at random initialization, where preactivations are well-approximated as Gaussian random variables with self-consistently determined covariances. In the strict $N_l\to\infty$ limit this Gaussian description becomes exact \cite{Lee2018DNNasGP}, while at large but finite width deviations from Gaussianity can be organized perturbatively in the depth-to-width aspect ratio (schematically $L/N$), as treated comprehensively in \cite{roberts2022principlesdeeplearningtheory,bahri2024leshoucheslecturesdeep}.
+We first state the mean-field assumptions for MLPs, which provide the baseline for the dropout analysis \cite{poole2016exponentialexpressivitydeepneural,schoenholz2017deepinformationpropagation,Bahri2020StatMechDeepLearning,bahri2024leshoucheslecturesdeep}. We consider fully-connected MLPs at random initialization, where preactivations are well-approximated as Gaussian random variables with self-consistently determined covariances. In the strict $N_l\to\infty$ limit this Gaussian description becomes exact \cite{Lee2018DNNasGP}, while at large but finite width deviations from Gaussianity can be organized perturbatively in the depth-to-width aspect ratio (schematically $L/N$), as treated comprehensively in \cite{roberts2022principlesdeeplearningtheory,bahri2024leshoucheslecturesdeep}.
 
-We consider an MLP of depth $L$, $N_l$ neurons in layer $l$, and an activation $\phi:\mathbb{R}\to\mathbb{R}$ (e.g.\ $\tanh$, ReLU, \emph{etc.}). We use the standard i.i.d.\ Gaussian initialization
+We consider an MLP of depth $L$, $N_l$ neurons in layer $l$, and an activation $\phi:\mathbb{R}\to\mathbb{R}$ (e.g.\ $\tanh$, \relu{}, \emph{etc.}). We use the standard i.i.d.\ Gaussian initialization
 %
 \begin{equation}
 W^{l}_{ij}\sim \mathcal{N}\!\left(0,\frac{\sigma_{w}^{2}}{N_{l}}\right), \qquad b^{l}_{i}\sim \mathcal{N}\!\left(0,\sigma_{b}^{2}\right),
@@ -192,7 +192,7 @@ To probe its stability, one linearizes the map at $c=1$, defining the (angular) 
 \end{equation}
 %
 This creates a phase diagram with three regimes: $\chi_{\perp}<1$ is the ordered regime, $\chi_{\perp}>1$ is chaotic, and 
- $\chi_{\perp}=1$ defines the critical regime (the so-called "edge-of-chaos"). The depth scale controlling cross-input correlations can become arbitrarily large in the latter, allowing information to penetrate deep into the network. As a canonical worked example, He \cite{he2015delvingdeeprectifierssurpassing} initialization can be derived by requiring criticality for ReLU initialization\footnote{This is not true for general activations, but rather an idiosyncrasy of ReLU} (see App.~\ref{app:mft_primer}), a more fundamental viewpoint than variance preservation. 
+ $\chi_{\perp}=1$ defines the critical regime (the so-called "edge-of-chaos"). The depth scale controlling cross-input correlations can become arbitrarily large in the latter, allowing information to penetrate deep into the network. As a canonical worked example, He \cite{he2015delvingdeeprectifierssurpassing} initialization can be derived by requiring criticality for \relu{} initialization\footnote{This is not true for general activations, but rather an idiosyncrasy of \relu{}} (see App.~\ref{app:mft_primer}), a more fundamental viewpoint than variance preservation. 
  
  This leads to an emergent characteristic depth scale $\xi_c$, which parametrizes both signal propagation and gradient flow. Iterating random affine maps induces an effective coarse-graining in depth akin to renormalization-group flow, called representation group flow in the ML context \cite{roberts2022principlesdeeplearningtheory}; information about norms and angles relaxes exponentially fast,
 %
@@ -201,11 +201,11 @@ This creates a phase diagram with three regimes: $\chi_{\perp}<1$ is the ordered
 \label{corrq}
 \end{equation}
 %
-An analogous correlation length $\xi_q$ controls how quickly single-input norms settle to $q^{*}$. Heuristically, $\xi_{c}$ controls how far distinctions between different inputs survive with depth; in the ordered phase $c^{*}=1$, so $u_{1}^{*}=u_{2}^{*}$ and $\xi_{c}^{-1}=-\log\chi_{\perp}$, hence $\chi_{\perp}\to 1$ implies $\xi_{c}\to\infty$. Consequently, the edge-of-chaos is primarily about $\xi_{c}$ rather than $\xi_{q}$, except in special cases. For ReLU, the curvature vanishes everywhere away from the origin, leading to a coincidence between $\xi_c$ and $\xi_q$, both diverging as $\chi_{\perp}\to 1$, provided a finite $q^{*}$ exists. This is one concrete reason why ReLU-style near-critical initializations are comparatively forgiving in practice.
+An analogous correlation length $\xi_q$ controls how quickly single-input norms settle to $q^{*}$. Heuristically, $\xi_{c}$ controls how far distinctions between different inputs survive with depth; in the ordered phase $c^{*}=1$, so $u_{1}^{*}=u_{2}^{*}$ and $\xi_{c}^{-1}=-\log\chi_{\perp}$, hence $\chi_{\perp}\to 1$ implies $\xi_{c}\to\infty$. Consequently, the edge-of-chaos is primarily about $\xi_{c}$ rather than $\xi_{q}$, except in special cases. For \relu{}, the curvature vanishes everywhere away from the origin, leading to a coincidence between $\xi_c$ and $\xi_q$, both diverging as $\chi_{\perp}\to 1$, provided a finite $q^{*}$ exists. This is one concrete reason why \relu{}-style near-critical initializations are comparatively forgiving in practice.
 
 As previously discussed, mean-field theory is an expansion in non-Gaussian corrections suppressed by powers of \(L/N\). Therefore, in our experiments we work in a controlled regime with \(L/N \ll 1\) (i.e., \(N \gg L\)), which is also the regime in which networks perform best empirically \cite{roberts2022principlesdeeplearningtheory}. The correlation length diverges as we approach criticality, amplifying finite-width and other non-Gaussian corrections. Thus, when probing critical power laws with dropout, we keep the dropout rate small but non-negligible: infinitesimal dropout would require prohibitively deep networks to estimate the correlation length and related quantities.
 
-Although we derive these results for MLPs, analogous large-width limits exist elsewhere. CNNs are the canonical convolutional setting \cite{cnnslecun}, and at infinite channel count their covariance recursions again close through Gaussian activation kernels \cite{xiao2018dynamicalisometrymeanfield}. ResNets are especially suggestive: Yang and Schoenholz \cite{yang2017meanfieldresnets} find qualitatively different tanh/ReLU large-depth behavior. Skip connections alter global depth dynamics, changing exponential convergence to subexponential or polynomial laws and allowing norm drift, but each residual branch still inherits the local nonlinear Gaussian kernel. Thus our smooth/kinked universality split offers a possible theoretical explanation for their observed dichotomy; a dropout-deformed ResNet theory is left for future work. For transformers, related infinite-width analyses use large hidden dimension and/or many heads \cite{vaswani2023attentionneed,Hron2020InfiniteAttention,Halverson:2024hax}. Because the exponents are controlled by the local analytic structure of this channel, we expect the mechanism to persist when it controls the wide-limit recursion. In Sec.~\ref{subsec:optimal_dropout}, we test this extrapolation in transformers.
+Although we derive these results for MLPs, analogous large-width limits exist elsewhere. CNNs are the canonical convolutional setting \cite{cnnslecun}, and at infinite channel count their covariance recursions again close through Gaussian activation kernels \cite{xiao2018dynamicalisometrymeanfield}. ResNets are especially suggestive: Yang and Schoenholz \cite{yang2017meanfieldresnets} find qualitatively different tanh/\relu{} large-depth behavior. Skip connections alter global depth dynamics, changing exponential convergence to subexponential or polynomial laws and allowing norm drift, but each residual branch still inherits the local nonlinear Gaussian kernel. Thus our smooth/kinked universality split offers a possible theoretical explanation for their observed dichotomy; a dropout-deformed ResNet theory is left for future work. For transformers, related infinite-width analyses use large hidden dimension and/or many heads \cite{vaswani2023attentionneed,Hron2020InfiniteAttention}. Because the exponents are controlled by the local analytic structure of this channel, we expect the mechanism to persist when it controls the wide-limit recursion. In Sec.~\ref{subsec:optimal_dropout}, we test this extrapolation in transformers.
 
 In App.~\ref{app:experimental_info} we probe realistic scenarios across architectures, datasets, and schedules. We focus on overparameterized regimes where dropout improves generalization and accuracy, and we explicitly study the trade-off between dropout-driven regularization and stable signal propagation. The mean-field objective predicts sparse, step-like allocation at fixed budget, but it is permutation invariant in depth and therefore cannot by itself decide where dropout should be concentrated. To break this degeneracy we appeal to effects outside the mean-field closure, such as early coadaptation and rank collapse: these make the first layers the most valuable place to inject noise, explaining why front-loaded schedules work best in the experiments.
 
@@ -229,7 +229,7 @@ p^{(\ell)}_{j} \sim \mathrm{Bernoulli}(\rho), \qquad y^{(\ell)}_j \;\mapsto\; \t
 %
 i.e.\ the standard inverted-dropout convention in which $\mathbb E_p[\tilde y^{(\ell)}_j]=y^{(\ell)}_j$, and hence $\mathbb E_p[\tilde z^\ell_i\mid W,b]=z^\ell_i$, so the mean preactivation is invariant to the dropout rate \cite{schoenholz2017deepinformationpropagation}. Throughout, $\rho$ is the keep probability. When comparing two inputs, we draw the dropout masks independently for each input\footnote{Correlated dropout masks can alleviate this detuning: independent dropout masks across datapoints inject sample-specific multiplicative noise \cite{bishop1995noise} that destroys the \(c=1\) fixed point. Instead, if the same mask is shared across the batch, the fixed point structure is preserved and near critical scaling can be recovered by retuning, but the noise becomes batch coupled and the regularization is correspondingly weaker and more structured. We leave detailed analysis of correlated masks to future work.}; this independence is the source of the decorrelation effect analyzed below.
 
-This distinction originally emerged from the following variational question: among activations of fixed scale, which functions make the correlation length of the near-critical Gaussian channel as large as possible? Extremizing the correlation length functional shows that the natural eigenfunctions of this problem are Hermite polynomials. When standard nonlinearities are decomposed in that basis, two qualitatively different spectra emerge. Smooth, analytic activations such as $\tanh$ have exponentially decaying Hermite coefficients, so their effect is dominated by the first few modes. Kinked activations such as ReLU have power-law tails instead: the kink keeps exciting higher Hermite modes, leaving a broader spectrum in the correlation map. This spectral split was the original diagnostic for the smooth/kinked universality classes, which later reappears in the dropout scaling laws. The details of these computations can be found in App.~\ref{sec:var-opt-act}.
+This distinction originally emerged from the following variational question: among activations of fixed scale, which functions make the correlation length of the near-critical Gaussian channel as large as possible? Extremizing the correlation length functional shows that the natural eigenfunctions of this problem are Hermite polynomials. When standard nonlinearities are decomposed in that basis, two qualitatively different spectra emerge. Smooth, analytic activations such as $\tanh$ have exponentially decaying Hermite coefficients, so their effect is dominated by the first few modes. Kinked activations such as \relu{} have power-law tails instead: the kink keeps exciting higher Hermite modes, leaving a broader spectrum in the correlation map. This spectral split was the original diagnostic for the smooth/kinked universality classes, which later reappears in the dropout scaling laws. The details of these computations can be found in App.~\ref{sec:var-opt-act}.
 
 Our classification is orthogonal to the scale-invariant vs. non-scale-invariant distinction of \cite{roberts2022principlesdeeplearningtheory}: the multi-scale Hermite spectrum highlighted above is controlled primarily by analytic regularity (kinks and other non-analytic structure), not by scale invariance per se. The criterion is based on two facts: (a) near-critical scaling laws differ between smooth and kinked activations, and (b) the Hermite spectral weight of non-analytic activations decays as a power law, in contrast to the exponential decay characteristic of smooth activations (Apps.~\ref{ap:exponent_derivations} and~\ref{sec:var-opt-act}).
 
@@ -292,7 +292,7 @@ up to convention-dependent layer indexing. If \(G^\ell_{ab}\equiv \mathbb E[\del
 G^\ell_{ab} = \sigma_w^2 \mathbb E\!\left[ \frac{p^\ell_a p^\ell_b}{\rho^2} \phi'(u_a)\phi'(u_b) \right] G^{\ell+1}_{ab}.
 \end{equation}
 %
-Thus independent masks give a diagonal factor \(\mathbb E[p_a^2]/\rho^2=1/\rho\) but an off-diagonal factor \(\mathbb E[p_a p_b]/\rho^2=1\). Dropout inflates single-sample gradient variance without similarly inflating cross-sample covariance, mirroring the forward asymmetry that produced \(h\). After normalization this suggests a backward field \(h_\nabla(\rho)\) that moves perfect gradient alignment below one. We do not identify it with the forward field: the backward kernel is built from \(\phi'\), not \(\phi\), and for ReLU \(\phi'\) is discontinuous. A full dropout-deformed backward critical theory, including finite-width gradient susceptibilities and training-time mask correlations, is left for future work.
+Thus independent masks give a diagonal factor \(\mathbb E[p_a^2]/\rho^2=1/\rho\) but an off-diagonal factor \(\mathbb E[p_a p_b]/\rho^2=1\). Dropout inflates single-sample gradient variance without similarly inflating cross-sample covariance, mirroring the forward asymmetry that produced \(h\). After normalization this suggests a backward field \(h_\nabla(\rho)\) that moves perfect gradient alignment below one. We do not identify it with the forward field: the backward kernel is built from \(\phi'\), not \(\phi\), and for \relu{} \(\phi'\) is discontinuous. A full dropout-deformed backward critical theory, including finite-width gradient susceptibilities and training-time mask correlations, is left for future work.
 
 
 
@@ -328,7 +328,7 @@ g_\rho &\equiv \bar F_\rho''(1) = \sigma_w^2\,\bar q^{*}\!\int Dz\,\big[\phi''(\
 \end{align}
 %
 In the smooth-class analysis below we assume \(g_\rho>0\). If \(g_\rho=0\), as for a linear activation, the quadratic Landau term is absent and the leading nonzero term determines a degenerate case rather than the generic smooth universality class.
-For kinked, ReLU-like activations \(\bar F_\rho''(1)\) is not finite and the analytic expansion below is not the
+For kinked, \relu{}-like activations, \(\bar F_\rho''(1)\) is not finite and the analytic expansion below is not the
 correct organizing principle; we treat that universality class separately.
 
 The Landau equation of state follows by expanding \(\bar F_\rho(c)\) around \(c=1\). Writing \(c^*=1-m\) with \(0<m\ll 1\) acting as the order parameter,
@@ -398,7 +398,7 @@ This square-root power law is our first encounter with a larger family of critic
 
 
 \begin{table}[h]
-\caption{Critical exponents for neural network initialization across different universality classes. The kinked \(\nu_\rho\) is a normal-form field exponent; ordinary bias-free ReLU dropout follows the constrained path \(t=-h\) but has the same leading \(\xi\sim h^{-1/3}\) law (App.~\ref{ap:exponent_derivations}).}
+\caption{Critical exponents for neural network initialization across different universality classes. The kinked \(\nu_\rho\) is a normal-form field exponent; ordinary bias-free \relu{} dropout follows the constrained path \(t=-h\) but has the same leading \(\xi\sim h^{-1/3}\) law (App.~\ref{ap:exponent_derivations}).}
 \label{tab:critical_exponents}
 \centering
 \small
@@ -429,7 +429,7 @@ Figure~\ref{fig:dropout_scaling} summarizes these power laws from direct mean-fi
     \centering
     \includegraphics[width=1.0 \textwidth]{figures/theory/critical_exponents.pdf}
 \caption{
-Critical scaling for smooth (tanh) and kinked (ReLU) activation functions, comparing tuning at zero dropout to tuning at the edge-of-chaos using a dropout field. The top row compares the different critical exponents at zero dropout and probes critical detuning decay, while the bottom row explores on critical networks with non-zero dropout. As the variables grow, higher-order effects become comparable and the linearized theory departs from the full recursion.}
+Critical scaling for smooth (tanh) and kinked (\relu{}) activation functions, comparing tuning at zero dropout to tuning at the edge-of-chaos using a dropout field. The top row compares the different critical exponents at zero dropout and probes critical detuning decay, while the bottom row explores on critical networks with non-zero dropout. As the variables grow, higher-order effects become comparable and the linearized theory departs from the full recursion.}
     \label{fig:dropout_scaling}
 \end{figure*}
 
@@ -525,7 +525,7 @@ The associated crossover scale is
 \label{eq:crossover_scale_kink}
 \end{equation}
 %
-showing that kinked activations lie in a distinct universality class from smooth activations. For literal bias-free ReLU with standard inverted dropout, the microscopic path locks \(t=\rho-1=-h\), so the \(t=0,h>0\) direction is a normal-form field direction rather than a directly independent ReLU knob. This path nevertheless satisfies \(t/(\kappa^{2/3}h^{1/3})\to0\), hence it enters the same field-dominated regime and retains the leading constrained-path law \(\xi\sim h^{-1/3}\); App.~\ref{ap:exponent_derivations} gives the short derivation and the nonzero-bias caveat.
+showing that kinked activations lie in a distinct universality class from smooth activations. For literal bias-free \relu{} with standard inverted dropout, the microscopic path locks \(t=\rho-1=-h\), so the \(t=0,h>0\) direction is a normal-form field direction rather than a directly independent \relu{} knob. This path nevertheless satisfies \(t/(\kappa^{2/3}h^{1/3})\to0\), hence it enters the same field-dominated regime and retains the leading constrained-path law \(\xi\sim h^{-1/3}\); App.~\ref{ap:exponent_derivations} gives the short derivation and the nonzero-bias caveat.
 
 \begin{figure*}[ht]
     \centering
@@ -536,7 +536,7 @@ showing that kinked activations lie in a distinct universality class from smooth
 \end{figure*}
 
 
-Figure~\ref{fig:uni_scaling} shows this collapse for smooth activations. This also clarifies the tanh/ReLU dichotomy observed in ResNet mean-field theory \cite{yang2017meanfieldresnets}: tanh belongs to the smooth class, where the analytic \(m^2\) term makes weak fields especially important and long correlation lengths are preserved when dropout is kept small; ReLU belongs to the kinked class, where the \(m^{3/2}\) branch point broadens the crossover window and makes the dynamics more forgiving to imperfect tuning. In short, smooth channels reward keeping the dropout field very weak, while kinked channels tolerate detuning over a wider range; neither class is uniformly preferable.
+Figure~\ref{fig:uni_scaling} shows this collapse for smooth activations. This also clarifies the tanh/\relu{} dichotomy observed in ResNet mean-field theory \cite{yang2017meanfieldresnets}: tanh belongs to the smooth class, where the analytic \(m^2\) term makes weak fields especially important and long correlation lengths are preserved when dropout is kept small; \relu{} belongs to the kinked class, where the \(m^{3/2}\) branch point broadens the crossover window and makes the dynamics more forgiving to imperfect tuning. In short, smooth channels reward keeping the dropout field very weak, while kinked channels tolerate detuning over a wider range; neither class is uniformly preferable.
 
 
 
@@ -625,7 +625,7 @@ In practice, this suggests a simple construction. Choose a mean-field budget $\b
 
 The remaining tie-breaker comes from representation dynamics beyond the mean-field closure. Rank collapse gives one concrete mechanism \cite{dong2021attention,noci2022signalpropagation,daneshmand2020batch}: token diversity in pure attention, and analogous rank-diversity proxies in wide MLPs, tend to decay with depth. Dropout pushes in the opposite direction at the level of second moments by inflating diagonal variance and shrinking normalized correlations, thereby increasing a participation-ratio effective rank (App.~\ref{app:rank_flow}). This mechanism is preventative rather than reparative: once the representation has collapsed to an essentially one-dimensional signal subspace, inverted dropout mostly adds training-time diagonal noise rather than constructing new task-relevant modes. Thus rank flow breaks the permutation symmetry of \(\xi_{\rm eff}\) by favoring concentrated dropout where collapse is fastest; in regularization- and rank-collapse-limited regimes, this means front-loading the dropout budget.
 
-To test these predictions, we deliberately work in controlled regimes where mean-field assumptions remain valid (width $\gg$ depth, moderate dropout) rather than pursuing benchmark performance. We evaluate MLPs and Vision Transformers \cite{dosovitskiy2021vit} using CIFAR-10/100 \cite{krizhevsky2009cifar} (full details in App.~\ref{app:experimental_info}), where finite-width corrections and extensive data augmentation do not obscure the signal-propagation effects central to our analysis. Across architectures, early step-like schedules consistently outperform constant dropout (e.g., ViT on CIFAR-100: linearly decreasing achieves $49.38\%$ vs $48.69\%$ constant, $p < 0.05$), confirming that the scheduling principle transfers beyond the MLP setting in which it was derived. The appendices check that this is not a single-run effect: the gains persist across \(\bar h\)-sweeps and large-width sweeps for kinked ReLU MLPs (App.~\ref{app:sweeps}, Fig.~\ref{fig:mlp_sweeps}), across the smooth GELU activation class (App.~\ref{app:sweeps}, Fig.~\ref{fig:gelu_h_sweep}), and across transformer schedules and component ablations (Figs.~\ref{fig:dropout_regimes_transformer} and~\ref{fig:ablations}). Table~\ref{tab:loss_improvements} summarizes the final-epoch gains. The advantage weakens only at high dropout or in overly narrow networks, precisely where the theory exits its regime of validity.
+To test these predictions, we deliberately work in controlled regimes where mean-field assumptions remain valid (width $\gg$ depth, moderate dropout) rather than pursuing benchmark performance. We evaluate MLPs and Vision Transformers \cite{dosovitskiy2021vit} using CIFAR-10/100 \cite{krizhevsky2009cifar} (full details in App.~\ref{app:experimental_info}), where finite-width corrections and extensive data augmentation do not obscure the signal-propagation effects central to our analysis. Across architectures, early step-like schedules consistently outperform constant dropout (e.g., ViT on CIFAR-100: linearly decreasing achieves $49.38\%$ vs $48.69\%$ constant, $p < 0.05$), confirming that the scheduling principle transfers beyond the MLP setting in which it was derived. The appendices check that this is not a single-run effect: the gains persist across \(\bar h\)-sweeps and large-width sweeps for kinked \relu{} MLPs (App.~\ref{app:sweeps}, Fig.~\ref{fig:mlp_sweeps}), across the smooth GELU activation class (App.~\ref{app:sweeps}, Fig.~\ref{fig:gelu_h_sweep}), and across transformer schedules and component ablations (Figs.~\ref{fig:dropout_regimes_transformer} and~\ref{fig:ablations}). Table~\ref{tab:loss_improvements} summarizes the final-epoch gains. The advantage weakens only at high dropout or in overly narrow networks, precisely where the theory exits its regime of validity.
 
 \begin{table*}[t]
 \caption{Final-epoch improvements over the corresponding constant-dropout baseline. Accuracy gains are shown both as percentage-point differences and as relative percent improvements over the baseline final accuracy. Loss reductions are relative reductions in cross-entropy. Detailed appendix tables list best and final test accuracy where applicable.}
@@ -645,7 +645,7 @@ MLP budget controls, Fig.~\ref{fig:triple_dropout}
 & Big step (1/3)
 & \(+1.08\) & \(+2.6\%\) & \(+22.6\%\) \\
 \addlinespace[1pt]
-ReLU \(h\)-sweep at \(\bar h=0.1\), Fig.~\ref{fig:mlp_sweeps}
+\relu{} \(h\)-sweep at \(\bar h=0.1\), Fig.~\ref{fig:mlp_sweeps}
 & Big step (1/3)
 & \(+2.04\) & \(+5.0\%\) & \(+35.4\%\) \\
 \addlinespace[1pt]
@@ -777,7 +777,7 @@ Symbol & Meaning \\
 
 Here we briefly review the mean-field formalism of deep information propagation (DIP) \cite{schoenholz2017deepinformationpropagation}, with broader background in the Les Houches and TASI lecture notes \cite{bahri2024leshoucheslecturesdeep,Halverson:2024hax}, which will serve as the baseline for what follows. The context is a fully-connected MLP at random initialization, studied in the wide limit, where preactivations are well-approximated as Gaussian random variables with self-consistently determined covariances. In the strict $N_l\to\infty$ limit this Gaussian description closes, while at large but finite width deviations from Gaussianity can be organized perturbatively in the depth-to-width aspect ratio (schematically $L/N$), as emphasized in \cite{roberts2022principlesdeeplearningtheory}.
 
-We consider a depth-$L$ network with $N_l$ neurons in layer $l$, and an activation $\phi:\mathbb{R}\to\mathbb{R}$ (e.g.\ $\tanh$, ReLU, \emph{etc.}). We use the standard i.i.d.\ Gaussian initialization
+We consider a depth-$L$ network with $N_l$ neurons in layer $l$, and an activation $\phi:\mathbb{R}\to\mathbb{R}$ (e.g.\ $\tanh$, \relu{}, \emph{etc.}). We use the standard i.i.d.\ Gaussian initialization
 %
 \begin{equation}
 W^{l}_{ij}\sim \mathcal{N}\!\left(0,\frac{\sigma_{w}^{2}}{N_{l}}\right), \qquad b^{l}_{i}\sim \mathcal{N}\!\left(0,\sigma_{b}^{2}\right),
@@ -818,7 +818,7 @@ When it exists, the large-depth fixed point is
 q^{*}\equiv\lim_{l\to\infty} q^{\,l}_{aa}.
 \end{equation}
 %
-For bounded activations (e.g.\ $\tanh$) the fixed point exists for any $\sigma_{w}^{2},\sigma_{b}^{2}$. For unbounded activations (e.g.\ ReLU) it exists only in part of parameter space; outside that region the recursion can run away and the typical preactivation scale diverges with depth.
+For bounded activations (e.g.\ $\tanh$) the fixed point exists for any $\sigma_{w}^{2},\sigma_{b}^{2}$. For unbounded activations (e.g.\ \relu{}) it exists only in part of parameter space; outside that region the recursion can run away and the typical preactivation scale diverges with depth.
 
 We now consider the correlations between two distinct inputs $a,b$. Mean-field predicts that different neurons decorrelate at leading order, so we define
 %
@@ -868,13 +868,13 @@ Hence
 \chi_{1}=\frac{\sigma_{w}^{2}}{2}, \qquad \chi_{1}=1 \ \Longrightarrow\ \sigma_{w}^{2}=2,
 \end{equation}
 %
-which is precisely the He  variance condition (variance $2/N$) for ReLU. At the same time, the ReLU variance recursion simplifies to
+which is precisely the He  variance condition (variance $2/N$) for \relu{}. At the same time, the \relu{} variance recursion simplifies to
 %
 \begin{equation}
 q^{\,l}_{aa}=\frac{\sigma_w^2}{2}\,q^{\,l-1}_{aa}+\sigma_b^2,
 \end{equation}
 %
-so for $\sigma_b^2>0$ the fixed point is $q^{*}=\sigma_b^2/(1-\sigma_w^2/2)$ when $\sigma_w^2<2$ and ceases to exist at $\sigma_w^2\ge 2$ (diverging as $\sigma_w^2\to 2^{-}$). Thus, if one insists on $\sigma_b^2>0$, tuning exactly to $\chi_1=1$ is incompatible with a finite $q^{*}$ for ReLU, and in practice one often works slightly subcritical (or sets biases to zero) to keep the signal scale under control. For smooth bounded $\phi$, changing $\sigma_{b}^{2}$ shifts $q^{*}$ and therefore shifts the typical slope $\phi'(\sqrt{q^{*}}z)$, so the critical value of $\sigma_w^2$ becomes $\sigma_b^2$-dependent.
+so for $\sigma_b^2>0$ the fixed point is $q^{*}=\sigma_b^2/(1-\sigma_w^2/2)$ when $\sigma_w^2<2$ and ceases to exist at $\sigma_w^2\ge 2$ (diverging as $\sigma_w^2\to 2^{-}$). Thus, if one insists on $\sigma_b^2>0$, tuning exactly to $\chi_1=1$ is incompatible with a finite $q^{*}$ for \relu{}, and in practice one often works slightly subcritical (or sets biases to zero) to keep the signal scale under control. For smooth bounded $\phi$, changing $\sigma_{b}^{2}$ shifts $q^{*}$ and therefore shifts the typical slope $\phi'(\sqrt{q^{*}}z)$, so the critical value of $\sigma_w^2$ becomes $\sigma_b^2$-dependent.
 
 Beyond the phase diagram, these recursions "grow" characteristic depth scales. Iterating random affine maps induces an effective coarse-graining in depth akin to the renormalization group flow in theoretical physics, coined representation group flow in the ML context \cite{roberts2022principlesdeeplearningtheory}: information about norms and angles relaxes exponentially fast toward their fixed points. Concretely, perturb the variance around $q^{*}$ by an infinitesimal amount,
 %
@@ -910,7 +910,7 @@ Similarly, perturbing the correlation around its fixed point $c^{*}$ gives an ex
 %
 Heuristically, $\xi_{c}$ controls how far distinctions between different inputs survive with depth. In the ordered phase $c^{*}=1$, so $u_{1}^{*}=u_{2}^{*}$ and $\xi_{c}^{-1}=-\log\chi_{1}$, hence $\chi_{1}\to 1$ implies $\xi_{c}\to\infty$. Meanwhile, $\xi_{q}$ controls how quickly single-input norms settle to $q^{*}$. For smooth saturating activations such as $\tanh$, the curvature term is typically negative, so even at $\chi_{1}=1$ one often finds $|r_{q}|<1$ and $\xi_{q}$ stays finite and relatively short.
 
-In this sense, the edge-of-chaos is primarily about $\xi_{c}$ rather than $\xi_{q}$, except in special cases. For ReLU, $\phi''=0$ away from the origin (so the curvature contribution vanishes in the Gaussian averages), and one has $r_{q}=\chi_{1}$. In that case $\xi_{q}$ and $\xi_{c}$ essentially coincide and both diverge as $\chi_{1}\to 1$, provided a finite $q^{*}$ exists. This is one concrete reason why ReLU-style near-critical initializations are comparatively forgiving in practice.
+In this sense, the edge-of-chaos is primarily about $\xi_{c}$ rather than $\xi_{q}$, except in special cases. For \relu{}, $\phi''=0$ away from the origin (so the curvature contribution vanishes in the Gaussian averages), and one has $r_{q}=\chi_{1}$. In that case $\xi_{q}$ and $\xi_{c}$ essentially coincide and both diverge as $\chi_{1}\to 1$, provided a finite $q^{*}$ exists. This is one concrete reason why \relu{}-style near-critical initializations are comparatively forgiving in practice.
 
 MFT provides a good approximation in very wide networks, especially through the first few layers. At large but finite width, deviations from Gaussian mean-field behavior can be organized perturbatively in the depth-to-width aspect ratio \(L/N\). Accordingly, in our experiments we work in a controlled regime with \(L/N \ll 1\) (i.e., \(N \gg L\)). Near criticality, the correlation length becomes large, which slows relaxation to the fixed point and typically amplifies sensitivity to finite-width and other non-Gaussian corrections. Hence, when probing critical power laws while maintaining dropout, we keep the latter parametrically small but non-negligible: taking dropout to be infinitesimal would require prohibitively deep networks to obtain precise estimates of the correlation length and related quantities, making the experiments computationally expensive.
 
@@ -1043,9 +1043,9 @@ which is Eq.~\eqref{eq:g_dropout}.
 
 We briefly discuss extensions to architectures not treated in the main analysis. Although our derivation is for MLPs, the universality-class mechanism is tied to the local Gaussian kernel rather than to the MLP architecture itself. Other architectures introduce additional structure that can change the exact exponents, but the qualitative smooth-versus-kinked distinction should remain when the same local channel controls the wide-limit recursion. 
 
-For example, the same local channel which appears in MLPs re-emerges in infinite-width CNNs when the number of channels is taken to infinity: preactivations at different spatial positions become jointly Gaussian across channels, and the covariance recursion composes the same bivariate Gaussian activation expectation with a linear operator that averages over convolutional filter offsets \cite{cnnslecun,xiao2018dynamicalisometrymeanfield}. In schematic form, a spatial covariance \(K^\ell_{\alpha\beta}(x,x')\) evolves as \(K^{\ell+1}=\sigma_b^2+\sigma_w^2\mathcal A[V_\phi(K^\ell)]\), where \(V_\phi\) is the scalar Gaussian channel analyzed above and \(\mathcal A\) is the convolutional averaging operator. Independent dropout shifts the single-input variance entering \(V_\phi\) as in the fully connected case, while the cross-input covariance is still controlled by the same bivariate expectation. Therefore, for an isolated leading spatial mode, convolution changes the relevant eigenvalue and mode shape but not the local smooth-versus-kinked non-analyticity: smooth activations retain the analytic Landau equation, while ReLU-like kinks retain the \(m^{3/2}\) branch point. A complete CNN theory would promote \(m\) to a spatial covariance-mode amplitude and track boundary conditions, pooling, and degeneracies of \(\mathcal A\).
+For example, the same local channel which appears in MLPs re-emerges in infinite-width CNNs when the number of channels is taken to infinity: preactivations at different spatial positions become jointly Gaussian across channels, and the covariance recursion composes the same bivariate Gaussian activation expectation with a linear operator that averages over convolutional filter offsets \cite{cnnslecun,xiao2018dynamicalisometrymeanfield}. In schematic form, a spatial covariance \(K^\ell_{\alpha\beta}(x,x')\) evolves as \(K^{\ell+1}=\sigma_b^2+\sigma_w^2\mathcal A[V_\phi(K^\ell)]\), where \(V_\phi\) is the scalar Gaussian channel analyzed above and \(\mathcal A\) is the convolutional averaging operator. Independent dropout shifts the single-input variance entering \(V_\phi\) as in the fully connected case, while the cross-input covariance is still controlled by the same bivariate expectation. Therefore, for an isolated leading spatial mode, convolution changes the relevant eigenvalue and mode shape but not the local smooth-versus-kinked non-analyticity: smooth activations retain the analytic Landau equation, while \relu{}-like kinks retain the \(m^{3/2}\) branch point. A complete CNN theory would promote \(m\) to a spatial covariance-mode amplitude and track boundary conditions, pooling, and degeneracies of \(\mathcal A\).
 
-ResNets modify depth dynamics in a complementary way: skip connections can change exponential convergence to subexponential or polynomial behavior, and norms may drift rather than relax to a fixed point \cite{yang2017meanfieldresnets}. Still, the residual branch evaluates the same nonlinear Gaussian channel \(V_\phi\), so the local analytic distinction is unchanged. The tanh/ReLU asymptotic split observed in \cite{yang2017meanfieldresnets} is consistent with our smooth/kinked classes; a dropout-deformed ResNet theory would additionally track residual-branch strength and norm drift.
+ResNets modify depth dynamics in a complementary way: skip connections can change exponential convergence to subexponential or polynomial behavior, and norms may drift rather than relax to a fixed point \cite{yang2017meanfieldresnets}. Still, the residual branch evaluates the same nonlinear Gaussian channel \(V_\phi\), so the local analytic distinction is unchanged. The tanh/\relu{} asymptotic split observed in \cite{yang2017meanfieldresnets} is consistent with our smooth/kinked classes; a dropout-deformed ResNet theory would additionally track residual-branch strength and norm drift.
 
 \FloatBarrier
 
@@ -1285,10 +1285,10 @@ g_\rho \propto \int Dz\,\bigl[\phi''(\sqrt{\bar q^{*}}\,z)\bigr]^2.
 %
 For kinked activations, this logic fails: the map remains smooth for \(c<1\), but as it approaches \(c\to 1\), it is governed by a branch point, and the leading nonlinear correction is non-analytic in \(m\). This changes the scaling of the dropout deformation.
 
-We illustrate this explicitly for the ReLU activation \(\phi(x)=\max(0,x)\). To keep formulas compact we set \(\sigma_b = 0\)
+We illustrate this explicitly for the \relu{} activation \(\phi(x)=\max(0,x)\). To keep formulas compact we set \(\sigma_b = 0\)
 throughout this subsection and use the same inverted-dropout convention as before, with masks drawn independently across inputs.
 
-The mean-field correlation map for ReLU admits a closed form. Writing \(c\in[-1,1]\) for the preactivation correlation at some depth,
+The mean-field correlation map for \relu{} admits a closed form. Writing \(c\in[-1,1]\) for the preactivation correlation at some depth,
 %
 \begin{align}
 F_{\ReLU}(c) &= \frac{1}{\pi} \Bigl[ \sqrt{1-c^{2}} + \bigl(\pi-\cos^{-1}c\bigr)c \Bigr].
@@ -1320,7 +1320,7 @@ h \;=\; 1-\bar F_\rho(1) \;=\; 1-\rho,
 %
 independent of the activation, since at \(c=1\) the only source of mismatch is the independence of the two dropout masks.
 We write the fixed point as \(c^*=1-m^*\) with \(m^*>0\) and impose \(c^*=\bar F_\rho(c^*)\).
-For the literal bias-free ReLU map, \(\bar F_\rho(c)=\rho F_{\ReLU}(c)\), so \(\chi_\rho=\rho\) and \(t=\rho-1=-h\). Thus the \(t=0,h>0\) direction below is the kinked normal-form field direction, while standard ReLU dropout follows a constrained path through the same scaling function.
+For the literal bias-free \relu{} map, \(\bar F_\rho(c)=\rho F_{\ReLU}(c)\), so \(\chi_\rho=\rho\) and \(t=\rho-1=-h\). Thus the \(t=0,h>0\) direction below is the kinked normal-form field direction, while standard \relu{} dropout follows a constrained path through the same scaling function.
 
 Near \(m^*\ll 1\), the kinked analogue of the Landau equation of state is obtained by combining the shift \(\bar F_\rho(1)=1-h\), the linear slope \(\chi_\rho=1+t\), and the non-analytic term \eqref{eq:relu_expand}:
 %
@@ -1364,7 +1364,7 @@ Using \(\xi_{c,\rho}^{-1}\simeq 1-\lambda\) for \(\lambda\simeq 1\) yields
 \end{equation}
 %
 to be compared with the smooth result \(\xi_{c,\rho}(0,h)\sim h^{-1/2}\).
-For ordinary bias-free ReLU dropout, substituting the constrained path \(t=-h\) into \eqref{eq:eos_kink_correct} gives
+For ordinary bias-free \relu{} dropout, substituting the constrained path \(t=-h\) into \eqref{eq:eos_kink_correct} gives
 %
 \begin{equation}
 h=\kappa m^{3/2}+hm+\mathcal O(m^2).
@@ -1386,7 +1386,7 @@ The remaining kinked exponents follow from the same equation of state. At \(h=0\
 %
 so \(\beta_{\rm kink}=2\). On the subcritical side \(t<0\), the small-field balance is \(h\simeq |t|m\), giving \(\chi_M\sim |t|^{-1}\) and therefore \(\gamma_{\rm kink}=1\). Substituting the zero-field branch into \eqref{eq:kink_slope} gives \(1-\lambda\propto t\), so \(\xi_{c,\rho}(t,0)\sim t^{-1}\) and \(\nu_{t,\rm kink}=1\).
 
-Adding nonzero ReLU bias variance does not restore a finite-\(q^*\) critical isotherm. With inverted dropout,
+Adding nonzero \relu{} bias variance does not restore a finite-\(q^*\) critical isotherm. With inverted dropout,
 %
 \begin{equation}
 \bar q_{\ell+1}=\frac{\sigma_w^2}{2\rho}\bar q_\ell+\sigma_b^2,
@@ -1404,7 +1404,7 @@ f_{\mathrm{kink}}(t,m;h) \;=\; -\frac{t}{2}\,m^2 + \frac{2\kappa}{5}\,m^{5/2} - 
 \label{eq:free_energy_kink}
 \end{equation}
 %
-since $\partial f_{\mathrm{kink}}/\partial m=0$ gives $h=\kappa m^{3/2}-tm$ at leading order. In the effective-action language, the \(m^{5/2}\) term is the pseudo-free-energy avatar of the branch point in the ReLU correlation map; this is precisely where the kinked universality class departs from the analytic Landau polynomial above.\footnote{
+since $\partial f_{\mathrm{kink}}/\partial m=0$ gives $h=\kappa m^{3/2}-tm$ at leading order. In the effective-action language, the \(m^{5/2}\) term is the pseudo-free-energy avatar of the branch point in the \relu{} correlation map; this is precisely where the kinked universality class departs from the analytic Landau polynomial above.\footnote{
 As before, $f_{\mathrm{kink}}$ is defined only up to addition of an $m$-independent analytic background $f_0(t,h)$, which does not affect the equation of state.
 }
 At zero field the physical branch is $m=0$ for $t\le 0$ and $m=(t/\kappa)^2$ for $t\ge 0$, so the on-shell free energy behaves as
@@ -1425,7 +1425,7 @@ In the standard exponent convention $C_{\mathrm{sing}}(t)\sim |t|^{-\alpha}$, th
 \alpha_{\mathrm{kink}}=-3.
 \end{equation}
 %
-Although we used ReLU to compute the near-alignment expansion in closed form, the resulting fractional power is not a peculiarity of ReLU. Rather, it is a generic feature of the mean-field Gaussian channel whenever the activation has an ordinary kink: \(\phi\) is continuous and piecewise \(C^{1}\) with a finite jump in slope at some point. In that case the correlated-Gaussian expectation defining the normalized correlation map remains smooth for \(c<1\), but its approach to \(c\to 1\) is controlled by a square-root branch associated with the thin Gaussian tube around the diagonal \(u_{1}=u_{2}\). Writing \(c=1-m\) with \(0<m\ll 1\), the transverse fluctuations scale as \(\sqrt{m}\), so the probability that two nearly aligned preactivations fall on opposite sides of the kink scales as \(\mathcal O(\sqrt{m})\); in that straddling region a finite-slope kink produces activation mismatches of size \(\mathcal O(\sqrt{m})\), so the leading non-linear correction to the kernel scales as \(\mathcal O(\sqrt{m})\times \mathcal O(m)=\mathcal O(m^{3/2})\). Thus, for any standard kinked activation one expects
+Although we used \relu{} to compute the near-alignment expansion in closed form, the resulting fractional power is not a peculiarity of \relu{}. Rather, it is a generic feature of the mean-field Gaussian channel whenever the activation has an ordinary kink: \(\phi\) is continuous and piecewise \(C^{1}\) with a finite jump in slope at some point. In that case the correlated-Gaussian expectation defining the normalized correlation map remains smooth for \(c<1\), but its approach to \(c\to 1\) is controlled by a square-root branch associated with the thin Gaussian tube around the diagonal \(u_{1}=u_{2}\). Writing \(c=1-m\) with \(0<m\ll 1\), the transverse fluctuations scale as \(\sqrt{m}\), so the probability that two nearly aligned preactivations fall on opposite sides of the kink scales as \(\mathcal O(\sqrt{m})\); in that straddling region a finite-slope kink produces activation mismatches of size \(\mathcal O(\sqrt{m})\), so the leading non-linear correction to the kernel scales as \(\mathcal O(\sqrt{m})\times \mathcal O(m)=\mathcal O(m^{3/2})\). Thus, for any standard kinked activation one expects
 %
 \begin{equation}
 F(1-m)=1-m+\kappa_{\phi}\,m^{3/2}+{\cal O}(m^{2}),
@@ -1453,7 +1453,7 @@ In a continuum-depth approximation \(m_{\ell+1}-m_\ell\to \partial_\ell m\), we 
 \label{eq:kink_relax_sol}
 \end{equation}
 %
-which reproduces the characteristic \(1-c_\ell\sim \ell^{-2}\) relaxation of ReLU activations at the edge-of-chaos and gives \(\theta_{\rm rel}=2\).
+which reproduces the characteristic \(1-c_\ell\sim \ell^{-2}\) relaxation of \relu{} activations at the edge-of-chaos and gives \(\theta_{\rm rel}=2\).
 
 
 
@@ -1464,7 +1464,7 @@ which reproduces the characteristic \(1-c_\ell\sim \ell^{-2}\) relaxation of ReL
 
 
 
-\subsection{Non-Analytic Expansion of the ReLU Correlation Map near $c=1$}
+\subsection{Non-Analytic Expansion of the \relu{} Correlation Map near $c=1$}
 \label{app:relu_non-analytic}
 
 Here we derive the non-analytic expansion
@@ -1474,7 +1474,7 @@ F_{\ReLU}(1-m) = 1-m+\kappa\,m^{3/2}+{\cal O}(m^{2}), \qquad \kappa=\frac{2\sqrt
 \label{eq:app_relu_expand}
 \end{align}
 %
-starting from the closed form ReLU correlation map
+starting from the closed form \relu{} correlation map
 %
 \begin{align}
 F_{\ReLU}(c) &= \frac{1}{\pi} \Bigl[ \sqrt{1-c^{2}} + \bigl(\pi-\cos^{-1}c\bigr)c \Bigr], \qquad c\in[-1,1].
@@ -1540,13 +1540,13 @@ leading non-analytic correction of order $m^{3/2}$, which encodes the kink.
 \subsection{Square-Root Tube Origin of the $m^{3/2}$ Non-Analyticity for Kinked Activations}
 \label{app:tube_argument_kink}
 
-The \(m^{3/2}\) term has a simple geometric origin: near perfect alignment, the joint Gaussian concentrates in a thin tube around \(u_1=u_2\). The main text derives the ReLU result in closed form,
+The \(m^{3/2}\) term has a simple geometric origin: near perfect alignment, the joint Gaussian concentrates in a thin tube around \(u_1=u_2\). The main text derives the \relu{} result in closed form,
 %
 \begin{equation}
 F(1-m)=1-m+\kappa\,m^{3/2}+O(m^{2}),
 \end{equation}
 %
-with $\kappa=\frac{2\sqrt{2}}{3\pi}$ for ReLU. We now explain why the exponent $3/2$ is generic for any ordinary kink, while the amplitude is nonuniversal.
+with $\kappa=\frac{2\sqrt{2}}{3\pi}$ for \relu{}. We now explain why the exponent $3/2$ is generic for any ordinary kink, while the amplitude is nonuniversal.
 
 Let $(u_{1},u_{2})$ be jointly Gaussian with
 %
@@ -1588,13 +1588,13 @@ s\sim O(1), \qquad d\sim O(\sqrt{m}).
 %
 Geometrically, the joint Gaussian measure concentrates in a thin tube of transverse thickness $\sqrt{m}$ around the diagonal $u_{1}=u_{2}$.
 
-As we now show, this is not an idiosyncrasy of ReLU, but rather a general feature of kinked activations. The key point is that, in a neighborhood of the kink, any ordinary kinked $\phi$ can be written as a smooth part plus a multiple of ReLU. Concretely, if $\phi$ has finite one-sided slopes $a_\pm$ at $u=0$, then locally one may decompose
+As we now show, this is not an idiosyncrasy of \relu{}, but rather a general feature of kinked activations. The key point is that, in a neighborhood of the kink, any ordinary kinked $\phi$ can be written as a smooth part plus a multiple of \relu{}. Concretely, if $\phi$ has finite one-sided slopes $a_\pm$ at $u=0$, then locally one may decompose
 %
 \begin{equation}
 \phi(u)=a_-\,u+\big(a_+-a_-\big)\,\ReLU(u)+r(u), \qquad r(u)=o(u)\ \ \text{as }u\to 0,
 \end{equation}
 %
-where $r$ is continuous and has no slope jump at $u=0$. The remainder $r$ contributes only integer-power terms in $m$ in the near-alignment expansion, so the leading fractional-power term is controlled by the ReLU component and therefore has exponent $3/2$ for every ordinary kink; only its amplitude depends on nonuniversal details such as $a_\pm$ and the precise normalization.
+where $r$ is continuous and has no slope jump at $u=0$. The remainder $r$ contributes only integer-power terms in $m$ in the near-alignment expansion, so the leading fractional-power term is controlled by the \relu{} component and therefore has exponent $3/2$ for every ordinary kink; only its amplitude depends on nonuniversal details such as $a_\pm$ and the precise normalization.
 
 
 
@@ -1788,7 +1788,7 @@ Pure modes $f\propto h_n$ are stationary points with $\mathcal{Q}[h_n]=n$. Exclu
 
 \subsection{Smooth and kinked activations}
 
-For smooth activations, the Hermite coefficients typically decay rapidly and $F(c)$ is analytic near $c=1$, with $\chi$ dominated by the lowest few degrees. For kinked activations such as ReLU, $\phi'(u)=\theta(u)$ almost everywhere, so
+For smooth activations, the Hermite coefficients typically decay rapidly and $F(c)$ is analytic near $c=1$, with $\chi$ dominated by the lowest few degrees. For kinked activations such as \relu{}, $\phi'(u)=\theta(u)$ almost everywhere, so
 %
 \begin{equation}
 \chi=\sigma_w^2\int Dz\,\theta(u)=\frac{\sigma_w^2}{2}, \qquad \chi=1 \Rightarrow \sigma_w^2=2.
@@ -1821,7 +1821,7 @@ For smooth activations, the Hermite coefficients typically decay rapidly and $F(
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\linewidth]{figures/theory/hermite_decomposition.pdf}
-    \caption{Magnitude of Hermite coefficients $|a_n|$ for ReLU versus $\tanh$. ReLU exhibits a slow (power-law) decay, reflecting multi-scale support across Hermite degrees, while $\tanh$ decays rapidly and concentrates most spectral mass in the lowest modes.}
+    \caption{Magnitude of Hermite coefficients $|a_n|$ for \relu{} versus $\tanh$. \relu{} exhibits a slow (power-law) decay, reflecting multi-scale support across Hermite degrees, while $\tanh$ decays rapidly and concentrates most spectral mass in the lowest modes.}
     \label{fig:hermite-decomposition}
 \end{figure}
 
@@ -1837,7 +1837,7 @@ For smooth activations, the Hermite coefficients typically decay rapidly and $F(
 
 
 
-\subsection{Hermite decompositions for ReLU and \texorpdfstring{\(\tanh\)}{tanh}}
+\subsection{Hermite decompositions for \relu{} and \texorpdfstring{\(\tanh\)}{tanh}}
 
 Throughout, \(Z\sim\mathcal{N}(0,1)\) and
 %
@@ -1866,7 +1866,7 @@ H_{n}(x)\equiv (-1)^{n}e^{x^{2}}\frac{d^{n}}{dx^{n}}e^{-x^{2}}, \qquad h_{n}(z)\
 
 
 
-\subsubsection{ReLU}
+\subsubsection{\relu{}}
 
 Let \(f(z)=\ReLU(z)=\max(0,z)\). The coefficients have a closed form.
 %
@@ -1946,7 +1946,7 @@ $\nu_{\rho,\ReLU}$ & $0.3528 \pm 0.0010$ & $1/3$ \\
 \end{tabular}
 \end{table}
 
-The same scaling-collapse diagnostic can be carried out for the kinked universality class, using ReLU as the representative activation. 
+The same scaling-collapse diagnostic can be carried out for the kinked universality class, using \relu{} as the representative activation. 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=1.0\linewidth]{figures/theory/kinked_scaling_collapse.pdf}
@@ -2107,7 +2107,7 @@ Triple ($3\bar{h}$) & $2.22$   & $2.70$ & $33.94 \pm 0.22$ & $33.82 \pm 0.23$ \\
 \setlength{\dbltextfloatsep}{6pt plus 1pt minus 2pt}
 \setlength{\dblfloatsep}{6pt plus 1pt minus 2pt}
 
-To test whether scheduling is tied to one budget, width, or activation, we ran CIFAR-10 MLP sweeps (Figs.~\ref{fig:mlp_sweeps} and \ref{fig:gelu_h_sweep}). The ReLU sweeps probe mean-field boundaries: at \(\bar h=0.15\), Step/Big step use nonperturbative local fields \(0.30/0.45\); at \(N=64\), finite-width non-Gaussianity weakens the correlation-length prediction. The GELU MLP sweep gives the same best-accuracy ordering at \(\bar h=0.1\)--constant \(41.96\pm0.16\), Step \(42.24\pm0.15\), Big step \(42.46\pm0.12\)--and Big step falls to \(38.97\pm0.23\) at \(\bar h=0.15\), matching this perturbative-boundary picture. The final-epoch gains summarized in Table~\ref{tab:loss_improvements} use the last recorded epoch, giving \(+2.04\) pp for the ReLU \(\bar h=0.1\) sweep and \(+0.62\) pp for the GELU \(\bar h=0.1\) sweep.
+To test whether scheduling is tied to one budget, width, or activation, we ran CIFAR-10 MLP sweeps (Figs.~\ref{fig:mlp_sweeps} and \ref{fig:gelu_h_sweep}). The \relu{} sweeps probe mean-field boundaries: at \(\bar h=0.15\), Step/Big step use nonperturbative local fields \(0.30/0.45\); at \(N=64\), finite-width non-Gaussianity weakens the correlation-length prediction. The GELU MLP sweep gives the same best-accuracy ordering at \(\bar h=0.1\)--constant \(41.96\pm0.16\), Step \(42.24\pm0.15\), Big step \(42.46\pm0.12\)--and Big step falls to \(38.97\pm0.23\) at \(\bar h=0.15\), matching this perturbative-boundary picture. The final-epoch gains summarized in Table~\ref{tab:loss_improvements} use the last recorded epoch, giving \(+2.04\) pp for the \relu{} \(\bar h=0.1\) sweep and \(+0.62\) pp for the GELU \(\bar h=0.1\) sweep.
 
 \begin{figure*}[t]
     \centering
@@ -2117,7 +2117,7 @@ To test whether scheduling is tied to one budget, width, or activation, we ran C
     \subfigure[Schedule advantage over constant dropout at \(\bar h=0.1\).]{
         \includegraphics[width=0.45\textwidth]{figures/experiments/sweeps/width_sweep_baseline_advantage.pdf}
     }
-    \caption{Robustness sweeps for depth-6 near-critical ReLU MLPs on CIFAR-10. Early schedules improve over constant dropout throughout the large-width regime, while \(N=64\) illustrates the expected finite-width boundary.}
+    \caption{Robustness sweeps for depth-6 near-critical \relu{} MLPs on CIFAR-10. Early schedules improve over constant dropout throughout the large-width regime, while \(N=64\) illustrates the expected finite-width boundary.}
     \label{fig:mlp_sweeps}
 \end{figure*}
 

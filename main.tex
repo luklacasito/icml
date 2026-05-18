@@ -1532,9 +1532,9 @@ where $r$ is continuous and has no slope jump at $u=0$. The remainder $r$ contri
 \section{Hermite and Variational Perspective}
 \label{sec:var-opt-act}
 
-For this Gaussian problem, Hermite polynomials give the convenient coordinates. Expanding an activation in this basis shows which Hermite degrees the nonlinearity actually uses. Weight concentrated in low degrees keeps the correlation map close to the linear channel and makes $\chi$ smaller. Weight in higher degrees makes the activation less linear, but it also increases the derivative energy, so the correlation length shortens unless $\sigma_w^2$ is adjusted.
+We start from the variational problem that first led us to the smooth/kinked split: choose the shape of the activation so as to maximize the mean-field correlation length. Since wide-network preactivations are Gaussian, this is naturally a problem in a function space with Gaussian measure. Hermite polynomials are the standard orthonormal basis for such spaces, so expanding the rescaled activation in Hermite modes turns the correlation-length calculation into a spectral problem. This appendix makes that reduction explicit.
 
-There is also a trivial scale freedom: $\phi \mapsto a\,\phi$ can be absorbed by $\sigma_w^2 \mapsto \sigma_w^2/a^2$ without changing the mean-field fixed point. To focus on shape rather than scale, we fix a variance fixed point $q^*$ and the bias variance $\sigma_b^2$, and determine $\sigma_w^2$ from the fixed-point condition. With this convention, the remaining freedom is the shape of a function $f \in L^2(Dz)$ with Gaussian inner product
+Before doing this, we remove a trivial scale freedom: $\phi \mapsto a\,\phi$ can be absorbed by $\sigma_w^2 \mapsto \sigma_w^2/a^2$ without changing the mean-field fixed point. To focus on shape rather than scale, we fix a variance fixed point $q^*$ and the bias variance $\sigma_b^2$, and determine $\sigma_w^2$ from the fixed-point condition. With this convention, the remaining freedom is the shape of a function $f \in L^2(Dz)$ with Gaussian inner product
 %
 \begin{equation}
 Dz \equiv \frac{e^{-z^2/2}}{\sqrt{2\pi}}\,dz, \qquad \langle f,g\rangle \equiv \int Dz\, f(z)\,g(z).

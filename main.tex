@@ -235,7 +235,7 @@ Our classification is orthogonal to the scale-invariant vs. non-scale-invariant 
 
 It is in this context that we seek a sharper analytical understanding of how dropout deforms the edge-of-chaos. Extending mean-field propagation to include dropout, one finds that for a single input dropout largely acts as a renormalization of the effective weight variance, $\sigma_w^2\mapsto \sigma_w^2/\rho$, but for two inputs the perfect-alignment fixed point at $c^*=1$ is lost for any $\rho<1$ when the two dropout masks are chosen independently \cite{schoenholz2017deepinformationpropagation}. In other words, dropout acts as an explicit symmetry-breaking ``field'' for alignment: even if two inputs are perfectly aligned at some depth, the next layer produces $\bar c_{ab}<1$, cutting off the divergence of the depth correlation length at the edge.
 
-To begin, we drop activations at random with keep probability $\rho$, so the preactivations are
+Introducing multiplicative Bernoulli noise with keep probability $\rho$, the perturbed preactivations read
 %
 \begin{equation}
 z_i^\ell = \frac{1}{\rho} \sum_j W_{ij}^\ell \,p_j^\ell \,y_j^\ell + b_i^\ell.
@@ -674,7 +674,7 @@ ViT CIFAR-10 ablations, Fig.~\ref{fig:ablations}
 
 
 \section{Conclusions and further scope for research}
-By extending mean-field signal propagation to include multiplicative dropout, we established that activation non-analyticity fundamentally dictates universality. This formalism yields a Landau equation of state for the decorrelation order parameter, a universal two-parameter scaling collapse, and distinct critical exponents for smooth versus kinked channels. As a demonstration that the framework has practical predictive power, we derived dropout schedules from the theory and tested them experimentally; in the controlled regimes we test, the predicted front-loaded schedules outperform constant dropout. Extending this mean-field analysis to attention mechanisms and incorporating finite-width corrections are natural directions for future work.
+By extending mean-field signal propagation to include multiplicative dropout, we established that activation non-analyticity fundamentally dictates universality. This formalism yields a Landau equation of state for the decorrelation order parameter, a universal two-parameter scaling collapse, and distinct critical exponents for smooth versus kinked channels. Mean-field theory is often best at clarifying the mechanisms inside wide networks, and less often at producing directly testable design rules; here it gives one such rule. Treating dropout as a depth-dependent field leads to front-loaded schedules, which outperform constant dropout in the controlled regimes we test. Extending this mean-field analysis to attention mechanisms and incorporating finite-width corrections are natural directions for future work.
 
 
 
@@ -1941,7 +1941,7 @@ No dropout          & $\infty$ & $0$    & $38.77 \pm 0.10$ & $38.34 \pm 0.12$ \\
 \end{tabular}
 \end{table}
 
-A natural objection to the above results is that the improved performance of early-concentrated dropout might simply reflect the network's need for stronger local regularization, rather than any benefit from spatial allocation. After all, the step schedule applies dropout at rate $2\bar{h}$ to the first half of the network, so perhaps the same improvement could be achieved by applying this higher rate uniformly throughout.
+The budget-control experiment checks a simpler explanation: early-concentrated dropout may only be winning because it raises the local dropout rate, not because the allocation over depth matters. After all, the step schedule applies dropout at rate $2\bar{h}$ to the first half of the network, so perhaps the same improvement could be achieved by applying this higher rate uniformly throughout.
 
 To disentangle allocation from total dropout strength, we compare constant schedules with fields $\bar h,2\bar h,3\bar h$ against step schedules using $2\bar h$ in the first half or $3\bar h$ in the first third of the network (Fig.~\ref{fig:triple_dropout}, Tab.~\ref{tab:triple_summary}).
  \begin{figure}[H]

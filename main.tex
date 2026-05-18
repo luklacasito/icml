@@ -775,149 +775,69 @@ Symbol & Meaning \\
 \subsection{Mean-Field Theory Primer}
 \label{app:mft_primer}
 
-Even the Standard Model, with only on the order of a few dozen empirical constants, invites the feeling that some deeper organizing principle is missing. Fermi made the same point more sharply to Dyson by quoting von Neumann: ``With four parameters I can fit an elephant, and with five I can make him wiggle his trunk'' \cite{Dyson2004Fermi}. Modern machine learning pushes this worry to an extreme: parameters are abundant, so understanding cannot mean tracking each weight individually. The useful question is which collective variables organize the high-dimensional system.
+Even the Standard Model of physics, with only on the order of a few dozen empirical parameters, invites the feeling that some deeper organizing principle is yet to be found. Fermi made the same point more sharply to Dyson by quoting von Neumann: ``With four parameters I can fit an elephant, and with five I can make him wiggle his trunk'' \cite{Dyson2004Fermi}. Modern machine learning pushes this worry to an extreme: parameters are abundant, so understanding cannot mean tracking each weight individually. A pressing question in modern ML literature is what set of parameters or effective fields can give a useful description of the network's behavior, and how to derive such a description from the microscopic model.
 
 Mean-field theory gives one such effective description: instead of tracking every neuron and every random weight, one tracks a small number of self-consistent fields. In the signal-propagation version used here, those fields are variances, covariances, and correlations. This is the deep information propagation line of mean-field theory \cite{poole2016exponentialexpressivitydeepneural,schoenholz2017deepinformationpropagation}, with broader background in the Les Houches and TASI lecture notes \cite{bahri2024leshoucheslecturesdeep,Halverson:2024hax}. The same infinite-width covariance recursion can also be read as the NNGP kernel recursion \cite{Lee2018DNNasGP}; we use the MFT language because our questions concern fixed points, susceptibilities, correlation lengths, and critical exponents rather than the induced function-space prior or training dynamics.
 
-The context is a fully-connected MLP at random initialization, studied in the wide limit, where preactivations are well-approximated as Gaussian random variables with self-consistently determined covariances. In the strict $N_l\to\infty$ limit this Gaussian description closes, while at large but finite width deviations from Gaussianity can be organized perturbatively in the depth-to-width aspect ratio (schematically $L/N$), as emphasized in \cite{roberts2022principlesdeeplearningtheory}.
-
-We consider a depth-$L$ network with $N_l$ neurons in layer $l$, and an activation $\phi:\mathbb{R}\to\mathbb{R}$ (e.g.\ $\tanh$, \relu{}, \emph{etc.}). We use the standard i.i.d.\ Gaussian initialization
+Section~\ref{sec:mft_background} gives the main-body version of the signal-propagation story. Here we only fix notation and record the elementary steps used later in the appendices. For a depth-$L$ MLP with activation $\phi:\mathbb R\to\mathbb R$, weights and biases are initialized as
 %
 \begin{equation}
 W^{l}_{ij}\sim \mathcal{N}\!\left(0,\frac{\sigma_{w}^{2}}{N_{l}}\right), \qquad b^{l}_{i}\sim \mathcal{N}\!\left(0,\sigma_{b}^{2}\right),
 \end{equation}
 %
-take the input as $y^{0}_{i;a}=x_{i;a}$, and propagate forward via
+and propagated by
 %
 \begin{equation}
 z^{\,l}_{i;a}= W^{l}_{ij}\,y^{\,l}_{j;a}+b^{l}_{i}, \qquad y^{\,l+1}_{i;a}=\phi\!\left(z^{\,l}_{i;a}\right),
 \end{equation}
 %
-where $a$ labels the input. Throughout, expectations $\mathbb{E}[\cdot]$ are over the random weights and biases at initialization, with inputs held fixed. We also use the standard Gaussian measure
+where $a$ labels the input. We write
 %
 \begin{equation}
-\int Dz\,(\cdots)\;\equiv\;\frac{1}{\sqrt{2\pi}}\int_{-\infty}^{\infty}dz\,e^{-z^{2}/2}(\cdots),
+\int Dz\,(\cdots)=\frac{1}{\sqrt{2\pi}}\int_{-\infty}^{\infty}dz\,e^{-z^{2}/2}(\cdots),
 \end{equation}
 %
-and similarly for $\int Dz_1 Dz_2$.
+and use the same convention for multiple Gaussian variables.
 
-The mean-field approximation is that, at large width, each preactivation is a sum of many weakly-dependent terms and is therefore well modelled by a Gaussian with matching first two moments. In the infinite-width limit this becomes exact layer-by-layer, while at finite width the first layer is exactly Gaussian (being a linear map of fixed inputs) and subsequent layers are only approximately Gaussian, with controlled non-Gaussian corrections.
-
-We first track the layer-wise preactivation variance for a single input $a$,
-%
-\begin{equation}
-q^{\,l}_{aa}:=\mathbb{E}\!\left[\left(z^{\,l}_{i;a}\right)^{2}\right], \qquad \mathbb{E}\!\left[z^{\,l}_{i;a}\right]=0 .
-\end{equation}
-%
-At initialization, $q^{\,l}_{aa}$ is deterministic in MFT and evolves by a closed recursion. Conditioning on the previous layer and using independence and zero means gives
-%
-\begin{equation}
-q^{\,l}_{aa} = \sigma_{w}^{2}\int Dz\,\phi^{2}\!\left(\sqrt{q^{\,l-1}_{aa}}\,z\right)+\sigma_{b}^{2}.
-\label{app:variancerecursion}
-\end{equation}
-%
-When it exists, the large-depth fixed point is
-%
-\begin{equation}
-q^{*}\equiv\lim_{l\to\infty} q^{\,l}_{aa}.
-\end{equation}
-%
-For bounded activations (e.g.\ $\tanh$) the fixed point exists for any $\sigma_{w}^{2},\sigma_{b}^{2}$. For unbounded activations (e.g.\ \relu{}) it exists only in part of parameter space; outside that region the recursion can run away and the typical preactivation scale diverges with depth.
-
-We now consider the correlations between two distinct inputs $a,b$. Mean-field predicts that different neurons decorrelate at leading order, so we define
-%
-\begin{equation}
-\mathbb{E}\!\left[z^{\,l}_{i;a}z^{\,l}_{j;b}\right] = q^{\,l}_{ab}\,\delta_{ij}.
-\end{equation}
-%
-The corresponding mean-field recursion is
-%
-\begin{equation}
-q^{\,l}_{ab} = \sigma_{w}^{2}\int Dz_{1}\,Dz_{2}\,\phi(u_{1})\,\phi(u_{2}) +\sigma_{b}^{2},
-\label{eq:mean_field_recurssion}
-\end{equation}
-%
-with
+The Gaussian closure comes from the fact that each preactivation is a sum of many independently initialized weighted inputs. In the infinite-width limit this central-limit effect becomes exact layer-by-layer, while finite-width corrections are organized perturbatively in the depth-to-width aspect ratio, schematically $L/N$ \cite{roberts2022principlesdeeplearningtheory}. The single-input variance and two-input covariance recursions are therefore the closed equations already quoted in Sec.~\ref{sec:mft_background}:
 %
 \begin{align}
-u_{1}&=\sqrt{q^{\,l-1}_{aa}}\,z_{1},\qquad c^{\,l-1}_{ab}=\frac{q^{\,l-1}_{ab}}{\sqrt{q^{\,l-1}_{aa}\,q^{\,l-1}_{bb}}},\\
-u_{2}&=\sqrt{q^{\,l-1}_{bb}}\left(c^{\,l-1}_{ab} z_{1}+\sqrt{1-\left(c^{\,l-1}_{ab}\right)^{2}}\,z_{2}\right).
+q^{\,l}_{aa}&=\sigma_{w}^{2}\int Dz\,\phi^{2}\!\left(\sqrt{q^{\,l-1}_{aa}}\,z\right)+\sigma_{b}^{2},\nonumber\\
+q^{\,l}_{ab}&=\sigma_{w}^{2}\int Dz_{1}\,Dz_{2}\,\phi(u_{1})\,\phi(u_{2})+\sigma_{b}^{2},\nonumber\\
+u_{1}&=\sqrt{q^{\,l-1}_{aa}}\,z_{1},\qquad c^{\,l-1}_{ab}=\frac{q^{\,l-1}_{ab}}{\sqrt{q^{\,l-1}_{aa}\,q^{\,l-1}_{bb}}},\nonumber\\
+u_{2}&=\sqrt{q^{\,l-1}_{bb}}\left(c^{\,l-1}_{ab}z_{1}+\sqrt{1-\left(c^{\,l-1}_{ab}\right)^{2}}\,z_{2}\right).
 \end{align}
 %
-After the variance dynamics has relaxed to a common fixed point $q^{*}$ (so $q^{\,l}_{aa}=q^{\,l}_{bb}=q^{*}$), this induces a one-dimensional correlation map $c^{\,l}_{ab}=F(c^{\,l-1}_{ab})$. In the absence of dropout, perfect alignment is always a fixed point: $c^{*}=1$ solves $c^{*}=F(c^{*})$.
-
-To probe its stability, one linearizes the map at $c=1$, defining the DIP susceptibility
+Once the variance relaxes to $q^*$, these equations induce a one-dimensional correlation map $c^l_{ab}=F(c^{l-1}_{ab})$. Without dropout, perfect alignment is a fixed point, $F(1)=1$. Its linear stability is controlled by the angular susceptibility
 %
 \begin{equation}
-\chi_{1} \equiv \left.\frac{\partial c^{\,l}_{ab}}{\partial c^{\,l-1}_{ab}}\right|_{c_{ab}=1} = \sigma_{w}^{2}\int Dz \,\big[\phi'(\sqrt{q^{*}}\,z)\big]^{2}.
+\chi_{1}=\left.\frac{\partial c^{\,l}_{ab}}{\partial c^{\,l-1}_{ab}}\right|_{c_{ab}=1}=\sigma_{w}^{2}\int Dz\,\big[\phi'(\sqrt{q^{*}}\,z)\big]^{2},
 \end{equation}
 %
-(In the language of \cite{roberts2022principlesdeeplearningtheory}, this is the angular susceptibility $\chi_{\perp}$.) This creates a phase diagram with three regimes:
-\begin{itemize}
-\item $\chi_{1}<1$: ordered regime. The fixed point $c^{*}=1$ is attractive: different inputs become asymptotically aligned, and gradients typically vanish with depth.
-\item $\chi_{1}>1$: chaotic regime. Perfect alignment is unstable, correlations flow to a nontrivial fixed point $c^{*}<1$, and gradients typically explode with depth.
-\item $\chi_{1}=1$: critical regime (the edge-of-chaos). The depth scale controlling cross-input correlations can become arbitrarily large.
-\end{itemize}
+called $\chi_\perp$ in the main text and in \cite{roberts2022principlesdeeplearningtheory}. The ordered, chaotic, and critical regimes correspond to $\chi_1<1$, $\chi_1>1$, and $\chi_1=1$ respectively; the last case is the edge-of-chaos, where the cross-input correlation length can diverge.
 
-
-To show the power of criticality, we will derive a well known initialization based purely on demanding criticality: He \cite{he2015delvingdeeprectifierssurpassing}. Let us take $\phi(z)=\max(0,z)$, so that $\phi'(z)=\theta(z)$ and
+The usual He initialization follows from this criterion in the special case of \relu{}. Since $\phi'(z)=\theta(z)$ almost everywhere,
 %
 \begin{equation}
-\int Dz\,\big(\phi'(\sqrt{q^{*}}\,z)\big)^{2} = \int Dz\,\theta(z) = \frac{1}{2}.
+\int Dz\,\big(\phi'(\sqrt{q^{*}}z)\big)^2=\frac12,
+\qquad \chi_1=1 \Longrightarrow \sigma_w^2=2,
 \end{equation}
 %
-Hence
-%
-\begin{equation}
-\chi_{1}=\frac{\sigma_{w}^{2}}{2}, \qquad \chi_{1}=1 \ \Longrightarrow\ \sigma_{w}^{2}=2,
-\end{equation}
-%
-which is precisely the He  variance condition (variance $2/N$) for \relu{}. At the same time, the \relu{} variance recursion simplifies to
+which is the variance-$2/N$ initialization. The same example also shows why variance preservation and correlation criticality are not identical: for \relu{},
 %
 \begin{equation}
 q^{\,l}_{aa}=\frac{\sigma_w^2}{2}\,q^{\,l-1}_{aa}+\sigma_b^2,
 \end{equation}
 %
-so for $\sigma_b^2>0$ the fixed point is $q^{*}=\sigma_b^2/(1-\sigma_w^2/2)$ when $\sigma_w^2<2$ and ceases to exist at $\sigma_w^2\ge 2$ (diverging as $\sigma_w^2\to 2^{-}$). Thus, if one insists on $\sigma_b^2>0$, tuning exactly to $\chi_1=1$ is incompatible with a finite $q^{*}$ for \relu{}, and in practice one often works slightly subcritical (or sets biases to zero) to keep the signal scale under control. For smooth bounded $\phi$, changing $\sigma_{b}^{2}$ shifts $q^{*}$ and therefore shifts the typical slope $\phi'(\sqrt{q^{*}}z)$, so the critical value of $\sigma_w^2$ becomes $\sigma_b^2$-dependent.
+so with nonzero bias the finite-$q^*$ condition requires $\sigma_w^2<2$, while exact angular criticality sets $\sigma_w^2=2$. In practice one either sets biases to zero or works slightly subcritical to keep the variance scale finite.
 
-Beyond the phase diagram, these recursions "grow" characteristic depth scales. Iterating random affine maps induces an effective coarse-graining in depth akin to the renormalization group flow in theoretical physics, coined representation group flow in the ML context \cite{roberts2022principlesdeeplearningtheory}: information about norms and angles relaxes exponentially fast toward their fixed points. Concretely, perturb the variance around $q^{*}$ by an infinitesimal amount,
+Finally, the correlation length used throughout the paper is obtained by linearizing the correlation map around its fixed point. If $r_c=F'(c^*)$, then
 %
 \begin{equation}
-q^{\,l}_{aa} = q^{*} + \epsilon^{\,l}_{q}.
+|c^*-c^l_{ab}|\propto e^{-l/\xi_c},\qquad \xi_c^{-1}=-\log|r_c|.
 \end{equation}
 %
-Expanding \eqref{app:variancerecursion} to first order yields
-%
-\begin{equation}
-\epsilon^{\,l+1}_{q} = \epsilon^{\,l}_{q} \Bigg[ \chi_{1} + \sigma_{w}^{2}\int Dz\,\phi''(\sqrt{q^{*}}z)\,\phi(\sqrt{q^{*}}z) \Bigg].
-\end{equation}
-%
-Defining
-%
-\begin{equation}
-r_{q} \equiv \chi_{1} + \sigma_{w}^{2}\int Dz\,\phi''(\sqrt{q^{*}}z)\,\phi(\sqrt{q^{*}}z),
-\end{equation}
-%
-we have asymptotically
-%
-\begin{equation}
-\epsilon^{\,l}_{q} = \epsilon^{\,0}_{q}\,r_{q}^{\,l} = \epsilon^{\,0}_{q}\,e^{-l/\xi_{q}}, \qquad \xi_{q}^{-1}\equiv -\log|r_{q}|.
-\label{app:corrq}
-\end{equation}
-%
-Similarly, perturbing the correlation around its fixed point $c^{*}$ gives an exponential approach with depth scale
-%
-\begin{align}
-&\xi_{c}^{-1} = -\log\!\left[ \sigma_{w}^{2} \int Dz_{1}\,Dz_{2}\,\phi'(u_{1}^{*})\,\phi'(u_{2}^{*}) \right],\\
-&u_{1}^{*}=\sqrt{q^{*}}\,z_{1},\quad u_{2}^{*}=\sqrt{q^{*}}\!\left(c^{*}z_{1}+\sqrt{1-(c^{*})^{2}}\,z_{2}\right).
-\end{align}
-%
-Heuristically, $\xi_{c}$ controls how far distinctions between different inputs survive with depth. In the ordered phase $c^{*}=1$, so $u_{1}^{*}=u_{2}^{*}$ and $\xi_{c}^{-1}=-\log\chi_{1}$, hence $\chi_{1}\to 1$ implies $\xi_{c}\to\infty$. Meanwhile, $\xi_{q}$ controls how quickly single-input norms settle to $q^{*}$. For smooth saturating activations such as $\tanh$, the curvature term is typically negative, so even at $\chi_{1}=1$ one often finds $|r_{q}|<1$ and $\xi_{q}$ stays finite and relatively short.
-
-In this sense, the edge-of-chaos is primarily about $\xi_{c}$ rather than $\xi_{q}$, except in special cases. For \relu{}, $\phi''=0$ away from the origin (so the curvature contribution vanishes in the Gaussian averages), and one has $r_{q}=\chi_{1}$. In that case $\xi_{q}$ and $\xi_{c}$ essentially coincide and both diverge as $\chi_{1}\to 1$, provided a finite $q^{*}$ exists. This is one concrete reason why \relu{}-style near-critical initializations are comparatively forgiving in practice.
-
-MFT provides a good approximation in very wide networks, especially through the first few layers. At large but finite width, deviations from Gaussian mean-field behavior can be organized perturbatively in the depth-to-width aspect ratio \(L/N\). Accordingly, in our experiments we work in a controlled regime with \(L/N \ll 1\) (i.e., \(N \gg L\)). Near criticality, the correlation length becomes large, which slows relaxation to the fixed point and typically amplifies sensitivity to finite-width and other non-Gaussian corrections. Hence, when probing critical power laws while maintaining dropout, we keep the latter parametrically small but non-negligible: taking dropout to be infinitesimal would require prohibitively deep networks to obtain precise estimates of the correlation length and related quantities, making the experiments computationally expensive.
-
+The analogous variance length $\xi_q$ tracks relaxation of $q^l_{aa}$ to $q^*$, but the edge-of-chaos phenomenon is primarily controlled by $\xi_c$: it measures how many layers preserve distinctions between different inputs. This is the scale deformed by dropout in the main analysis.
 \FloatBarrier
 
 

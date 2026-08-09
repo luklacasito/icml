@@ -443,7 +443,8 @@
   \only<4>{\vfill\begin{center}\schedfig{1.55}{1}{1}\end{center}\vfill}
 
   % ---- beats 5-8: the settled layout ------------------------------------
-  \only<5->{%
+  % Skipped on beat 6, which hands the whole screen to the numbers.
+  \only<5,7->{%
   \begin{columns}[c,onlytextwidth]
     \begin{column}{0.44\textwidth}
       \centering
@@ -475,15 +476,15 @@
     \end{tikzpicture}
   \end{center}}}
 
-  % ---- beat 6: the numbers get their own moment, floated over the layout
-  % so the settled columns underneath do not move when it goes away.
+  % ---- beat 6: the numbers take the whole screen, then zoom out to their
+  % place on beat 7.  Same \parbox width as the settled version, so the line
+  % breaks are identical and the step reads as one object shrinking rather
+  % than as a different slide.
   \only<6>{%
     \begin{tikzpicture}[remember picture,overlay]
-      % paper fill so the blow-up never collides with the schematic that
-      % has already settled into the left column
-      \node[anchor=center,inner sep=0.28cm,fill=paper,rounded corners=4pt]
-        at ($(current page.center)+(3.30cm,0.15cm)$)
-        {\scalebox{1.12}{\parbox{0.52\textwidth}{\small\tldrmetrics}}};
+      \node[anchor=center,inner sep=0pt]
+        at ($(current page.center)+(0,-0.10cm)$)
+        {\scalebox{1.88}{\parbox{0.52\textwidth}{\small\tldrmetrics}}};
     \end{tikzpicture}}
   \endgroup
   \note{60 s. Eight clicks, so keep moving: headline, constant, arrow,

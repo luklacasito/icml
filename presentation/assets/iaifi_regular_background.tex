@@ -1,0 +1,15 @@
+\documentclass[tikz,border=0pt]{standalone}
+\usepackage{graphicx}
+
+\definecolor{paper}{HTML}{F4EFE3}
+\definecolor{gold}{HTML}{D8AD62}
+
+\begin{document}
+\begin{tikzpicture}[x=1cm,y=1cm]
+  \path[use as bounding box] (0,0) rectangle (16,9);
+  \fill[paper] (0,0) rectangle (16,9);
+  \node[anchor=north east] at (15.30,8.80)
+    {\includegraphics[height=0.60cm]{logos/Carnegie_Mellon_University_seal.svg-2.png}};
+  \draw[gold,line width=1.2pt] (0.70,7.86) -- (3.30,7.86);
+\end{tikzpicture}
+\end{document}

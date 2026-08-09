@@ -30,3 +30,19 @@ Thumbs.db
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+
+# Talk (presentation/): keep source, the assets the deck actually references,
+# and the two built PDFs. Everything below is regenerable, superseded, or
+# unreferenced by talk_iaifi_2026_v2.tex.
+presentation/assets/previews/
+presentation/assets/manifold_frames/
+presentation/assets/manifold_frames_fixed_pca/
+presentation/assets/manifold_frames_ordered08/
+presentation/assets/manifold_frames_ordered085/
+presentation/assets/manifold_frames_ordered085_smooth/
+presentation/assets/manifold_slide_frames/
+presentation/assets/*.gif
+presentation/talk_iaifi_2026.pdf
+presentation/talk_iaifi_2026_static.pdf
+presentation/talk_icml_5min.pdf
+presentation/talk_icml_5min_copy.pdf

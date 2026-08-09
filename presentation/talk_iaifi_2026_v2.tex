@@ -1,0 +1,1798 @@
+% =========================================================================
+% IAIFI Summer Workshop 2026 -- 12 minute slot
+% Re-cut of talk_iaifi_2026.tex:
+%   * result moved to slide 2
+%   * old slides 5+6+7 merged; old 8+9 merged; RG table moved to backup
+%   * overlays added; no \animategraphics (works in every PDF viewer)
+%   * 8pt typographic floor; phase colors no longer overloaded
+% =========================================================================
+\documentclass[aspectratio=169,10pt]{beamer}
+
+\usetheme{default}
+\useinnertheme{rectangles}
+\setbeamertemplate{navigation symbols}{}
+\setbeameroption{hide notes}
+\setbeamersize{text margin left=0.7cm, text margin right=0.7cm}
+
+\usepackage{amsmath,amssymb}
+\usepackage[T1]{fontenc}
+\usepackage[scaled=0.96]{FiraSans}
+\usepackage{newtxsf}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\pgfplotsset{compat=1.18}
+
+% -------------------------------------------------------------------------
+% ANIMATION TOGGLE.  Build both with scripts/build_talk.sh:
+%   _animated.pdf : \animategraphics, autoplay. Needs Acrobat / pdf-presenter.
+%   _static.pdf   : the same frames as click-through stills. Works everywhere
+%                   (Preview, Skim, browsers, screen share).
+% Present from _animated if you control the machine and it has Acrobat;
+% carry _static as the fallback.
+% -------------------------------------------------------------------------
+\providecommand{\useanimations}{0}
+\newif\ifanim
+\ifnum\useanimations=1 \animtrue\else\animfalse\fi
+\ifanim\usepackage{animate}\fi
+
+% Overlay step at which slide 4's conclusion box appears: right after the
+% animation in animated mode, after the fourth still in static mode.
+\ifanim
+  \newcommand{\manifoldbox}{2}
+\else
+  \newcommand{\manifoldbox}{4}
+\fi
+
+% Slide measures are short: avoid mid-word hyphenation.
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+
+% -------------------------------------------------------------------------
+% CONFIRM BEFORE PRESENTING.
+% The old deck's speaker note cited 25 runs / 75 epochs for the primary MLP
+% scheduling experiment, but main.tex Table (high-overfitting regime) lists
+% 20 runs / 50 epochs. These are different experiments or a stale note.
+% Set these to whatever the h-sweep run actually used.
+% -------------------------------------------------------------------------
+\newcommand{\mlpruns}{20}
+\newcommand{\epochsfast}{29--31}
+\newcommand{\epochsbase}{75}
+
+\definecolor{ink}{HTML}{202121}
+\definecolor{forest}{HTML}{0E3B2C}
+\definecolor{gold}{HTML}{D8AD62}
+\definecolor{gilt}{HTML}{9E7B38}
+\definecolor{paper}{HTML}{F4EFE3}
+\definecolor{mist}{HTML}{C9CBC7}
+\definecolor{muted}{HTML}{60645F}
+% Phase colors. Reserved meanings, used nowhere else in the deck:
+%   orderedblue = ordered phase, forest = critical edge, clay = chaotic phase.
+\definecolor{clay}{HTML}{B04A2F}
+\definecolor{orderedblue}{HTML}{3A6EA5}
+% Caveats and scope limits get their own accent so clay stays "chaotic".
+\definecolor{caveat}{HTML}{7A5C2E}
+
+\setbeamercolor{normal text}{fg=ink,bg=paper}
+\setbeamercolor{background canvas}{bg=paper}
+\setbeamercolor{frametitle}{fg=forest}
+\setbeamercolor{structure}{fg=forest}
+\setbeamercolor{block title}{fg=white,bg=forest}
+\setbeamercolor{block body}{fg=ink,bg=paper!85!mist}
+\setbeamercolor{itemize item}{fg=gilt}
+\setbeamertemplate{itemize item}{\raisebox{0.15em}{\tiny$\blacktriangleright$}}
+\setlength{\abovedisplayskip}{0.4em}
+\setlength{\belowdisplayskip}{0.4em}
+
+\newcommand{\relu}{\mathrm{ReLU}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\cmulogo}{assets/logos/cmu_seal.png}
+\newcommand{\iaifilogo}{assets/logos/IAIFI-logo-black.pdf}
+\newcommand{\regularbackground}{assets/iaifi_regular_background.png}
+
+% Caveat text: one consistent style, never below 8pt.
+\newcommand{\scope}[1]{{\footnotesize\color{caveat}#1}}
+\newcommand{\srcnote}[1]{{\footnotesize\color{muted}#1}}
+
+% -------------------------------------------------------------------------
+% Photos for the broken-telephone slide. Drop these three files in and they
+% appear automatically; until then the slide falls back to labelled boxes,
+% so the deck always compiles.
+%   assets/cat.png     the cat photo
+%   assets/dog.png     the dog photo
+%   assets/static.png  TV static, used for BOTH outputs (they end up
+%                      indistinguishable, which is the whole point)
+% Any raster format pdflatex accepts works; rename to .png or edit below.
+% -------------------------------------------------------------------------
+\newcommand{\catimg}{assets/cat.png}
+\newcommand{\dogimg}{assets/dog.png}
+\newcommand{\staticimg}{assets/static.png}
+% #1 file, #2 height, #3 frame colour, #4 fallback label
+\newcommand{\telephoto}[4]{%
+  \IfFileExists{#1}%
+    {\includegraphics[height=#2]{#1}}%
+    {\parbox[c][#2][c]{1.25cm}{\centering\scriptsize\color{#3}#4}}%
+}
+% One input under a particular dropout mask: the photo, some static, and a
+% set of blanked blocks standing in for the dropped units. Coordinates in
+% #4 are fractions of the image, so the same list works at any size.
+% #1 file, #2 size, #3 noise opacity, #4 list of x/y/w/h blocks
+\newcommand{\maskedphoto}[4]{%
+  \begin{tikzpicture}[inner sep=0pt,outer sep=0pt,x=#2,y=#2]
+    \node[inner sep=0pt,anchor=south west] at (0,0)
+      {\includegraphics[width=#2,height=#2]{#1}};
+    \node[inner sep=0pt,anchor=south west,opacity=#3] at (0,0)
+      {\includegraphics[width=#2,height=#2]{\staticimg}};
+    \foreach \bx/\by/\bw/\bh in {#4} {
+      \fill[paper!92!ink] (\bx,\by) rectangle ({\bx+\bw},{\by+\bh});
+    }
+  \end{tikzpicture}%
+}
+
+% Square-cropped variant: static.png is 4:3, so force it to the same
+% footprint as the square photos.
+\newcommand{\squarephoto}[3]{%
+  \IfFileExists{#1}%
+    {\includegraphics[width=#2,height=#2]{#1}}%
+    {\parbox[c][#2][c]{#2}{\centering\scriptsize\color{muted}#3}}%
+}
+% Partially-degraded image: the photo with static laid over it at opacity
+% #3. Gives the mid-depth state without needing extra image files.
+% #1 file, #2 height, #3 noise opacity
+\newcommand{\noisyphoto}[3]{%
+  \IfFileExists{#1}%
+    {\begin{tikzpicture}[inner sep=0pt,outer sep=0pt]
+       \node[inner sep=0pt] (np) {\includegraphics[height=#2]{#1}};
+       \node[inner sep=0pt,opacity=#3] at (np.center)
+         {\includegraphics[height=#2,width=#2]{\staticimg}};
+     \end{tikzpicture}}%
+    {\parbox[c][#2][c]{#2}{\centering\scriptsize\color{muted}noisy}}%
+}
+
+% The prebuilt background PNG has an OLD CMU seal and the gold rule baked in,
+% which double-printed under the foreground chrome below. Just paint the paper
+% colour; the hook draws the rule and the (current) seal.
+\setbeamertemplate{background canvas}{%
+  \color{paper}\rule{\paperwidth}{\paperheight}%
+}
+% Slide chrome in the shipout foreground. With \animategraphics gone there are
+% no optional-content groups left to swallow it, so the old per-frame fallback
+% redraws are no longer needed.
+\makeatletter
+\AddToHook{shipout/foreground}{%
+  \ifbeamer@plainframe\else
+    \begin{tikzpicture}[remember picture,overlay]
+      \node[anchor=north east]
+        at ($(current page.north east)+(-0.62cm,-0.15cm)$)
+        {\includegraphics[height=1.02cm]{\cmulogo}};
+      \draw[gold,line width=1.2pt]
+        ($(current page.north west)+(0.70cm,-1.14cm)$) --
+        ($(current page.north west)+(3.30cm,-1.14cm)$);
+      \node[anchor=south west,text=muted,font=\scriptsize]
+        at ($(current page.south west)+(0.70cm,0.10cm)$)
+        {Lucas Fernandez-Sarmiento};
+      \node[anchor=south,text=muted,font=\scriptsize]
+        at ($(current page.south)+(0,0.10cm)$)
+        {IAIFI Workshop 2026};
+      \node[anchor=south east,text=muted,font=\scriptsize]
+        at ($(current page.south east)+(-0.70cm,0.10cm)$)
+        {\insertframenumber};
+    \end{tikzpicture}%
+  \fi
+}
+\makeatother
+
+\setbeamertemplate{background}{}
+
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip
+  \vspace{0.20cm}
+  \hbox to \textwidth{%
+    \vbox to 0.60cm{\vfil
+      \hbox{{\color{forest}\bfseries\Large\insertframetitle}}%
+      \vfil}%
+    \hfill%
+  }%
+  \vspace{0.03cm}
+  \hbox to \textwidth{%
+    \rule{0pt}{1.2pt}\hfill%
+  }%
+  \vspace{0.08cm}
+}
+
+\setbeamertemplate{footline}{%
+  \leavevmode
+  \hbox to \paperwidth{\rule[-0.11cm]{0pt}{0.36cm}\hfill}%
+}
+
+\title[Dropout Universality]{Dropout Universality}
+\subtitle{Critical Scaling and Optimal Scheduling at the Edge-of-Chaos}
+\author{Lucas Fernandez-Sarmiento}
+\institute{Carnegie Mellon University}
+\date{August 12, 2026}
+
+\begin{document}
+
+% =========================================================================
+% 1. Title  (~20 s)
+% =========================================================================
+\begin{frame}[plain]
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[paper] (current page.south west) rectangle (current page.north east);
+    \draw[gold,line width=0.8pt]
+      ($(current page.north west)+(0.75,-2.22)$) --
+      ($(current page.north east)+(-0.75,-2.22)$);
+    \node[anchor=north west] at ($(current page.north west)+(0.75,-0.38)$)
+      {\includegraphics[height=1.02cm]{\iaifilogo}};
+    \node[anchor=west,text=forest] at ($(current page.north west)+(1.88,-0.87)$)
+      {\bfseries 2026 IAIFI Summer Workshop};
+    \node[anchor=north east] at ($(current page.north east)+(-0.62,-0.18)$)
+      {\includegraphics[height=1.92cm]{\cmulogo}};
+  \end{tikzpicture}
+
+  \vspace{2.48cm}
+  \begin{center}
+    {\color{ink}\bfseries\fontsize{22}{27}\selectfont
+    Dropout Universality}\\[0.35em]
+    {\color{forest}\fontsize{15}{19}\selectfont
+    Critical Scaling and Optimal Scheduling at the Edge-of-Chaos}
+
+    \vspace{0.65cm}
+    {\color{gold}\rule{6.0cm}{1.0pt}}
+
+    \vspace{0.48cm}
+    {\Large\color{ink} Lucas Fernandez-Sarmiento}\\[0.18em]
+    {\large\color{muted} Carnegie Mellon University}
+
+    \vspace{0.28cm}
+    {\small\color{forest}\bfseries ICML 2026}
+    \ {\small\color{muted}\(\cdot\)}\
+    {\small\color{muted}\href{https://arxiv.org/abs/2605.21648}{arXiv:2605.21648}}
+
+    \vfill
+    {\color{muted}August 12, 2026 \(\cdot\) IAIFI \(\cdot\) MIT}
+    \vspace{0.4cm}
+  \end{center}
+  \note{Say the one-liner here: dropout is an external field, and at fixed
+  budget you should put it early. 20 seconds, then move.}
+\end{frame}
+
+% =========================================================================
+% 2. The standard intuition, and what it cannot tell you  (~50 s)
+% =========================================================================
+\begin{frame}{A usual suspect of regularization: dropout}
+  \begingroup
+  \small
+  \begin{center}
+  \makebox[\textwidth][c]{%
+  \begin{tikzpicture}[x=1cm,y=1cm,>=Latex,scale=1.16,
+                      every node/.style={transform shape}]
+    % one input, masked afresh at every layer: the pattern changes and the
+    % damage compounds with depth.  Panels are 30% larger than the original
+    % pass; the gaps were squeezed to keep the total width inside the frame.
+    \draw[orderedblue,line width=1.3pt,-{Latex[length=2.0mm]}]
+      (1.58,0)--(3.68,0);
+    \draw[orderedblue,line width=1.3pt,-{Latex[length=2.0mm]}]
+      (5.18,0)--(7.28,0);
+    \draw[orderedblue!55,line width=1.3pt,-{Latex[length=2.0mm]}]
+      (8.78,0)--(9.58,0);
+    \node[font=\small,text=muted] at (9.95,0) {\(\cdots\)};
+
+    \foreach \x in {2.22,2.92,5.82,6.52} {
+      \node[draw=forest!60,fill=forest!8,minimum width=0.30cm,
+            minimum height=2.35cm,rounded corners=1pt] at (\x,0) {};
+    }
+
+    \node[draw=orderedblue,line width=0.9pt,rounded corners=2pt,
+          inner sep=1pt,fill=paper] at (0.80,0)
+          {\telephoto{\catimg}{1.55cm}{orderedblue}{cat}};
+
+    \node[draw=orderedblue!60,line width=0.9pt,rounded corners=2pt,
+          inner sep=1pt,fill=paper] at (4.40,0)
+      {\maskedphoto{\catimg}{1.55cm}{0.26}%
+        {0.08/0.60/0.24/0.19, 0.44/0.12/0.19/0.24,
+         0.70/0.64/0.21/0.22, 0.31/0.36/0.13/0.13}};
+
+    \node[draw=orderedblue!40,line width=0.9pt,rounded corners=2pt,
+          inner sep=1pt,fill=paper] at (8.00,0)
+      {\maskedphoto{\catimg}{1.55cm}{0.52}%
+        {0.55/0.55/0.27/0.23, 0.06/0.13/0.23/0.21,
+         0.33/0.74/0.20/0.18, 0.76/0.22/0.17/0.17,
+         0.14/0.42/0.15/0.16, 0.60/0.02/0.18/0.14,
+         0.40/0.40/0.14/0.15}};
+
+    \foreach \x/\lab in {0.80/{input}, 4.40/{a few layers in},
+                         8.00/{deeper still}} {
+      \node[font=\scriptsize\color{muted}] at (\x,-1.40) {\lab};
+    }
+  \end{tikzpicture}}
+  \end{center}
+
+  \vspace{0.05em}
+  \begin{center}
+    {\footnotesize\color{muted}A fresh mask at every layer: the pattern
+    changes and the damage compounds.}
+  \end{center}
+
+  \vspace{0.20em}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      {\color{forest}\bfseries The standard theory}
+
+      \vspace{0.10em}
+      Usual NNs are overparametrized, so there are enough parameters to memorize training neural patterns ("coadaptation"). Dropout blocks activations randomly, mitigating this. 
+
+      \vspace{0.15em}
+      \srcnote{Srivastava et al., JMLR \textbf{15}, 1929 (2014).}
+    \end{column}
+
+    \begin{column}{0.48\textwidth}
+      \onslide<2->{%
+      {\color{clay}\bfseries The practice}
+
+      \vspace{0.10em}
+      People usually do a grid search over the probability of dropping out and call it a day.
+
+      \vspace{0.40em}
+      \begin{tikzpicture}[scale=0.85,every node/.style={transform shape}]
+        \node[
+          fill=forest!10!paper, fill opacity=0.45,
+          draw=forest, line width=0.9pt,
+          text opacity=1, text=ink,
+          rounded corners=5pt, font=\normalsize,
+          inner xsep=0.30cm, inner ysep=0.22cm,
+          text width=0.74\linewidth, align=left
+        ] {Reasonable. But is it \textbf{optimal}? Can we do better?};
+      \end{tikzpicture}}
+    \end{column}
+  \end{columns}
+  \endgroup
+  \note{50 s. Give the textbook reading its due in one breath, then say
+  plainly what it cannot deliver. The last line hands off to the
+  collective-variable slide.}
+\end{frame}
+
+% =========================================================================
+% 3. THE RESULT, UP FRONT  (~60 s)
+% =========================================================================
+% Built in eight beats: the headline alone, then it retreats into the
+% frame title; the constant schedule at full size, an arrow, the step
+% schedule it uncovers; the pair settles into the left column; the
+% numbers get a beat at full size before landing on the right.
+%
+% \schedfig{scale}{show arrow}{show step} -- one geometry, used big for the
+% centre-stage beats and small for the final layout, so nothing is redrawn
+% differently between the two.
+\newcommand{\schedfig}[3]{%
+  \begin{tikzpicture}[x=1cm,y=1cm,scale=#1,
+                      every node/.style={transform shape}]
+    % frozen box: the step row must not shove the constant row when it lands
+    \useasboundingbox (-0.10,-0.95) rectangle (5.30,2.30);
+    % --- constant schedule ---
+    \node[anchor=west,font=\footnotesize\bfseries,text=gilt]
+      at (-0.05,1.95) {constant};
+    \foreach \i in {0,...,11}{
+      \fill[gilt!70] ({0.42*\i},1.25) rectangle ({0.42*\i+0.30},1.67);
+    }
+    \ifnum#2=1
+      \draw[clay,line width=1.5pt,-{Latex[length=2.6mm]}]
+        (2.46,1.16) -- (2.46,0.76);
+    \fi
+    % --- front-loaded: half the layers (6 of 12), twice the height.
+    %     Equal area, so "same total dropout" is literally true. This is
+    %     the paper's Step schedule: f = 1/2, h_max = 0.2, hbar = 0.1.
+    \ifnum#3=1
+      \node[anchor=west,font=\footnotesize\bfseries,text=forest]
+        at (-0.05,0.95) {front-loaded};
+      \foreach \i in {0,...,5}{
+        \fill[forest] ({0.42*\i},-0.20) rectangle ({0.42*\i+0.30},0.64);
+      }
+      \foreach \i in {6,...,11}{
+        \draw[forest!30,line width=0.4pt]
+          ({0.42*\i},-0.20) rectangle ({0.42*\i+0.30},-0.18);
+      }
+    \fi
+    \draw[muted,line width=0.6pt,-{Latex[length=1.6mm]}]
+      (-0.02,-0.42) -- (5.20,-0.42);
+    \node[anchor=north,font=\footnotesize,text=muted] at (2.55,-0.50)
+      {layer \(\ell\)};
+  \end{tikzpicture}%
+}
+
+% The numbers, written once: shown scaled up for their own beat, then at
+% size in the right column.
+\newcommand{\tldrmetrics}{%
+  {\color{forest}\bfseries Final-epoch test loss}\\[0.10em]
+  {\fontsize{17}{20}\selectfont\color{clay}\bfseries 18--35\%} lower
+  {\small(MLP)}\qquad
+  {\fontsize{17}{20}\selectfont\color{clay}\bfseries 4--6\%} lower
+  {\small(ViT)}
+
+  \vspace{0.40em}
+  {\color{gold}\rule{6.8cm}{1.0pt}}
+
+  \vspace{0.40em}
+  {\color{forest}\bfseries Epochs to reach constant-dropout accuracy}\\[0.10em]
+  {\fontsize{17}{20}\selectfont\color{clay}\bfseries \epochsfast}
+  \ vs \ \epochsbase
+  \ \ {\small\color{clay}\bfseries(\(\approx\)60\% fewer)}%
+}
+
+\begin{frame}
+  \frametitle{\only<2->{TLDR: Front-load your dropout!}}
+  \begingroup
+  \small
+
+  % ---- beat 1: the headline, alone -------------------------------------
+  \only<1>{%
+    \vfill
+    \begin{center}
+      {\color{forest}\bfseries\fontsize{34}{41}\selectfont
+      Front-load your dropout!}
+    \end{center}
+    \vfill}
+
+  % ---- beats 2-4: the schedules, centre stage ---------------------------
+  \only<2>{\vfill\begin{center}\schedfig{1.55}{0}{0}\end{center}\vfill}
+  \only<3>{\vfill\begin{center}\schedfig{1.55}{1}{0}\end{center}\vfill}
+  \only<4>{\vfill\begin{center}\schedfig{1.55}{1}{1}\end{center}\vfill}
+
+  % ---- beats 5-8: the settled layout ------------------------------------
+  \only<5->{%
+  \begin{columns}[c,onlytextwidth]
+    \begin{column}{0.44\textwidth}
+      \centering
+      \schedfig{1.06}{0}{1}
+
+      \vspace{0.55em}
+      \onslide<8->{%
+        {\footnotesize\color{muted}Same total dropout. Same cost per epoch.}}
+    \end{column}
+
+    \begin{column}{0.52\textwidth}
+      % \onslide (not \only) so the column reserves its height from beat 5
+      % and nothing below it shifts when the numbers arrive.
+      \onslide<7->{\tldrmetrics}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.45em}
+  \onslide<8->{%
+  \begin{center}
+    \begin{tikzpicture}
+      \node[fill=forest!10!paper, fill opacity=0.45,
+            draw=forest, line width=0.9pt,
+            text opacity=1, text=ink,
+            rounded corners=5pt,
+            inner xsep=0.42cm,inner ysep=0.22cm]
+        {Follows from applying principle of tuning to
+         \textbf{criticality} to dropout distribution.};
+    \end{tikzpicture}
+  \end{center}}}
+
+  % ---- beat 6: the numbers get their own moment, floated over the layout
+  % so the settled columns underneath do not move when it goes away.
+  \only<6>{%
+    \begin{tikzpicture}[remember picture,overlay]
+      % paper fill so the blow-up never collides with the schematic that
+      % has already settled into the left column
+      \node[anchor=center,inner sep=0.28cm,fill=paper,rounded corners=4pt]
+        at ($(current page.center)+(3.30cm,0.15cm)$)
+        {\scalebox{1.12}{\parbox{0.52\textwidth}{\small\tldrmetrics}}};
+    \end{tikzpicture}}
+  \endgroup
+  \note{60 s. Eight clicks, so keep moving: headline, constant, arrow,
+  step, land it, numbers, land them, the caveat and the promise. Land the
+  number, promise the derivation, move on. Do not defend the experiment
+  here; the results slide does that.}
+\end{frame}
+
+% =========================================================================
+% 4. In search of good variables  (~40 s)
+% =========================================================================
+\begin{frame}{In search of better variables}
+  \begingroup
+  \small
+  \begin{columns}[c,onlytextwidth]
+    \begin{column}{0.600\textwidth}
+      \vspace{0.35em}
+      {\color{ink}\itshape\fontsize{14}{17.5}\selectfont
+      ``With four parameters I can fit an elephant, and with five I can
+      make him wiggle his trunk.''}\\[0.35em]
+      {\color{gilt}\normalsize von Neumann to Fermi, via Dyson}
+
+      \vspace{1.6em}
+      \begin{tikzpicture}
+        \node[
+          fill=forest!10!paper, fill opacity=0.45,
+          draw=forest, line width=0.9pt,
+          text opacity=1, text=ink,
+          rounded corners=5pt, font=\large,
+          inner xsep=0.42cm, inner ysep=0.32cm,
+          text width=0.90\linewidth, align=left
+        ] {Can a few \textbf{collective variables} describe what depth does
+           to information?};
+      \end{tikzpicture}
+    \end{column}
+
+    \begin{column}{0.371\textwidth}
+      \centering
+      \ifanim
+        \animategraphics[method=icon,autoplay,loop,poster=first,
+          width=1.00\linewidth,type=png]%
+          {20}{assets/elephant_frames/elephant_}{0}{59}%
+      \else
+        \includegraphics[width=1.00\linewidth]%
+          {assets/von_neumann_elephant_wiggle_trail.png}%
+      \fi
+
+      \vspace{0.20em}
+      \srcnote{Mayer, Khairy \& Howard,\\
+      Am.\ J.\ Phys.\ \textbf{78}, 648 (2010)}
+    \end{column}
+  \end{columns}
+  \endgroup
+  \note{40 s. This is the physics thesis of the whole talk: trade millions
+  of microscopic parameters for a handful of macroscopic ones. It sets up
+  slide 7, where the reduction actually happens.}
+\end{frame}
+
+% =========================================================================
+% 5. Broken telephone / information preservation  (~55 s)
+% =========================================================================
+\begin{frame}{At initialization, depth is like broken telephone}
+  \begingroup
+  \small
+  \begin{center}
+    Each layer \emph{re-transmits} the message it receives. Track the
+    correlation between the two inputs, \(c_\ell\).
+
+    \vspace{0.30em}
+    {\color{forest}\bfseries Aim of the game: postpone perfect correlation
+    for as long as possible!}
+  \end{center}
+
+  \vspace{0.80em}
+  \begin{center}
+  \makebox[\textwidth][c]{%
+  \begin{tikzpicture}[x=1cm,y=1cm,>=Latex,scale=1.125,
+                      every node/.style={transform shape}]
+    % Signal paths first, so the layer bars sit on top of them.
+    \foreach \y/\col in {0.95/orderedblue,-0.95/clay} {
+      \draw[\col,line width=1.35pt,-{Latex[length=2.1mm]}]
+        (1.58,\y)--(4.22,\y);
+      \draw[\col,line width=1.35pt,-{Latex[length=2.1mm]}]
+        (5.78,\y)--(8.42,\y);
+    }
+
+    % layer bars, two groups
+    \foreach \x in {2.45,3.30,6.65,7.50} {
+      \node[draw=forest!60,fill=forest!8,minimum width=0.32cm,
+            minimum height=3.05cm,rounded corners=1pt] at (\x,0) {};
+    }
+
+    % --- column 1: the clean inputs ---
+    \node[draw=orderedblue,line width=0.9pt,rounded corners=2pt,
+          inner sep=1pt,fill=paper]
+          at (0.90,0.95) {\telephoto{\catimg}{1.35cm}{orderedblue}{cat}};
+    \node[draw=clay,line width=0.9pt,rounded corners=2pt,
+          inner sep=1pt,fill=paper]
+          at (0.90,-0.95) {\telephoto{\dogimg}{1.35cm}{clay}{dog}};
+    \node[font=\bfseries\scriptsize,text=orderedblue,anchor=east]
+          at (0.10,0.95) {cat \(\mathbf x^{(a)}\)};
+    \node[font=\bfseries\scriptsize,text=clay,anchor=east]
+          at (0.10,-0.95) {dog \(\mathbf x^{(b)}\)};
+
+    % --- column 2: mid-depth, partly forgotten ---
+    \node[draw=orderedblue!60,line width=0.9pt,rounded corners=2pt,
+          inner sep=1pt,fill=paper]
+          at (5.00,0.95) {\noisyphoto{\catimg}{1.35cm}{0.55}};
+    \node[draw=clay!60,line width=0.9pt,rounded corners=2pt,
+          inner sep=1pt,fill=paper]
+          at (5.00,-0.95) {\noisyphoto{\dogimg}{1.35cm}{0.55}};
+
+    % --- column 3: the SAME static both times. That is the point. ---
+    \node[draw=muted,line width=0.9pt,rounded corners=2pt,
+          inner sep=1pt,fill=paper]
+          at (9.10,0.95) {\squarephoto{\staticimg}{1.35cm}{noise}};
+    \node[draw=muted,line width=0.9pt,rounded corners=2pt,
+          inner sep=1pt,fill=paper]
+          at (9.10,-0.95) {\squarephoto{\staticimg}{1.35cm}{noise}};
+    \node[font=\scriptsize,text=orderedblue,anchor=west]
+          at (9.90,0.95) {\(\mathbf z_a^\ell\)};
+    \node[font=\scriptsize,text=clay,anchor=west]
+          at (9.90,-0.95) {\(\mathbf z_b^\ell\)};
+    \draw[<->,muted,line width=0.7pt] (10.55,0.95)--(10.55,-0.95);
+    \node[anchor=west,font=\scriptsize,text=muted,align=left]
+          at (10.68,0) {same static:\\\(c_\ell\to1\)};
+
+    % --- column captions ---
+    \foreach \x/\lab in {0.90/{input},5.00/{mid-depth},9.10/{deep}} {
+      \node[font=\scriptsize\color{muted}] at (\x,-1.95) {\lab};
+    }
+  \end{tikzpicture}}
+  \end{center}
+
+  \endgroup
+  \note{55 s. This is the answer to the elephant slide: here is the
+  collective variable. If \(c_\ell\to1\) the network has forgotten which
+  input it saw, so deep layers cannot tell cats from dogs.}
+\end{frame}
+
+% =========================================================================
+% 6. Three phases  (~50 s, 4 clicks)
+% =========================================================================
+\begin{frame}{Initialization sets how long distinctions survive}
+  \begingroup
+  \small
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.31\textwidth}
+      \centering
+      {\color{orderedblue}\bfseries Ordered}\\[0.10em]
+      {\footnotesize \(c_\ell\to1\) fast;\\ everything looks alike}
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \centering
+      {\color{forest}\bfseries Critical edge}\\[0.10em]
+      {\footnotesize forgetting is slow;\\ distinctions survive deep}
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \centering
+      {\color{clay}\bfseries Chaotic}\\[0.10em]
+      {\footnotesize differences blow up,\\ then saturate}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.25em}
+  \begin{center}
+    \ifanim
+      \animategraphics[method=icon,autoplay,loop,poster=first,
+        width=0.77\textwidth,type=png]%
+        {16}{assets/manifold_slide_frames_t/manifold_}{0}{200}%
+    \else
+      \only<1>{\includegraphics[width=0.77\textwidth]%
+        {assets/manifold_slide_frames_t/manifold_0.png}}%
+      \only<2>{\includegraphics[width=0.77\textwidth]%
+        {assets/manifold_slide_frames_t/manifold_20.png}}%
+      \only<3>{\includegraphics[width=0.77\textwidth]%
+        {assets/manifold_slide_frames_t/manifold_80.png}}%
+      \only<4->{\includegraphics[width=0.77\textwidth]%
+        {assets/manifold_slide_frames_t/manifold_200.png}}%
+    \fi
+
+    \vspace{-0.10em}
+    {\footnotesize\color{muted}A circular input manifold through random
+    \(\tanh\) layers, projected to 2D.}
+
+    \vspace{0.35em}
+    \onslide<\manifoldbox->{%
+    \begin{tikzpicture}
+      \node[draw=forest,fill=forest!8,rounded corners=5pt,
+            inner xsep=0.42cm,inner ysep=0.20cm,text=ink]
+        {Tune initialization to the edge so distinctions propagate deepest.};
+    \end{tikzpicture}}
+  \end{center}
+  \endgroup
+  \note{Click through the four depths. The ordered panel collapsing to a
+  point is the moment. 50 s.  Poole et al.\ 2016; Schoenholz et al.\ 2017.}
+\end{frame}
+
+% =========================================================================
+% 7. Why the edge? Critical brain + the smoking gun  (~45 s)
+% =========================================================================
+\begin{frame}{The edge of chaos is a borrowed hypothesis}
+  \begingroup
+  \small
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.50\textwidth}
+      {\color{forest}\bfseries The critical brain hypothesis}
+
+      \vspace{0.10em}
+      Cortical activity arrives in avalanches whose sizes follow a power
+      law, \(P(s)\sim s^{-3/2}\). Scale-free all the way up to the
+      recording array --- electrodes 200\,\(\mu\)m apart, millimetres of
+      cortex firing as one event. No intrinsic scale, so the correlation
+      length \(\xi\to\infty\).
+
+      \vspace{0.15em}
+      \srcnote{Beggs \& Plenz, J.\ Neurosci.\ \textbf{23}, 11167 (2003).
+      Still contested: Beggs \& Timme, Front.\ Physiol.\ \textbf{3}, 163
+      (2012).}
+
+      \vspace{0.55em}
+      {\color{forest}\bfseries Inherited by machine learning}
+
+      \vspace{0.10em}
+      {\footnotesize
+      tuning nets to edge-of-chaos at initialization}
+
+      \vspace{0.15em}
+      \srcnote{Sompolinsky et al.\ 1988; Packard 1988;
+      Bertschinger \& Natschl\"ager 2004; Poole et al.\ 2016;
+      Schoenholz et al.\ 2017.}
+    \end{column}
+
+    \begin{column}{0.47\textwidth}
+      \centering
+      {\color{forest}\bfseries The smoking gun: \(\xi\) diverges}
+
+      \vspace{0.20em}
+      \begin{tikzpicture}
+      \begin{axis}[
+        width=5.0cm, height=2.85cm, scale only axis,
+        xmin=0.55,xmax=1.45,ymin=0,ymax=27,
+        xtick={0.6,0.8,1.0,1.2,1.4}, ytick={0,10,20},
+        tick label style={font=\scriptsize,color=muted},
+        axis line style={muted,line width=0.5pt},
+        label style={font=\scriptsize,color=ink},
+        xlabel={\(\chi\)}, ylabel={\(\xi_c\) (layers)},
+        every axis plot/.append style={line width=1.0pt},
+      ]
+        \addplot[forest,dashed,line width=0.7pt,forget plot]
+          coordinates {(1,0)(1,27)};
+        \addplot[orderedblue,domain=0.55:0.962,samples=120]{1/(1-x)};
+        \addplot[clay,domain=1.038:1.45,samples=120]{1/(x-1)};
+        \node[font=\scriptsize,text=orderedblue] at (axis cs:0.72,6)
+          {ordered};
+        \node[font=\scriptsize,text=clay] at (axis cs:1.29,6) {chaotic};
+        \node[font=\scriptsize\bfseries,text=forest,anchor=north]
+          at (axis cs:1.0,26.5) {edge};
+      \end{axis}
+      \end{tikzpicture}
+
+      \vspace{0.25em}
+      {\footnotesize Criticality's signature is a \textbf{diverging correlation length} \(\xi\to\infty\)
+      and power law behaviour.}
+
+      \vspace{0.15em}
+      {\footnotesize\color{muted}In a deep network that length is measured
+      in \emph{layers}.}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.25em}
+  \begin{center}
+    \begin{tikzpicture}
+      \node[draw=forest,fill=forest!8,rounded corners=5pt,
+            inner xsep=0.38cm,inner ysep=0.16cm,text=ink]
+        {Anything that cuts off the divergence destroys criticality
+         \textbf{...enter dropout}};
+    \end{tikzpicture}
+  \end{center}
+  \endgroup
+  \note{45 s. Physics lineage, then the one diagnostic this room trusts.
+  Say the critical-brain claim is contested -- do not oversell it. If
+  pressed: Beggs \& Plenz 2003 is \emph{in vitro} (rat cortex cultures and
+  acute slices, 8x8 array at 200 um pitch); in vivo support came later
+  (Petermann et al., PNAS 2009). The -3/2 exponent is also just the
+  mean-field critical-branching value, which is part of why the claim is
+  contested. The box is the hinge into the second half of the talk.}
+\end{frame}
+
+% =========================================================================
+% 8. The correlation length, shown  (~65 s)
+% =========================================================================
+\begin{frame}{Distance to perfect correlation decays exponentially}
+  \begingroup
+  \small
+  \begin{center}
+    How far are we from perfect correlation at layer \(\ell\)? Track
+    \(|1-c_\ell|\): it decays exponentially, at a scale mean-field theory
+    hands us explicitly:
+    \vspace{-0.15em}
+    \[
+      |1-c_\ell|\sim e^{-\ell/\xi_c},
+      \qquad
+      \xi_c^{-1}=-\log\!\left[\sigma_w^2\!\int\!\!Dz_1Dz_2\,
+        \phi'(u_1^*)\,\phi'(u_2^*)\right] .
+    \]
+    \vspace{-1.20em}
+
+    {\footnotesize\color{muted}\(\sigma_w\) the weight std, \(\phi\) the
+    nonlinearity, \(u_{1,2}^*\) the two inputs' preactivations at the fixed
+    point. So \(\xi_c\) is set by \(\sigma_w,\sigma_b,\phi\) alone ---
+    knobs we tune to make it \textbf{diverge}.}
+  \end{center}
+
+  \vspace{0.10em}
+  \begin{center}
+  \makebox[\textwidth][c]{%
+  \begin{tikzpicture}[x=1cm,y=1cm,scale=0.87,
+                      every node/.style={transform shape}]
+    \foreach \x/\op/\cv in {0/0.00/0.10, 2.15/0.28/0.30, 4.30/0.48/0.50,
+                            6.45/0.66/0.70, 8.60/0.83/0.90, 10.75/0.95/0.99} {
+      \node[draw=orderedblue!70,line width=0.8pt,rounded corners=2pt,
+            inner sep=0.8pt,fill=paper] at (\x,0.76)
+            {\noisyphoto{\catimg}{1.24cm}{\op}};
+      \node[draw=clay!70,line width=0.8pt,rounded corners=2pt,
+            inner sep=0.8pt,fill=paper] at (\x,-0.76)
+            {\noisyphoto{\dogimg}{1.24cm}{\op}};
+      \node[font=\scriptsize,text=ink] at (\x,-1.68) {\(c_\ell=\cv\)};
+    }
+    \draw[muted,line width=0.7pt,-{Latex[length=2.0mm]}]
+      (-0.70,-2.05)--(11.45,-2.05);
+  \end{tikzpicture}}
+  \end{center}
+
+  \vspace{0.02em}
+  \begin{center}
+    {\color{forest}\bfseries Tune to the edge and \(\xi_c\to\infty\): the
+    two never collapse together.}
+  \end{center}
+  \endgroup
+  \note{65 s. The whole point in one picture: c grows toward 1 and the two
+  inputs become the same thing. xi_c is how many layers that takes, and it
+  is set by knobs we control. Full recursions and the propagator flow are
+  in backup.}
+\end{frame}
+
+% =========================================================================
+% 9. Dropout is an external field  (~75 s)
+% =========================================================================
+\begin{frame}{Dropout is an external field}
+  \begingroup
+  \small
+  \begin{center}
+  \makebox[\textwidth][c]{%
+  \begin{tikzpicture}[x=1cm,y=1cm,scale=0.86,
+                      every node/.style={transform shape}]
+    % Same sweep as the previous slide, but each row now carries its OWN
+    % dropout mask. The patterns never agree, so c saturates below 1.
+    \foreach \x/\op/\cv in {0/0.00/0.10, 2.00/0.26/0.30, 4.00/0.46/0.50,
+                            6.00/0.62/0.68, 8.00/0.74/0.80, 10.00/0.82/0.85} {
+      \node[draw=orderedblue!70,line width=0.8pt,rounded corners=2pt,
+            inner sep=0.8pt,fill=paper] at (\x,0.72)
+        {\maskedphoto{\catimg}{1.16cm}{\op}%
+          {0.07/0.62/0.24/0.19, 0.45/0.11/0.19/0.23, 0.71/0.63/0.21/0.22}};
+      \node[draw=clay!70,line width=0.8pt,rounded corners=2pt,
+            inner sep=0.8pt,fill=paper] at (\x,-0.72)
+        {\maskedphoto{\dogimg}{1.16cm}{\op}%
+          {0.58/0.56/0.26/0.22, 0.09/0.15/0.22/0.20, 0.35/0.73/0.19/0.18}};
+      \node[font=\scriptsize,text=ink] at (\x,-1.58) {\(c_\ell=\cv\)};
+    }
+    \node[font=\scriptsize\bfseries,text=clay,anchor=west]
+      at (11.05,0) {\(c^*=0.85<1\)};
+    \draw[clay,line width=0.8pt] (10.95,-1.15) -- (10.95,1.15);
+  \end{tikzpicture}}
+  \end{center}
+
+  \vspace{0.10em}
+  \begin{center}
+    {\footnotesize\color{muted}Each row gets its own mask, so even in pure
+    noise the two never agree: \(c_\ell\) stalls below 1.}
+  \end{center}
+
+  \vspace{0.10em}
+  \begin{center}
+  \begin{minipage}{0.94\textwidth}
+    {\color{clay}\bfseries \(c=1\) stops being a fixed point}, and
+    \(\xi_c\) was a linearization \emph{about} it --- so it is not even
+    defined. Look for the fixed point \emph{perturbatively away} from
+    perfect correlation, in the dropout field \(h\propto1-\rho\).
+
+    \onslide<2->{%
+    \vspace{0.05em}
+    Tuned to the edge (\(t\equiv\chi_\rho-1=0\)), one can show a length
+    comes back:
+    \vspace{-0.45em}
+    {\Large\[
+      \xi_c\ \propto\ h^{-1/2} .
+    \]}}
+  \end{minipage}
+  \end{center}
+  \endgroup
+  \note{75 s. The dictionary is a 15 s gesture for this room; spend the
+  time on the exponent table, which is the actual claim. Expect
+  ``isn't this just mean field'' -- backup B3.}
+\end{frame}
+
+% =========================================================================
+% 10. Two universality classes  (~40 s)
+% =========================================================================
+\begin{frame}{Two universality classes, neither of them Ising}
+  \begingroup
+  \small
+  \begin{center}
+    The critical exponents are set by the \textbf{analyticity of the
+    activation}, not by a spatial dimension.
+  \end{center}
+
+  \vspace{0.60em}
+  \begin{center}
+    \renewcommand{\arraystretch}{1.35}
+    \setlength{\tabcolsep}{10pt}
+    \begin{tabular}{@{}lcc@{}}
+      \toprule
+      & \(\beta\) & \(\delta\) \\
+      \midrule
+      Smooth \(\phi\) (\(\tanh\)) & \(1\) & \(2\) \\
+      Kinked \(\phi\) (\(\relu\)) & \(2\) & \(\tfrac32\) \\
+      \midrule
+      Ising, Landau mean field & \(\tfrac12\) & \(3\) \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.60em}
+  \begin{center}
+    \begin{tikzpicture}
+      \node[draw=forest,fill=forest!8,rounded corners=5pt,
+            inner xsep=0.40cm,inner ysep=0.18cm,text=ink]
+        {A kink in \(\phi\) puts a branch point in \(\bar F_\rho\) at
+         \(c=1\): \(m^{5/2}\) replaces \(m^{3}\).};
+    \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.45em}
+  \scope{Structural analogy only: depth is an iteration count, not a
+  distance, and \(m\ge0\) carries no \(\mathbb Z_2\) symmetry.}
+  \endgroup
+  \note{40 s. This is the paper's title claim. Full exponent table in
+  backup; expect ``isn't this just mean field''.}
+\end{frame}
+
+% =========================================================================
+% 10b. The ink-in-a-river intuition  (~40 s)
+% =========================================================================
+% One scene macro, driven by a single time parameter t in [0,1]: the ink
+% plume advances downstream at the same current speed in all three rivers.
+% \ifanim -> autoplaying animateinline; static build -> three overlay stills.
+%   #1 = t
+\newcommand{\riverscene}[1]{%
+  \begin{tikzpicture}[x=1cm,y=1cm,>=Latex,scale=0.815,
+                      every node/.style={transform shape}]
+    % river = the signal flowing through depth; ink = dropout.
+    % Same litre in all three rows, released in different places.
+    \colorlet{rivercol}{orderedblue!16!paper}
+    \colorlet{inkcol}{ink!84!orderedblue}
+    \colorlet{bankcol}{orderedblue!40}
+    % Frozen bounding box: every frame must occupy the same space or the
+    % animation jitters as the plumes grow.
+    \useasboundingbox (-2.15,-2.78) rectangle (11.05,3.34);
+
+    \pgfmathsetmacro{\tt}{min(1,max(0,#1))}
+    \pgfmathsetmacro{\vflow}{10.20}          % same current in every river
+    \pgfmathsetmacro{\ftop}{min(11.60,8.40+\vflow*\tt)}
+    \pgfmathsetmacro{\fmid}{min(11.60,0.80+\vflow*\tt)}
+    \pgfmathsetmacro{\fbot}{min(11.60,1.40+\vflow*\tt)}
+    % uniform row: concentration accumulates with distance, so the tint at
+    % the plume tip deepens as the ramp fills out.
+    \pgfmathsetmacro{\pct}{100*min(1,(\fmid-0.80)/9.90)}
+    \colorlet{tipcol}{inkcol!\pct!rivercol}
+    % the verdict labels fade in only once the plumes have run their course
+    \pgfmathsetmacro{\labop}{max(0,min(1,(\tt-0.72)*4))}
+
+    % ---- row 1: poured at the mouth -------------------------------------
+    % banks are gentle sine curves so the bands read as water, not as bars.
+    \pgfmathsetmacro{\btop}{min(9.20,\ftop)}
+    \pgfmathsetmacro{\ctop}{max(\btop,\ftop-0.80)}
+    \begin{scope}
+      \clip plot[domain=0:10.70,samples=140,smooth]
+              (\x,{2.34+0.05*sin(\x*105)})
+            -- plot[domain=10.70:0,samples=140,smooth]
+              (\x,{1.62+0.05*sin(\x*95+50)}) -- cycle;
+      \fill[rivercol] (0,1.45) rectangle (10.70,2.50);
+      \shade[left color=rivercol,right color=inkcol]
+        (8.40,1.45) rectangle (\btop,2.50);
+      \fill[inkcol] (\btop,1.45) rectangle (\ctop,2.50);
+      \shade[left color=inkcol,right color=rivercol]
+        (\ctop,1.45) rectangle (\ftop,2.50);
+    \end{scope}
+    \draw[bankcol,line width=0.6pt] plot[domain=0:10.70,samples=140,smooth]
+      (\x,{2.34+0.05*sin(\x*105)});
+    \draw[bankcol,line width=0.6pt] plot[domain=0:10.70,samples=140,smooth]
+      (\x,{1.62+0.05*sin(\x*95+50)});
+    \node[font=\scriptsize\bfseries,text=paper,text opacity=\labop]
+      at (9.85,1.98) {last 20\%};
+
+    % ---- row 2: poured evenly (the constant schedule) -------------------
+    \pgfmathsetmacro{\emid}{min(11.20,\fmid+0.50)}
+    \begin{scope}
+      \clip plot[domain=0:10.70,samples=140,smooth]
+              (\x,{0.62+0.05*sin(\x*98+20)})
+            -- plot[domain=10.70:0,samples=140,smooth]
+              (\x,{-0.10+0.05*sin(\x*112+65)}) -- cycle;
+      \fill[rivercol] (0,-0.27) rectangle (10.70,0.78);
+      % ink keeps being added along the way, so the tint ramps up downstream
+      \shade[left color=rivercol,right color=tipcol]
+        (0.80,-0.27) rectangle (\fmid,0.78);
+      \shade[left color=tipcol,right color=rivercol]
+        (\fmid,-0.27) rectangle (\emid,0.78);
+    \end{scope}
+    \draw[bankcol,line width=0.6pt] plot[domain=0:10.70,samples=140,smooth]
+      (\x,{0.62+0.05*sin(\x*98+20)});
+    \draw[bankcol,line width=0.6pt] plot[domain=0:10.70,samples=140,smooth]
+      (\x,{-0.10+0.05*sin(\x*112+65)});
+    \node[font=\scriptsize\bfseries,text=paper,text opacity=\labop]
+      at (8.90,0.26) {all of it, but thin};
+
+    % ---- row 3: poured upstream -----------------------------------------
+    \pgfmathsetmacro{\bbot}{min(2.20,\fbot)}
+    \pgfmathsetmacro{\cbot}{max(\bbot,\fbot-0.80)}
+    \begin{scope}
+      \clip plot[domain=0:10.70,samples=140,smooth]
+              (\x,{-1.10+0.05*sin(\x*103+35)})
+            -- plot[domain=10.70:0,samples=140,smooth]
+              (\x,{-1.82+0.05*sin(\x*108+70)}) -- cycle;
+      \fill[rivercol] (0,-1.99) rectangle (10.70,-0.94);
+      \shade[left color=rivercol,right color=inkcol]
+        (1.40,-1.99) rectangle (\bbot,-0.94);
+      \fill[inkcol] (\bbot,-1.99) rectangle (\cbot,-0.94);
+      \shade[left color=inkcol,right color=rivercol]
+        (\cbot,-1.99) rectangle (\fbot,-0.94);
+    \end{scope}
+    \draw[bankcol,line width=0.6pt] plot[domain=0:10.70,samples=140,smooth]
+      (\x,{-1.10+0.05*sin(\x*103+35)});
+    \draw[bankcol,line width=0.6pt] plot[domain=0:10.70,samples=140,smooth]
+      (\x,{-1.82+0.05*sin(\x*108+70)});
+    \node[font=\scriptsize\bfseries,text=paper,text opacity=\labop]
+      at (6.30,-1.46) {90\% of it, fully dark};
+
+    % ---- the same litre, released three different ways ------------------
+    \foreach \dx/\dy in {8.40/2.96, 1.40/-0.48} {
+      \begin{scope}[shift={(\dx,\dy)}]
+        \fill[inkcol] (0,0.27) .. controls (0.21,0.03) and (0.20,-0.12) ..
+                      (0,-0.20) .. controls (-0.20,-0.12) and (-0.21,0.03) ..
+                      cycle;
+        \node[font=\tiny\bfseries,text=inkcol,anchor=west] at (0.30,0.02)
+          {1\,L};
+        \draw[inkcol,line width=0.9pt,-{Latex[length=1.7mm]}]
+          (0,-0.32) -- (0,-0.56);
+      \end{scope}
+    }
+    % the same litre, split into eight and sprinkled the whole way down
+    \foreach \dx in {0.80,2.20,3.60,5.00,6.40,7.80,9.20,10.40} {
+      \begin{scope}[shift={(\dx,1.24)},scale=0.60]
+        \fill[inkcol] (0,0.27) .. controls (0.21,0.03) and (0.20,-0.12) ..
+                      (0,-0.20) .. controls (-0.20,-0.12) and (-0.21,0.03) ..
+                      cycle;
+        \draw[inkcol,line width=0.9pt,-{Latex[length=1.7mm]}]
+          (0,-0.34) -- (0,-0.72);
+      \end{scope}
+    }
+
+    % ---- row labels ------------------------------------------------------
+    \node[font=\scriptsize\bfseries,text=muted,anchor=east,align=right]
+      at (-0.22,1.98) {poured at\\the mouth};
+    \node[font=\scriptsize\bfseries,text=gilt,anchor=east,align=right]
+      at (-0.22,0.26) {poured evenly\\(constant)};
+    \node[font=\scriptsize\bfseries,text=forest,anchor=east,align=right]
+      at (-0.22,-1.46) {poured\\upstream};
+
+    % ---- flow axis -------------------------------------------------------
+    \draw[muted,line width=0.7pt,-{Latex[length=2.0mm]}]
+      (0,-2.24) -- (10.70,-2.24);
+    \node[font=\scriptsize,text=muted,anchor=north west] at (0,-2.34)
+      {input};
+    \node[font=\scriptsize,text=muted,anchor=north east] at (10.70,-2.34)
+      {output};
+    \node[font=\scriptsize,text=muted,anchor=north] at (5.35,-2.34)
+      {downstream: deeper layers \(\ell\)};
+  \end{tikzpicture}%
+}
+
+\begin{frame}{Intuition: where would you pour the ink?}
+  \begingroup
+  \small
+  \begin{center}
+    Same litre of ink, same river, three ways to pour it in.
+  \end{center}
+
+  \vspace{0.05em}
+  \begin{center}
+  \makebox[\textwidth][c]{%
+  \ifanim
+    % 30 frames at 15 fps = 2 s; t saturates at frame 24 so the finished
+    % picture is held for the last third of the loop.
+    \begin{animateinline}[autoplay,loop,poster=last]{15}
+      \multiframe{30}{i=0+1}{\riverscene{\i/24}}
+    \end{animateinline}%
+  \else
+    \only<1>{\riverscene{0.06}}%
+    \only<2>{\riverscene{0.34}}%
+    \only<3->{\riverscene{1}}%
+  \fi
+  }
+  \end{center}
+
+  \vspace{0.05em}
+  \begin{center}
+    {\color{forest}\bfseries Dropout is the ink, depth is the river.}
+    Constant dropout is the middle one --- front-loading is the bottom one.
+  \end{center}
+  \endgroup
+  \note{40 s. Pure intuition slide, no equations. The budget constraint is
+  the litre: you do not get to add ink, only to choose where it goes.
+  Everything downstream of the release point carries the perturbation, so
+  early placement buys the most reach per unit of dropout, and spreading it
+  evenly wastes half the river on a tint too thin to matter. The next slide
+  is this argument done properly, as a variational problem.}
+\end{frame}
+
+% =========================================================================
+% 11. Optimal schedule  (~75 s)
+% =========================================================================
+\begin{frame}{Optimal schedule: saturated blocks, placed early}
+  \begingroup
+  \small
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.52\textwidth}
+      Depth acts like an RG scale, so the couplings \emph{run}: the dropout
+      field becomes a function of depth, \(h\to h_\ell\).
+
+      \vspace{0.45em}
+      Treat the schedule as a functional and maximize the correlation
+      length at fixed budget:
+      \vspace{-0.10em}
+      \[
+        \max_{\{h_\ell\}}\ \xi_{\mathrm{eff}}[h]
+        \quad\text{s.t.}\quad
+        \frac1L\sum_\ell h_\ell=\bar h,\ \ 0\le h_\ell\le h_{\max}.
+      \]
+
+      \vspace{-0.10em}
+      \onslide<2->{%
+      At the edge \(\xi_{\mathrm{eff}}^{-1}[h]\propto
+      \frac1L\sum_\ell h_\ell^{\,a}\) with \(a<1\), so maximizing
+      \(\xi_{\mathrm{eff}}\) means minimizing a \textbf{concave} sum at
+      fixed mean. The optimum sits at the corners:
+      \(h_\ell\in\{0,h_{\max}\}\).}
+
+      \vspace{0.40em}
+      \onslide<3->{%
+      \begin{tikzpicture}
+        \node[draw=forest,fill=forest!8,rounded corners=5pt,
+              inner xsep=0.26cm,inner ysep=0.14cm,text=ink,
+              text width=0.91\linewidth,font=\footnotesize]
+          {\textbf{Propagation fixes the shape.} It is order-invariant, so
+           it cannot say \emph{where} the block goes.\\[0.25em]
+           \textbf{Reach fixes the position.} An early mask perturbs a
+           longer downstream suffix.};
+      \end{tikzpicture}}
+    \end{column}
+
+    \begin{column}{0.44\textwidth}
+      \centering
+      \includegraphics[width=0.86\linewidth]%
+        {assets/results/frontloaded_schedule_comparison.pdf}
+
+      \vspace{0.10em}
+      {\footnotesize\color{muted}Three profiles, identical
+      \(\sum_\ell h_\ell\).}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.05em}
+  \onslide<3->{\scope{Reach is a separate argument, and the weaker of the two.}}
+  \endgroup
+  \note{75 s. Be explicit that this is a two-part argument -- do not paper
+  over the seam. If pushed on reach, concede it is the softer half.}
+\end{frame}
+
+% =========================================================================
+% 12. Experiments  (~75 s)
+% =========================================================================
+\begin{frame}{The predicted schedule wins, and wins sooner}
+  \begingroup
+  \small
+  \begin{columns}[c,onlytextwidth]
+    \begin{column}{0.54\textwidth}
+      \centering
+      {\color{forest}\bfseries Best test accuracy across schedules}\\[0.05em]
+      {\footnotesize CIFAR-10, \(\relu\) MLP, width 256}\\[0.15em]
+      \includegraphics[width=0.94\linewidth]%
+        {assets/results/h_sweep_schedule_styled.pdf}
+
+      \vspace{0.10em}
+      {\footnotesize\color{muted}Mean \(\pm\) s.e.\ over \mlpruns\ runs.}
+    \end{column}
+
+    \begin{column}{0.42\textwidth}
+      \centering
+      {\color{forest}\bfseries Final-epoch test \emph{loss}}\\[0.05em]
+      {\fontsize{19}{22}\selectfont\color{clay}\bfseries 18--35\% lower}\\
+      {\footnotesize MLP settings}
+
+      \vspace{0.22em}
+      {\color{gold}\rule{4.2cm}{1.0pt}}
+
+      \vspace{0.22em}
+      {\fontsize{19}{22}\selectfont\color{clay}\bfseries 4--6\% lower}\\
+      {\footnotesize Vision Transformers}
+
+      \vspace{0.22em}
+      {\color{gold}\rule{4.2cm}{1.0pt}}
+
+      \vspace{0.22em}
+      {\color{forest}\bfseries Epochs to match constant dropout}\\[0.05em]
+      {\fontsize{19}{22}\selectfont\color{clay}\bfseries
+       \epochsfast\ vs \epochsbase}\\
+      {\footnotesize \(\approx\)60\% fewer, at equal per-epoch cost}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.25em}
+  \scope{Left panel is accuracy; the percentages are cross-entropy.
+  ``Fewer epochs'' is epoch-proportional compute at identical architecture
+  and batch size, not wall-clock or per-step FLOPs.}
+  \endgroup
+  \note{75 s. Say ``fewer epochs'', never ``less compute'' -- the honest
+  claim is just as good. Loss vs accuracy distinction out loud.
+  Confirm \mlpruns\ runs against the archived config before presenting.}
+\end{frame}
+
+% =========================================================================
+% 13. Close  (~30 s)
+% =========================================================================
+\begin{frame}[plain]
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[paper] (current page.south west) rectangle (current page.north east);
+    \node[anchor=north west] at ($(current page.north west)+(0.75,-0.38)$)
+      {\includegraphics[height=0.82cm]{\iaifilogo}};
+    \node[anchor=north east] at ($(current page.north east)+(-0.30,-0.18)$)
+      {\includegraphics[height=1.74cm]{\cmulogo}};
+  \end{tikzpicture}
+
+  \vspace{1.15cm}
+  \begin{center}
+    \resizebox{0.70\paperwidth}{!}{%
+      \color{forest}\bfseries From microscopic masks to a macroscopic design rule}
+
+    \vspace{0.52cm}
+    {\Large Dropout hurts propagation.}\\[0.25em]
+    {\color{gold}\Large\(\Downarrow\)}\\[0.20em]
+    {\Large Maximize the correlation length.}\\[0.25em]
+    {\color{gold}\Large\(\Downarrow\)}\\[0.20em]
+    {\Large\color{forest}\bfseries Front-load dropout.}
+
+    \vspace{0.45cm}
+    {\color{gold}\rule{6.5cm}{1.0pt}}
+
+    \vspace{0.35cm}
+    {\small\color{muted}Outlook: treat other depth-dependent
+    hyperparameters as dynamical fields.}
+
+    \vspace{0.32cm}
+    {\large\color{forest}\bfseries Questions?}\\[0.15em]
+    {\footnotesize\color{muted}arXiv:2605.21648 \(\cdot\)
+     Carnegie Mellon University}
+  \end{center}
+\end{frame}
+
+% #########################################################################
+% BACKUP
+% #########################################################################
+
+% ---- B-2: mean-field propagator flow (moved off the main path) ---------
+\begin{frame}{Backup: wide networks collapse to one map in depth}
+  \begingroup
+  \small
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.49\textwidth}
+      At \(N\to\infty\) the layer-\(\ell\) theory is \emph{free}: the action
+      is quadratic, so the propagator \(q^\ell_{ab}\) is its only datum.
+      \vspace{-0.10em}
+      \[
+        p(z^\ell)\propto e^{-S_\ell[z]},\quad
+        S_\ell=\tfrac12\textstyle\sum_{i,a,b}\big(q_\ell^{-1}\big)_{ab}
+          z_{i;a}z_{i;b}
+      \]
+
+      \vspace{-0.25em}
+      Integrating out a layer makes it \emph{flow}:
+      \vspace{-0.15em}
+      \[
+        q^{\ell+1}_{ab}=\sigma_w^2\big\langle\phi(z_a)\phi(z_b)
+          \big\rangle_{q_\ell}+\sigma_b^2 .
+      \]
+
+      \vspace{-0.20em}
+      Once \(q^\ell_{aa}\to q^*\), only \(c_\ell=q^\ell_{ab}/q^*\) survives:
+      \vspace{-0.15em}
+      \[
+        \begin{gathered}
+          \boxed{\;c_{\ell+1}=F(c_\ell)\;}\\[0.20em]
+          F(c)=\big[\sigma_w^2\big\langle\phi(u_a)\phi(u_b)\big\rangle_c
+            +\sigma_b^2\big]\big/q^*
+        \end{gathered}
+      \]
+
+      \vspace{-0.20em}
+      {\footnotesize\color{muted}\((u_a,u_b)\) Gaussian,
+      \(\E[u_au_b]=c\,q^*\).}
+    \end{column}
+
+    \begin{column}{0.48\textwidth}
+      \onslide<2->{%
+      \centering
+      \begin{tikzpicture}
+      \begin{axis}[
+        width=5.0cm, height=2.10cm, scale only axis,
+        xmin=0,xmax=40,ymin=0,ymax=1.14,
+        xtick={0,10,20,30,40},ytick={0,0.5,1},
+        tick label style={font=\scriptsize,color=muted},
+        axis line style={muted,line width=0.5pt},
+        label style={font=\scriptsize,color=ink},
+        xlabel={depth \(\ell\)}, ylabel={overlap \(c_\ell\)},
+        every axis plot/.append style={line width=1.0pt},
+        legend style={at={(0.97,0.05)},anchor=south east,font=\scriptsize,
+                      draw=none,fill=none,row sep=-1pt},
+        legend cell align=left,
+      ]
+        % "forget plot" keeps this reference line out of the legend; without
+        % it pgfplots shifts every entry down by one row.
+        \addplot[muted,dashed,line width=0.6pt,domain=0:40,samples=2,
+                 forget plot]{1};
+        \addplot[orderedblue,domain=0:40,samples=160]{1-0.8*pow(0.5,x)};
+          \addlegendentry{\(\lambda=0.5\)}
+        \addplot[gilt,domain=0:40,samples=160]{1-0.8*pow(0.85,x)};
+          \addlegendentry{\(\lambda=0.85\)}
+        \addplot[forest,domain=0:40,samples=160]{1-0.8*pow(0.98,x)};
+          \addlegendentry{\(\lambda=0.98\)}
+        \node[font=\scriptsize,text=muted,anchor=south east]
+          at (axis cs:40,1.01) {\(c^*=1\)};
+      \end{axis}
+      \end{tikzpicture}
+
+      \vspace{0.20em}
+      {\footnotesize\color{muted}Same fixed point \(c^*=F(c^*)\);
+      only the rate differs.}
+
+      \vspace{0.35em}
+      The slope \(\lambda=F'(c^*)\) sets an e-folding depth
+      \vspace{-0.20em}
+      \[
+        \xi_c=-1/\log|\lambda| \quad\text{layers.}
+      \]
+      \vspace{-1.05em}
+      {\footnotesize\color{muted}Here \(1.4,\ 6,\ 50\).}}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.10em}
+  \begin{center}
+    {\color{forest}\bfseries Millions of weights become a one-dimensional
+    dynamical system in depth.}
+  \end{center}
+
+  \vspace{0.05em}
+  \scope{The quadratic action is exact only at \(N=\infty\); finite width
+  generates interactions at \(\mathcal O(1/N)\). Without dropout
+  \(\lambda=F'(1)\equiv\chi\).}
+  \endgroup
+  \note{75 s. The cobweb replaces the Schoenholz heatmap: same message,
+  parsed instantly. Full Gaussian recursions are in backup.}
+\end{frame}
+
+% ---- B-1: double descent (moved off the main path) ---------------------
+\begin{frame}{Backup: regularization lost its textbook justification}
+  \begingroup
+  \small
+  \begin{center}
+  \begin{tikzpicture}
+  \begin{axis}[
+    width=8.6cm, height=3.45cm, scale only axis,
+    xmin=0, xmax=10.6, ymin=0, ymax=1.42,
+    xtick=\empty, ytick=\empty,
+    axis lines=left,
+    axis line style={-{Latex[length=2.0mm]},muted,line width=0.8pt},
+    xlabel={increasing model capacity},
+    ylabel={error},
+    label style={font=\footnotesize,color=ink},
+    every axis x label/.style={at={(axis description cs:0.78,-0.06)},
+                               anchor=north},
+    every axis y label/.style={at={(axis description cs:-0.03,0.55)},
+                               anchor=south,rotate=90},
+    clip=false,
+  ]
+    % --- regime shading, colours matched to the two column headers below ---
+    \fill[gilt!20!paper] (axis cs:0,0) rectangle (axis cs:5,1.42);
+    \only<2->{\fill[forest!16!paper]
+      (axis cs:5,0) rectangle (axis cs:10.6,1.42);}
+
+    % --- test error ---
+    \addplot[ink,line width=1.15pt,domain=0:5,samples=140]
+      {0.62*exp(-1.3*x)+0.20+0.9*(x/5)^4};
+    \only<2->{\addplot[ink,line width=1.15pt,domain=5:10.6,samples=140]
+      {0.15+0.95*exp(-1.1*(x-5))};}
+
+    % --- train error ---
+    \addplot[muted,dashed,line width=1.0pt,domain=0:5,samples=120]
+      {0.55*exp(-0.9*x)};
+    \only<2->{\addplot[muted,dashed,line width=1.0pt,domain=5:10.6,
+      samples=120]{0.55*exp(-0.9*x)};}
+
+    % --- interpolation threshold ---
+    \draw[muted,dashed,line width=0.7pt]
+      (axis cs:5,0) -- (axis cs:5,1.14);
+    \node[font=\scriptsize,text=muted,rotate=90,anchor=south]
+      at (axis cs:4.90,0.30) {interpolation threshold};
+
+    % --- curve labels ---
+    \node[font=\scriptsize,text=ink,rotate=-40,anchor=south west]
+      at (axis cs:0.55,0.60) {test error};
+    \node[font=\scriptsize,text=muted,rotate=-32]
+      at (axis cs:1.05,0.17) {train error};
+
+    % --- regime captions ---
+    \node[font=\scriptsize,text=gilt,align=center]
+      at (axis cs:2.45,1.28) {classical regime\\(underparametrized)};
+    \only<2->{\node[font=\scriptsize,text=forest,align=center]
+      at (axis cs:7.9,1.28) {modern interpolating regime\\(overparametrized)};}
+  \end{axis}
+  \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.25em}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.47\textwidth}
+      {\color{gilt}\bfseries Classical regime}
+
+      \vspace{0.10em}
+      More capacity overfits, so a regularizer earns its keep by
+      \emph{removing} capacity.
+    \end{column}
+
+    \begin{column}{0.49\textwidth}
+      \onslide<2->{%
+      {\color{forest}\bfseries Modern interpolating regime}
+
+      \vspace{0.10em}
+      Past the threshold more capacity \emph{helps}. Our networks live
+      here, where that story fails.}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.25em}
+  \onslide<2->{%
+  \begin{center}
+    \begin{tikzpicture}
+      \node[draw=forest,fill=forest!8,rounded corners=5pt,
+            inner xsep=0.40cm,inner ysep=0.16cm,text=ink]
+        {So what \emph{is} dropout doing, how much of it, and
+         \textbf{where in depth}?};
+    \end{tikzpicture}
+  \end{center}}
+  \endgroup
+  \note{50 s. Opening move: the textbook reason for regularizing does not
+  apply to the models we train. That is the gap the rest of the talk fills
+  with criticality rather than capacity. Curve redrawn after
+  Belkin et al., PNAS 116, 15849 (2019).}
+\end{frame}
+
+% ---- B0: scaling collapse (moved off the main path) --------------------
+\begin{frame}{Backup: two parameters collapse onto one scaling variable}
+  \begingroup
+  \centering
+  \vspace{-0.30em}
+  \includegraphics[width=0.74\textwidth]%
+    {../figures/theory/smooth_scaling_collapse.pdf}
+
+  \vspace{0.20em}
+  {\small
+   smooth \(m=h^{1/2}\mathcal M_s\!\left(t/h^{1/2}\right)\)
+   \qquad\(\cdot\)\qquad
+   kinked \(m=h^{2/3}\mathcal M_k\!\left(t/h^{1/3}\right)\)}
+
+  \vspace{0.20em}
+  {\small Solid line is the parameter-free normal form
+   \(\tilde m=\sqrt{1+\tilde t^{\,2}}-\tilde t\), not a fit.}
+
+  \vspace{0.15em}
+  \scope{Collapse holds in the scaling region; the spread at
+  \(\tilde t\lesssim-0.5\) is corrections to scaling at the largest \(h\).}
+  \endgroup
+\end{frame}
+
+% ---- B1: does this survive training? (most likely question) -------------
+\begin{frame}{Backup: the theory is at initialization; the results are trained}
+  \begingroup
+  \small
+  {\color{clay}\bfseries The gap, stated plainly.}
+  \(\xi_{\mathrm{eff}}\) is a property of the \emph{forward map at
+  initialization}. The experiments measure test accuracy after full
+  training. Nothing here derives the second from the first.
+
+  \vspace{0.55em}
+  {\color{forest}\bfseries What is actually claimed}
+  \begin{itemize}
+    \setlength{\itemsep}{0.30em}
+    \item The schedule shape is chosen \emph{a priori} from the
+      initialization theory, with no tuning on the test set.
+    \item That prediction, made in advance, is the one that wins.
+    \item So the initialization functional is a useful \emph{design
+      heuristic} for a schedule, not a theorem about the trained network.
+  \end{itemize}
+
+  \vspace{0.55em}
+  {\color{forest}\bfseries Why it is not vacuous.} The ordering of
+  schedules is predicted before any training run, and the predicted
+  ordering is reproduced across MLPs and ViTs, two architectures with
+  different \(F\).
+
+  \vspace{0.45em}
+  \scope{Honest answer if pressed: connecting init-time \(\xi_c\) to
+  end-of-training generalization is open, and is the main thing I would
+  want to do next.}
+  \endgroup
+\end{frame}
+
+% ---- B2: isn't this just mean field? -----------------------------------
+\begin{frame}{Backup: ``isn't this all just mean field?''}
+  \begingroup
+  \small
+  {\color{forest}\bfseries Yes, and that is not the interesting axis.}
+
+  \vspace{0.40em}
+  \begin{itemize}
+    \setlength{\itemsep}{0.35em}
+    \item \(N\to\infty\) is exactly a mean-field limit. There are no
+      fluctuation corrections at leading order.
+    \item There is \textbf{no spatial dimension} here. Depth is an
+      iteration index, not a coordinate, so there is no \(d\), no upper
+      critical dimension, and no \(\epsilon\)-expansion.
+    \item The universality is therefore not over dimension. It is over
+      the \textbf{analyticity class of \(\phi\)} at the fixed point.
+  \end{itemize}
+
+  \vspace{0.55em}
+  {\color{forest}\bfseries Why the exponents still differ from Landau.}
+  A kink in \(\phi\) puts a branch point in \(\bar F_\rho\) at \(c=1\).
+  The effective potential picks up \(m^{5/2}\) rather than \(m^{3}\), and
+  the exponents follow from that non-analyticity. Same mean-field
+  machinery, different local expansion.
+
+  \vspace{0.45em}
+  \scope{So ``mean field'' describes the method; it does not determine
+  the class.}
+  \endgroup
+\end{frame}
+
+% ---- B3: finite width --------------------------------------------------
+\begin{frame}{Backup: finite width}
+  \begingroup
+  \small
+  \begin{itemize}
+    \setlength{\itemsep}{0.40em}
+    \item Finite \(N\) makes \(c_\ell\) a random variable with
+      \(\mathcal O(1/N)\) variance about the deterministic recursion.
+    \item Near the edge, \(\lambda\to1\), so fluctuations accumulate over
+      depth rather than damping. The width needed for the mean-field
+      description to hold grows with \(L\).
+    \item Experiments run at width 256 with \(L\) of order tens, where the
+      recursion tracks the empirical overlap well.
+    \item The scheduling conclusion depends only on \emph{concavity} of
+      \(h\mapsto h^a\), which is robust to the fluctuation correction
+      shifting \(a\) slightly.
+  \end{itemize}
+
+  \vspace{0.55em}
+  \scope{The 1/N corrections are not computed in this work. Roberts,
+  Yaida \& Hanin (2022) develop the systematic expansion.}
+  \endgroup
+\end{frame}
+
+% ---- B4: why do ViTs transfer? -----------------------------------------
+\begin{frame}{Backup: why the ViT numbers transfer}
+  \begingroup
+  \small
+  {\color{clay}\bfseries The fair objection.} Attention, LayerNorm and
+  residual connections all change \(F\). The MLP derivation does not
+  literally apply.
+
+  \vspace{0.50em}
+  {\color{forest}\bfseries What survives the change of \(F\)}
+  \begin{itemize}
+    \setlength{\itemsep}{0.30em}
+    \item The argument needs only two things: dropout acts as a
+      decorrelating field \(h>0\), and \(\xi_{\mathrm{eff}}^{-1}\) is
+      \emph{concave} in \(h\).
+    \item Neither depends on the specific form of \(F\), only on the
+      existence of a fixed point at \(c=1\) that dropout displaces.
+    \item So the prediction is qualitative for ViTs: front-load, whatever
+      the exponent \(a\) turns out to be.
+  \end{itemize}
+
+  \vspace{0.50em}
+  {\color{forest}\bfseries Observed.} 4--6\% final-epoch loss reduction,
+  same ordering of schedules. Component ablations put dropout on the
+  attention block, the MLP block, and both; the early-step schedule wins
+  in every case.
+
+  \vspace{0.40em}
+  \scope{The ViT exponent is not measured. Only the sign of the effect is
+  predicted.}
+  \endgroup
+\end{frame}
+
+% ---- B5: full mean-field recursions ------------------------------------
+\begin{frame}{Backup: the full second-moment recursions}
+  \begingroup
+  \small
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.62\textwidth}
+      \begin{align*}
+        z_{i;a}^{\ell+1}
+          &=\sum_{j=1}^{N}W_{ij}^{\ell+1}\phi(z_{j;a}^{\ell})+b_i^{\ell+1},\\
+        W_{ij}^{\ell}&\sim\mathcal N(0,\sigma_w^2/N),\quad
+        b_i^{\ell}\sim\mathcal N(0,\sigma_b^2).
+      \end{align*}
+      \begin{align*}
+        q_{aa}^{\ell+1}
+          &=\sigma_w^2\!\int\! Dz\,\phi^2\!\left(\sqrt{q_{aa}^{\ell}}z\right)
+            +\sigma_b^2,\\
+        q_{ab}^{\ell+1}
+          &=\sigma_w^2\,\E_{(u_a,u_b)}[\phi(u_a)\phi(u_b)]+\sigma_b^2,\\
+        c_{ab}^{\ell}
+          &=q_{ab}^{\ell}\big/\sqrt{q_{aa}^{\ell}q_{bb}^{\ell}}.
+      \end{align*}
+    \end{column}
+    \begin{column}{0.34\textwidth}
+      {\color{forest}\bfseries Assumptions}
+      \begin{itemize}
+        \setlength{\itemsep}{0.30em}
+        \item \(N\to\infty\)
+        \item i.i.d.\ Gaussian init
+        \item fixed activation \(\phi\)
+        \item exchangeable neurons
+      \end{itemize}
+
+      \vspace{0.50em}
+      {\footnotesize \((u_a,u_b)\) jointly Gaussian with covariance fixed
+      by \(q_{aa}^\ell,q_{bb}^\ell,q_{ab}^\ell\); \(Dz\) is the standard
+      Gaussian measure.}
+
+      \vspace{0.40em}
+      {\footnotesize At equal variance,
+      \(\E\|\mathbf z_a-\mathbf z_b\|^2/N=2q^*(1-c)\).}
+    \end{column}
+  \end{columns}
+  \endgroup
+\end{frame}
+
+% ---- B6: RG coefficient table (from old slide 10) ----------------------
+\begin{frame}{Backup: depth as an RG scale}
+  \begingroup
+  \small
+  \begin{center}
+    {\bfseries network depth \(\ell\uparrow\)
+      \(\longleftrightarrow\) QFT scale \(\mu\downarrow\)
+      toward the infrared}
+  \end{center}
+
+  \vspace{0.35em}
+  Coarse-graining representations makes the effective coefficients run
+  with depth:
+
+  \vspace{0.25em}
+  \begin{center}
+    \footnotesize
+    \setlength{\tabcolsep}{6pt}
+    \renewcommand{\arraystretch}{1.20}
+    \begin{tabular}{@{}lll@{}}
+      \toprule
+      \textbf{coefficient} & \textbf{network definition} &
+      \textbf{effective-theory role} \\
+      \midrule
+      \(t_\ell\) & \(\chi_{\rho_\ell}-1\) & mass-like detuning \\
+      \(h_\ell\) & \(1-\bar F_{\rho_\ell}(1)\) & relevant decorrelation source \\
+      \(g_\ell\) & \(\bar F_{\rho_\ell}''(1)\) & smooth analytic interaction \\
+      \(\kappa_\ell\) & branch-point amplitude & kinked non-analytic interaction \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.40em}
+  Both equations of state follow from a reduced (zero-momentum) 1PI action
+  \[
+    \Gamma_{\mathrm{eff}}=-\tfrac{t}{2}m^2+\mathcal V(m)-hm,
+    \qquad
+    \mathcal V_s=\tfrac{g_\rho}{6}m^3,
+    \qquad
+    \mathcal V_k=\tfrac{2\kappa}{5}m^{5/2}.
+  \]
+
+  \vspace{0.30em}
+  \scope{RG-scale analogy. Generic MLPs are not thereby proven conformal,
+  and \(\Gamma_{\mathrm{eff}}\) is not the training loss or a neural
+  partition function. Roberts, Yaida \& Hanin (2022), Ch.~4.}
+  \endgroup
+\end{frame}
+
+% ---- B7: kinked collapse -----------------------------------------------
+\begin{frame}{Backup: the kinked (\(\relu\)) collapse}
+  \begingroup
+  \centering
+  \includegraphics[width=0.82\textwidth]%
+    {../figures/theory/kinked_scaling_collapse.pdf}
+
+  \vspace{0.30em}
+  \small
+  \(m_k(t,h)=h^{2/3}\,\mathcal M_k(t/h^{1/3})\), with
+  \(\mathcal V_k=\tfrac{2\kappa}{5}m^{5/2}\) from the branch point at
+  \(c=1\).
+
+  \vspace{0.25em}
+  \scope{Ordinary bias-free \(\relu\) follows the constrained path
+  \(t=-h\) and retains \(\xi\sim h^{-1/3}\).}
+  \endgroup
+\end{frame}
+
+% ---- B8: full exponent dictionary --------------------------------------
+\begin{frame}{Backup: the complete critical-exponent dictionary}
+  \begin{center}
+    \small
+    \setlength{\tabcolsep}{3.5pt}
+    \renewcommand{\arraystretch}{1.10}
+    \begin{tabular}{@{}lccccccc@{}}
+      \toprule
+      Universality class & \(\nu_t\) & \(\beta\) & \(\theta_{\rm rel}\) &
+      \(\gamma\) & \(\delta\) & \(\nu_\rho\) & \(\alpha\) \\
+      \midrule
+      Smooth activation & \(1\) & \(1\) & \(1\) & \(1\) & \(2\) & \(\tfrac12\) & \(-1\) \\
+      Kinked activation & \(1\) & \(2\) & \(2\) & \(1\) & \(\tfrac32\) & \(\tfrac13\) & \(-3\) \\
+      Spin glass (SK MF) & \(\tfrac12\) & \(1\) & \(2\) & \(1\) & \(2\) & \(\tfrac14\) & \(-1\) \\
+      Ising-like (Landau MF) & \(\tfrac12\) & \(\tfrac12\) & \(1\) & \(1\) & \(3\) & \(\tfrac13\) & \(0\) \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+
+  \vspace{0.30em}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \small
+      \setlength{\jot}{1.5pt}
+      \begin{align*}
+        m&\sim |t|^\beta &&(h=0),\\
+        m&\sim |h|^{1/\delta} &&(t=0),\\
+        \chi_M&\sim |t|^{-\gamma},\\
+        C&\sim |t|^{-\alpha}.
+      \end{align*}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \small
+      \setlength{\jot}{1.5pt}
+      \begin{align*}
+        \xi&\sim |t|^{-\nu_t} &&(h=0),\\
+        \xi&\sim |h|^{-\nu_\rho} &&(t=0),\\
+        m_\ell&\sim \ell^{-\theta_{\rm rel}} &&(t=h=0).
+      \end{align*}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.20em}
+  \scope{The kinked \(\nu_\rho\) is a normal-form field exponent.}
+\end{frame}
+
+% ---- B9: prior work ----------------------------------------------------
+\begin{frame}{Backup: relation to prior scheduled-dropout work}
+  \begingroup
+  \small
+  \begin{itemize}
+    \setlength{\itemsep}{0.40em}
+    \item \textbf{Stochastic depth} (Huang et al., 2016) drops whole
+      residual blocks with a probability that increases with depth. A
+      mechanism, not a derived profile.
+    \item \textbf{Curriculum dropout} (Morerio et al., 2017) anneals
+      dropout over \emph{training time}. Orthogonal axis: ours is a
+      profile over \emph{layers}.
+    \item \textbf{LayerDrop} (Fan et al., 2019) removes transformer layers
+      for inference efficiency.
+    \item \textbf{Hayou et al.\ (2019)} observed that smooth and
+      \(\relu\)-like activations behave differently at the edge of chaos.
+  \end{itemize}
+
+  \vspace{0.55em}
+  {\color{forest}\bfseries What is new here.} The exponents are extracted
+  and the two universality classes identified, and the schedule shape is
+  \emph{derived} from concavity of the correlation-depth functional rather
+  than proposed and then tuned.
+  \endgroup
+\end{frame}
+
+\end{document}

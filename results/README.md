@@ -1,73 +1,81 @@
 # Saved results
 
-The original archives below contain the numerical results used in the
-camera-ready paper. The expanded paper adds paired endpoint data and
-confidence intervals for its two main comparison tables.
+These are the measurements behind the paper. The original CIFAR experiments
+include learning curves; the additional benchmark comparisons contain paired
+test measurements at the selected checkpoints and, where recorded, at the end
+of training.
 
-## Main comparison tables
+## Main comparisons
 
 | File | Contents |
 |---|---|
 | [Confidence intervals](confidence_intervals.md) | Both main tables, endpoint definitions, and statistical assumptions |
-| [Paired seed metrics](confidence_seed_metrics.json) | Uniform and selected-schedule endpoints, seed pairing, and source hashes |
-| [Calculated intervals, JSON](confidence_intervals.json) | Unrounded point estimates and confidence bounds |
-| [Calculated intervals, CSV](confidence_intervals.csv) | The same comparisons as a flat table |
+| [Paired seed measurements](confidence_seed_metrics.json) | Uniform and selected-schedule results, seed pairing, and source hashes |
+| [Intervals, JSON](confidence_intervals.json) | Unrounded estimates and confidence bounds |
+| [Intervals, CSV](confidence_intervals.csv) | The same comparisons in a flat table |
 
-Run the [analysis script](../scripts/confidence_intervals.py) to reproduce these
-results. The selected schedules remain fixed during the calculation. The
-additional benchmark data contain test metrics at validation-selected
-checkpoints, plus final-epoch metrics where recorded; they are not full training
-histories or a new independent confirmation study.
+The [analysis script](../scripts/confidence_intervals.py) computes the intervals
+with the recorded schedules held fixed. These comparisons reuse the existing
+runs, so the intervals describe seed variation on that split and do not account
+for the earlier choice of schedule or hyperparameters. The additional benchmark
+file contains checkpoint and final test measurements, without full learning
+curves or a new independent confirmation study.
 
-## Original experiment archives
+## CIFAR experiments
 
 | File | Comparison |
 |---|---|
 | [mlp_schedules.npz](mlp_schedules.npz) | CIFAR-10 MLP dropout schedules |
-| [mlp_budget_controls.npz](mlp_budget_controls.npz) | MLP budget controls and concentrated dropout |
+| [mlp_budget_controls.npz](mlp_budget_controls.npz) | Early concentration versus increasing uniform dropout |
 | [vit_schedules.json](vit_schedules.json) | CIFAR-100 ViT dropout schedules |
-| [vit_ablation.json](vit_ablation.json) | CIFAR-10 ViT component ablations |
-| [mlp_dropout_sweep.npz](mlp_dropout_sweep.npz) | CIFAR-10 ReLU MLP dropout strengths; 3 seeds, 125 epochs |
-| [mlp_width_sweep.npz](mlp_width_sweep.npz) | CIFAR-10 ReLU MLP widths; 10 seeds, 75 epochs |
-| [mlp_gelu.npz](mlp_gelu.npz) | CIFAR-10 GELU MLP dropout strengths; 10 seeds, 75 epochs |
+| [vit_ablation.json](vit_ablation.json) | CIFAR-10 ViT: attention, MLP branch, or both |
+| [mlp_dropout_sweep.npz](mlp_dropout_sweep.npz) | ReLU MLP dropout strengths; 3 seeds, 125 epochs |
+| [mlp_width_sweep.npz](mlp_width_sweep.npz) | ReLU MLP widths; 10 seeds, 75 epochs |
+| [mlp_gelu.npz](mlp_gelu.npz) | GELU MLP dropout strengths; 10 seeds, 75 epochs |
 
-The MLP archives retain the original arrays, theory values, and configuration;
-they were converted from pickle to NPZ without changing the numbers.
-Load them with `utils.results.load_npz_result`. The ViT files use JSON.
-Training and test accuracy are recorded as percentages.
+The MLP files preserve the original arrays, reference theory values, and
+configuration, converted from pickle to NPZ without changing the numbers.
+Use `utils.results.load_npz_result` to read them. The ViT files are JSON, and
+all training and test accuracies are percentages.
 
-The CIFAR-100 ViT archive contains ten 75-epoch runs per profile, but no run
-configuration. Its original notebook defaults were a one-seed, small-data pilot;
-the current defaults implement the paper's reported recipe. The historical
-dataset size and training settings cannot be verified from the metrics alone.
+The CIFAR-100 ViT archive has ten 75-epoch runs per profile but no configuration.
+The original notebook was set to a one-seed, small-data pilot, so its settings
+cannot establish how the saved curves were produced. The current notebook
+follows the paper's reported recipe; the historical dataset size and training
+settings remain unverified.
 
-The supplemental sweeps use `all_results`, `theory`, and `config` dictionaries.
-Keys in `all_results` and `theory` encode `(dropout_strength, schedule)` or
-`(width, schedule)` pairs as strings; the notebooks restore them with
-`ast.literal_eval`. The ReLU and GELU dropout sweeps share one no-dropout result
-across dropout strengths. The width sweep trains a separate baseline at each width.
-The ReLU dropout notebook defaults to the archived 3-seed, 125-epoch run.
+The sweeps contain `all_results`, `theory`, and `config` dictionaries. Keys in
+`all_results` and `theory` represent `(dropout_strength, schedule)` or
+`(width, schedule)` pairs, stored as strings and read with `ast.literal_eval`.
+ReLU and GELU dropout sweeps reuse one no-dropout run set across strengths;
+the width sweep trains a baseline at each width. The ReLU dropout notebook
+defaults to the saved three-seed, 125-epoch experiment.
 
-The original experiments record test loss at each epoch. Final-epoch comparisons
-and comparisons of the lowest recorded test loss answer different questions;
-the latter use the test set to choose the epoch. These files have no separate
-validation histories.
+These experiments record test loss every epoch, which lets us ask both how
+well the model finishes and how low its test loss ever gets. The second question
+uses the test set to choose an epoch; there are no separate validation histories
+in these files. That is why the paper distinguishes these results from the
+validation-selected comparisons above.
 
-Run `python scripts/plot_results.py` from the repository root to plot the saved
+Run `python scripts/plot_results.py` from the repository root for the learning
 curves. Notebook reruns write into `runs/`.
 
 ## Mean-field calculations
 
 | File | Contents |
 |---|---|
-| [mean_field.npz](mean_field.npz) | Raw curves and fit masks from the deterministic recursions |
-| [mean_field.json](mean_field.json) | Exponents, fit standard errors, fitting windows, and source hash |
+| [mean_field.npz](mean_field.npz) | Numerical curves and fit masks |
+| [mean_field.json](mean_field.json) | Exponents, fit errors, fitting windows, and source hash |
 | [scaling_collapse.npz](scaling_collapse.npz) | Smooth and kinked fixed points used in the collapse plots |
 | [scaling_collapse.json](scaling_collapse.json) | Array columns, source hash, and parameter conventions |
 | [hermite_coefficients.json](hermite_coefficients.json) | Exact ReLU coefficients and tanh quadrature values |
 
-Run `python scripts/plot_mean_field.py` to regenerate these files and the
-figures. The fit errors measure residual scatter in a log–log regression. They
-do not include errors from quadrature, finite iteration counts, or fitting away
-from the asymptotic limit. The independently tunable ReLU channel is a formal
-normal-form comparison, not a scan of finite-variance network initializations.
+Run `python scripts/plot_mean_field.py` to recompute these files and figures.
+Here the curves are deterministic, and a small regression error only means
+that the chosen points sit close to a power law. Quadrature error, finite
+iteration counts, and distance from the asymptotic limit can still shift the
+fitted exponent.
+
+The tunable ReLU channel probes the local normal form with independently varied
+parameters; those parameters need not describe a realizable finite-variance
+network initialization. The paper states this restriction alongside the fits.

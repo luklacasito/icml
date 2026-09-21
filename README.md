@@ -1,57 +1,56 @@
 # Dropout Universality
 
-**[Read the paper](paper.pdf)** · [LaTeX source](manuscript/) · [Confidence intervals](results/confidence_intervals.md)
+**[Read the paper](paper.pdf)** · [LaTeX source](manuscript/) · [Results and confidence intervals](results/confidence_intervals.md)
 
 *Dropout Universality: Scaling Laws and Optimal Scheduling at the Edge-of-Chaos*
 
 Lucas Fernandez Sarmiento · ICML 2026
 
-I study dropout as a perturbation of critical signal propagation, then use the
-mean-field picture to ask a concrete question: with a fixed dropout budget,
-where should we spend it across depth?
+Dropout perturbs a signal as it travels through a network, so where we apply it
+should matter. I study this through mean-field theory, treating dropout as a
+field that can vary across depth, and ask how a fixed budget should be
+allocated to preserve information while still regularizing the model.
 
-This is the revised September 21, 2026 version, with additional datasets,
-95% confidence intervals, and corrections to the numerical figures and theory's
-scope. The original
-[camera-ready paper is on arXiv](https://arxiv.org/pdf/2605.21648v2).
+An early mask affects many later layers, giving a concrete reason to try
+frontloaded schedules. The paper develops this intuition through a propagation
+approximation and a regularization-reach argument, then tests the schedules in
+MLPs and transformers. The gains depend on the task and on when we measure
+them: final loss, lowest recorded loss, and loss at a validation-selected
+checkpoint can tell quite different stories.
 
-The notebooks contain the original calculations and training code, including
-the dropout-budget, width, and smooth-activation sweeps. Saved results let you
-inspect the comparisons without rerunning them. The additional experiments
-are reported in the paper's appendix; paired seed metrics and a short analysis
-script reproduce both main confidence-interval tables.
+The PDF is the revised September 21, 2026 paper, with the additional experiments,
+confidence intervals, and corrections to the numerical figures and theoretical
+claims. The original [camera-ready version is on arXiv](https://arxiv.org/pdf/2605.21648v2).
 
-## Where to start
+## Finding things
 
-| Path | Contents |
+The [paper](paper.pdf) is at the top level. Its [source](manuscript/) is split by
+section, with the experimental details and learning curves in the appendices.
+[Saved results](results/) let you inspect the comparisons without training
+anything; [scripts](scripts/) reproduce the plots and confidence intervals,
+and [utils](utils/) holds the shared schedules, training loops, and loaders.
+
+## Calculations and experiments
+
+| Notebook | Question |
 |---|---|
-| [paper.pdf](paper.pdf) | Current paper, including the experimental appendix |
-| [manuscript](manuscript/) | LaTeX source, split by section, and paper figures |
-| [notebooks](notebooks/) | Seven calculations and training experiments |
-| [results](results/) | Saved measurements, fit inputs, and confidence intervals |
-| [scripts](scripts/) | Reproduce figures and summary tables without training |
-| [utils](utils/) | Shared dropout schedules, training, and result loading |
-| [tests](tests/) | Numerical and utility checks |
+| [Mean field](notebooks/mean_field.ipynb) | How does dropout change critical scaling for smooth and kinked activations? |
+| [MLP schedules](notebooks/mlp_schedules.ipynb) | Where should we put dropout across depth on CIFAR-10? |
+| [Dropout-budget sweep](notebooks/mlp_dropout_sweep.ipynb) | How does the comparison change as we increase dropout? |
+| [Width sweep](notebooks/mlp_width_sweep.ipynb) | What survives as the MLP width goes from 64 to 1024? |
+| [GELU sweep](notebooks/mlp_gelu.ipynb) | Does the scheduling idea carry over to a smooth activation? |
+| [ViT schedules](notebooks/vit_schedules.ipynb) | How do depth profiles compare in a CIFAR-100 transformer? |
+| [ViT ablations](notebooks/vit_ablation.ipynb) | Should dropout act on attention, the MLP branch, or both? |
 
-## Experiments
+The MLP budget controls compare early concentration with simply increasing
+uniform dropout; their [saved runs](results/mlp_budget_controls.npz) and
+[figure](manuscript/figures/experiments/mlp/dropout_budget_comparison.pdf) are
+included too. The additional datasets are in the paper's experimental appendix,
+with paired test measurements in [results](results/).
 
-| Notebook | What it does |
-|---|---|
-| [Mean field](notebooks/mean_field.ipynb) | Correlation recursions, critical exponents, and scaling collapse |
-| [MLP schedules](notebooks/mlp_schedules.ipynb) | Dropout placement across depth on CIFAR-10 |
-| [Dropout-budget sweep](notebooks/mlp_dropout_sweep.ipynb) | ReLU MLP schedules across mean dropout strengths |
-| [Width sweep](notebooks/mlp_width_sweep.ipynb) | ReLU MLP schedules from width 64 to 1024 |
-| [GELU sweep](notebooks/mlp_gelu.ipynb) | The same dropout-budget comparison with a smooth activation |
-| [ViT schedules](notebooks/vit_schedules.ipynb) | Residual-dropout schedules on CIFAR-100 |
-| [ViT ablations](notebooks/vit_ablation.ipynb) | Attention, MLP, and both-block dropout on CIFAR-10 |
+## Running the code
 
-The additional MLP budget-control comparison is preserved in
-[saved results](results/) and [its figure](manuscript/figures/experiments/mlp/dropout_budget_comparison.pdf).
-Shared schedules, training loops, and result loading live in [utils](utils/).
-
-## Run
-
-Use Python 3.11, from the repository root:
+Use Python 3.11 and run these commands from the repository root:
 
 ```bash
 python -m venv .venv
@@ -60,47 +59,50 @@ python -m pip install -r requirements.txt
 jupyter lab
 ```
 
-The mean-field calculation runs on CPU. Training the networks is better suited
-to a CUDA GPU. CIFAR downloads go into `data/`; new results and plots go into
-`runs/`, leaving the saved paper results intact. W&B logging is disabled by default.
+The mean-field calculations run on CPU; a CUDA GPU is preferable for training.
+Each notebook explains which cells to run for the saved results and which train
+new models. CIFAR downloads go into `data/`, reruns into `runs/`, and W&B logging
+is off by default.
 
-To plot the saved learning curves without training or downloading data:
+For the saved learning curves:
 
 ```bash
 python scripts/plot_results.py
 ```
 
-Plots are written to `runs/figures/`. Add `--sweeps` to include the learning curves
-at every saved dropout strength and width. The paper's figure exports are in
-[manuscript/figures](manuscript/figures/).
-
-To recompute the critical-exponent, scaling-collapse, and Hermite figures on CPU:
+This writes to `runs/figures/`. Add `--sweeps` for every saved dropout strength
+and width. To recompute the critical exponents, scaling collapse, and Hermite
+coefficients:
 
 ```bash
 python scripts/plot_mean_field.py
 ```
 
-The figures, raw numerical curves, and fit report go into `runs/mean_field/`.
-The [results guide](results/README.md) explains uncertainty conventions and
-what can be verified from each archive. In particular, the saved CIFAR-100 ViT
-metrics lack the original run configuration; notebook defaults follow the
-reported recipe.
+The numerical inputs, fits, and figures go into `runs/mean_field/`. The figures
+used in the paper are in [manuscript/figures](manuscript/figures/).
 
-## Confidence intervals
+## Reading the comparisons
 
-[Read the results and methods](results/confidence_intervals.md). Loss reductions
-use paired Fieller intervals; accuracy changes use paired Student-t intervals
-in percentage points. These describe variation across seeds with the selected
-schedules and data splits held fixed. The paper distinguishes minimum recorded
-test loss from test loss at the validation-selected checkpoint.
+I report loss reductions relative to uniform dropout and accuracy gains in
+percentage points, keeping the same schedule across the endpoints in each row.
+The [results table](results/confidence_intervals.md) gives paired 95% intervals:
+Fieller intervals for relative loss reductions and Student-t intervals for
+accuracy gains. They describe variation across seeds on the recorded split,
+conditional on the selected schedules and hyperparameters.
 
-To reproduce the intervals and the two LaTeX tables:
+The endpoint matters. Taking the lowest recorded test loss uses the test set to
+choose an epoch, whereas a validation-selected checkpoint is chosen before its
+test evaluation. The paper keeps these comparisons separate. The
+[results guide](results/README.md) also records gaps in the archives, including
+the missing historical configuration for the CIFAR-100 ViT runs.
+
+To reproduce the intervals and both main paper tables:
 
 ```bash
-python scripts/confidence_intervals.py --data results/confidence_seed_metrics.json --output-dir runs/confidence
+python scripts/confidence_intervals.py
 ```
 
-The script uses saved endpoint metrics and does not train models.
+Outputs go into `runs/confidence/`.
 
 ## Checks
 
@@ -109,4 +111,5 @@ python -m pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
-See [CITATION.cff](CITATION.cff) for citation details. Code is under the [MIT license](LICENSE).
+[CITATION.cff](CITATION.cff) contains the citation details. Code is under the
+[MIT license](LICENSE).

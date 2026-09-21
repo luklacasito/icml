@@ -1,5 +1,7 @@
 """The paper's layerwise dropout schedules.
 
+Here h_bar and h_max are raw dropout probabilities, keeping the variable names
+used in the experiment notebooks.
 Constant, linear, reverse_linear, step, and reverse_step have mean h_bar.
 The none, double, and triple controls use zero, twice, and three times that
 budget. Big_step applies 3 * h_bar to max(1, depth // 3) early layers; its mean

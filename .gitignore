@@ -20,6 +20,7 @@ ENV/
 # Local experiment artifacts
 data/
 wandb/
+runs/
 
 # Tooling
 .mypy_cache/

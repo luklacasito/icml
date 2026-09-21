@@ -1,59 +1,61 @@
-# Paper Data
+# Dropout Universality
 
-Research notebooks and supporting materials for overfitting, dropout scheduling, and mean-field analyses.
+**[Read the submitted paper](paper.pdf)**
 
-## Repository layout
-- `MLP overfitting/` — Main MLP overfitting notebook, figures, and serialized experiment results.
-- `MLP overfitting big step/` — Additional MLP experiment artifacts.
-- `Mean field theory recursions/` — Mean-field recursion notebook and exported scaling figures.
-- `Transformer CIFAR100 overfitting/` — ViT dropout scheduling experiments on CIFAR-100.
-- `Transformer ablations/` — ViT ablation experiments comparing dropout location and schedule.
-- `icml2026_submission.pdf` — Submission draft.
+*Dropout Universality: Scaling Laws and Optimal Scheduling at the Edge-of-Chaos*
 
-## Primary notebooks
-- `Mean field theory recursions/full_meanfield_dropout_criticality_clean_v5.ipynb`
-- `MLP overfitting/critical_dropout_scheduling_overfit.ipynb`
-- `Transformer ablations/vit_dropout_ablation.ipynb`
-- `Transformer CIFAR100 overfitting/vit_dropout_scheduling_cifar100_final.ipynb`
+Lucas Fernandez Sarmiento · ICML 2026 submission
 
-## Reproducibility
+I study dropout as a perturbation of critical signal propagation, then use the
+mean-field picture to ask a concrete question: with a fixed dropout budget,
+where should we spend it across depth?
 
-### Option 1: `venv` + `requirements.txt`
+This repo contains the original submission and its experiments. The PDF is the
+unchanged, anonymized submission. The notebooks contain the calculations and
+training code; saved results and figures are included so you can inspect the
+comparisons without rerunning them.
+
+## Experiments
+
+| Notebook | What it does |
+|---|---|
+| [Mean field](notebooks/mean_field.ipynb) | Correlation recursions, critical exponents, and scaling collapse |
+| [MLP schedules](notebooks/mlp_schedules.ipynb) | Dropout placement across depth on CIFAR-10 |
+| [ViT schedules](notebooks/vit_schedules.ipynb) | Residual-dropout schedules on CIFAR-100 |
+| [ViT ablations](notebooks/vit_ablation.ipynb) | Attention, MLP, and both-block dropout on CIFAR-10 |
+
+The additional MLP budget-control comparison is preserved in
+[saved results](results/) and [its figure](figures/mlp_budget_controls.png).
+Shared schedules, training loops, and result loading live in [utils](utils/).
+
+## Run
+
+Use Python 3.11, from the repository root:
+
 ```bash
-python3 -m venv .venv
+python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-python -m ipykernel install --user --name paperdata --display-name "paperdata"
+python -m pip install -r requirements.txt
 jupyter lab
 ```
 
-### Option 2: Conda / Mamba
+The mean-field calculation runs on CPU. Training the networks is better suited
+to a CUDA GPU. CIFAR downloads go into `data/`; new results and plots go into
+`runs/`, leaving the saved paper results intact. W&B logging is disabled by default.
+
+To plot the saved learning curves without training or downloading data:
+
 ```bash
-conda env create -f environment.yml
-conda activate paperdata
-jupyter lab
+python scripts/plot_results.py
 ```
 
-### Suggested execution order
-1. `Mean field theory recursions/full_meanfield_dropout_criticality_clean_v5.ipynb`
-2. `MLP overfitting/critical_dropout_scheduling_overfit.ipynb`
-3. `Transformer ablations/vit_dropout_ablation.ipynb`
-4. `Transformer CIFAR100 overfitting/vit_dropout_scheduling_cifar100_final.ipynb`
+Plots are written to `runs/figures/`. The original exports are in [figures](figures/).
 
-### Expected artifacts
-- `MLP overfitting/critical_dropout_scheduling_overfit.ipynb` writes `dropout_experiment_results.pkl`, `dropout_experiment_results.json`, and the MLP figure exports in `MLP overfitting/`.
-- `Transformer ablations/vit_dropout_ablation.ipynb` writes `ablation_results.json` and the exported ablation figures in `Transformer ablations/`.
-- `Transformer CIFAR100 overfitting/vit_dropout_scheduling_cifar100_final.ipynb` writes `vit_dropout_results.json` and the exported transformer figures in `Transformer CIFAR100 overfitting/`.
+## Checks
 
-## Runtime notes
-- The mean-field notebook is CPU-friendly; the transformer notebooks benefit substantially from a CUDA-capable GPU.
-- The transformer notebooks are the slowest runs in the repo and are the ones most likely to vary by hardware and backend.
-- The transformer notebooks download CIFAR-10 or CIFAR-100 into `./data/` on first run.
-- Notebook outputs are stripped to keep diffs clean.
-- `Transformer ablations/vit_dropout_ablation.ipynb` defaults to `WANDB_MODE=disabled` so it runs locally without authentication.
-- To enable online Weights & Biases logging for that notebook, run Jupyter with `WANDB_MODE=online`.
-- `Transformer CIFAR100 overfitting/vit_dropout_scheduling_cifar100_final.ipynb` saves `vit_dropout_results.json` locally and only triggers a browser download when run inside Google Colab.
+```bash
+python -m pip install -r requirements-dev.txt
+python -m pytest -q
+```
 
-## Portability note
-- The tracked `.pkl` result files are Python-version and NumPy-version sensitive. Prefer the JSON outputs when possible for sharing or downstream analysis.
-- The MLP notebook now writes both pickle and JSON so plotting can stay convenient locally while downstream analysis can use the portable JSON artifact.
+See [CITATION.cff](CITATION.cff) for citation details. Code is under the [MIT license](LICENSE).

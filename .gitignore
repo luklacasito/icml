@@ -21,6 +21,7 @@ ENV/
 data/
 wandb/
 runs/
+manuscript/build/
 
 # Tooling
 .mypy_cache/

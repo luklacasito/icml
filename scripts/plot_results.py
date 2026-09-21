@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import sys
 from pathlib import Path
 
@@ -96,6 +97,9 @@ def plot_curves(results, title, output, shared_baseline=False):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ROOT / "runs" / "figures")
+    parser.add_argument(
+        "--sweeps", action="store_true", help="Include every saved MLP sweep condition"
+    )
     args = parser.parse_args()
     plt.rcParams.update({"font.size": 10, "axes.titlesize": 11})
     results = ROOT / "results"
@@ -128,6 +132,24 @@ def main():
             args.output / f"vit_ablation_{mode}",
             shared_baseline=True,
         )
+
+    if args.sweeps:
+        for name, title, parameter in (
+            ("mlp_dropout_sweep", "CIFAR-10 ReLU MLP", "mean dropout field"),
+            ("mlp_width_sweep", "CIFAR-10 ReLU MLP", "width"),
+            ("mlp_gelu", "CIFAR-10 GELU MLP", "mean dropout field"),
+        ):
+            saved = load_npz_result(results / f"{name}.npz")
+            conditions = {}
+            for key, history in saved["all_results"].items():
+                value, schedule = ast.literal_eval(key)
+                conditions.setdefault(value, {})[schedule] = history
+            for value, profiles in sorted(conditions.items()):
+                plot_curves(
+                    profiles,
+                    f"{title}: {parameter} = {value:g}",
+                    args.output / name / f"value_{value:g}".replace(".", "_"),
+                )
 
 
 if __name__ == "__main__":

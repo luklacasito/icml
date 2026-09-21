@@ -36,6 +36,11 @@ they were converted from pickle to NPZ without changing the numbers.
 Load them with `utils.results.load_npz_result`. The ViT files use JSON.
 Training and test accuracy are recorded as percentages.
 
+The CIFAR-100 ViT archive contains ten 75-epoch runs per profile, but no run
+configuration. Its original notebook defaults were a one-seed, small-data pilot;
+the current defaults implement the paper's reported recipe. The historical
+dataset size and training settings cannot be verified from the metrics alone.
+
 The supplemental sweeps use `all_results`, `theory`, and `config` dictionaries.
 Keys in `all_results` and `theory` encode `(dropout_strength, schedule)` or
 `(width, schedule)` pairs as strings; the notebooks restore them with
@@ -50,3 +55,19 @@ validation histories.
 
 Run `python scripts/plot_results.py` from the repository root to plot the saved
 curves. Notebook reruns write into `runs/`.
+
+## Mean-field calculations
+
+| File | Contents |
+|---|---|
+| [mean_field.npz](mean_field.npz) | Raw curves and fit masks from the deterministic recursions |
+| [mean_field.json](mean_field.json) | Exponents, fit standard errors, fitting windows, and source hash |
+| [scaling_collapse.npz](scaling_collapse.npz) | Smooth and kinked fixed points used in the collapse plots |
+| [scaling_collapse.json](scaling_collapse.json) | Array columns, source hash, and parameter conventions |
+| [hermite_coefficients.json](hermite_coefficients.json) | Exact ReLU coefficients and tanh quadrature values |
+
+Run `python scripts/plot_mean_field.py` to regenerate these files and the
+figures. The fit errors measure residual scatter in a log–log regression. They
+do not include errors from quadrature, finite iteration counts, or fitting away
+from the asymptotic limit. The independently tunable ReLU channel is a formal
+normal-form comparison, not a scan of finite-variance network initializations.

@@ -43,6 +43,28 @@ def test_schedule_direction_and_budget_controls():
     assert get_dropout_schedule("big_step", 5, 0.1) == pytest.approx([0.3, 0, 0, 0, 0])
 
 
+@pytest.mark.parametrize("name", ["step", "reverse_step"])
+@pytest.mark.parametrize("h_max", [None, 0, 0.2])
+def test_zero_dropout_step_is_a_no_dropout_schedule(name, h_max):
+    assert get_dropout_schedule(name, 6, 0, h_max) == [0.0] * 6
+
+
+@pytest.mark.parametrize(
+    "name,depth,rate",
+    [
+        ("constant", 0, 0.1),
+        ("step", -1, 0.1),
+        ("linear", 2.5, 0.1),
+        ("constant", 6, float("nan")),
+        ("constant", 6, -0.1),
+        ("big_step", 6, 0.4),
+    ],
+)
+def test_invalid_schedule_geometry_and_probabilities_are_rejected(name, depth, rate):
+    with pytest.raises(ValueError):
+        get_dropout_schedule(name, depth, rate)
+
+
 def test_batches_keep_pairs_and_include_remainder():
     x = torch.arange(5).unsqueeze(1)
     y = torch.arange(5) + 10
@@ -55,6 +77,12 @@ def test_batches_keep_pairs_and_include_remainder():
     shuffled_y = torch.cat([yb for _, yb in batches])
     assert torch.equal(shuffled_x.sort().values, x.squeeze(1))
     assert torch.equal(shuffled_y, shuffled_x + 10)
+
+
+@pytest.mark.parametrize("count,targets,batch_size", [(0, 0, 2), (3, 2, 2), (3, 3, 0)])
+def test_invalid_batches_fail_before_training(count, targets, batch_size):
+    with pytest.raises(ValueError):
+        list(iterate_batches(torch.ones(count, 2), torch.ones(targets), batch_size))
 
 
 def test_evaluation_is_independent_of_batch_size():
@@ -117,3 +145,20 @@ def test_cifar_path_and_seeded_subsets(monkeypatch, tmp_path):
     assert train[0].device.type == "cpu"
     expected_red = (torch.tensor(train_indices).float() / 255 - 0.4914) / 0.2470
     torch.testing.assert_close(train[0][:, 0, 0, 0], expected_red)
+
+    # The meta device exercises device routing without requiring GPU hardware.
+    train, test = load_cifar(10, "meta", train_size=4, test_size=3, seed=7)
+    assert all(tensor.device.type == "meta" for tensor in (*train, *test))
+
+    with pytest.raises(ValueError, match="exceeds"):
+        load_cifar(10, "cpu", train_size=7)
+
+
+@pytest.mark.parametrize("size", [0, -1, 1.5, True])
+def test_invalid_cifar_subset_size_does_not_download_data(monkeypatch, size):
+    def unexpected_download(*args, **kwargs):
+        pytest.fail("Invalid subset size must be rejected before downloading")
+
+    monkeypatch.setitem(training._CIFAR_CLASS, 10, unexpected_download)
+    with pytest.raises(ValueError, match="train_size"):
+        load_cifar(10, "cpu", train_size=size)

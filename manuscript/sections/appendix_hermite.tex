@@ -1,0 +1,181 @@
+\section{Hermite and Variational Perspective}
+\label{sec:var-opt-act}
+
+We start from the variational question that first led us to the smooth/kinked split: how does the activation shape affect the mean-field correlation length? We study this through the angular susceptibility, whose stationary points at fixed scale admit a simple spectral description. Since wide-network preactivations are Gaussian, this is naturally a problem in a function space with Gaussian measure. Hermite polynomials are the standard orthonormal basis for such spaces, so expanding the rescaled activation in Hermite modes turns the susceptibility calculation into a spectral problem. This appendix makes that reduction explicit.
+
+Before doing this, we remove a trivial scale freedom: $\phi \mapsto a \phi$ can be absorbed by $\sigma_w^2 \mapsto \sigma_w^2/a^2$ without changing the mean-field fixed point. To focus on shape rather than scale, we fix a variance fixed point $q^*$ and the bias variance $\sigma_b^2$, and determine $\sigma_w^2$ from the fixed-point condition. With this convention, the remaining freedom is the shape of a function $f \in L^2(Dz)$ with Gaussian inner product
+\begin{equation}
+Dz \equiv \frac{e^{-z^2/2}}{\sqrt{2\pi}} dz, \qquad \langle f,g\rangle \equiv \int Dz f(z) g(z).
+\end{equation}
+
+\subsection{A Scale-Fixed Variational Problem for $\chi$}
+\label{sec:var-chi}
+
+We define the fixed-point rescaled activation
+\begin{equation}
+f(z) \equiv \phi(\sqrt{q^*} z).
+\end{equation}
+Assuming $\phi$ is weakly differentiable with $f \in H^1(Dz)$, Price's theorem \cite{Price1958GaussianInputs} yields the correlation susceptibility used in deep information propagation \cite{schoenholz2017deepinformationpropagation}
+\begin{equation}
+\chi \equiv F'(1) = \frac{\sigma_w^2}{q^*}\int Dz \bigl(f'(z)\bigr)^2 .
+\end{equation}
+The variance fixed-point equation
+\begin{equation}
+q^* = \sigma_w^2 \int Dz f(z)^2 + \sigma_b^2
+\end{equation}
+determines
+\begin{equation}
+\sigma_w^2 = \frac{q^*-\sigma_b^2}{\int Dz f^2}.
+\end{equation}
+Substituting gives the scale-fixed factorization
+\begin{equation}
+\chi = \left(1-\frac{\sigma_b^2}{q^*}\right) \frac{\int Dz (f')^2}{\int Dz f^2} \equiv \left(1-\frac{\sigma_b^2}{q^*}\right) \mathcal{Q}[f], \qquad \mathcal{Q}[f]\equiv \frac{\|f'\|_2^2}{\|f\|_2^2}.
+\label{eq:chi-factorization}
+\end{equation}
+Thus, at fixed $(q^*,\sigma_b^2)$, extremizing $\chi$ over activations reduces to extremizing the Rayleigh quotient (see for example \cite{Horn_Johnson_1985}) $\mathcal{Q}[f]$ over the shape of $f$. Criticality $\chi=1$ is equivalent to the constraint
+\begin{equation}
+\mathcal{Q}[f] = \left(1-\frac{\sigma_b^2}{q^*}\right)^{-1}.
+\end{equation}
+In this convention, $\mathcal{Q}[f]$ quantifies the activation's effective sensitivity to typical Gaussian fluctuations: shifting spectral weight to higher modes increases $\|f'\|_2$ relative to $\|f\|_2$ and therefore increases $\chi$ unless $\sigma_w^2$ is retuned.
+
+\subsection{The Ornstein--Uhlenbeck Eigenvalue Problem}
+\label{sec:ou}
+
+Because $\mathcal{Q}[f]$ is scale-invariant, we may impose the normalization $\int Dz f^2 = 1$ and extremize $\int Dz (f')^2$. Introducing a Lagrange multiplier $\lambda$, consider
+\begin{equation}
+\mathcal{S}[f] \equiv \int Dz \Bigl[(f'(z))^2 - \lambda f(z)^2\Bigr].
+\end{equation}
+Gaussian-weighted integration by parts (with boundary terms vanishing under mild decay assumptions) gives the Euler--Lagrange equation
+\begin{equation}
+\left(-\partial_z^2 + z \partial_z\right)f(z) = \lambda f(z),
+\label{eq:OU-eigenvalue}
+\end{equation}
+i.e.\ the Ornstein--Uhlenbeck eigenproblem on $L^2(Dz)$. Its spectrum is
+\begin{equation}
+\lambda_n = n, \qquad n=0,1,2,\dots,
+\end{equation}
+and the eigenfunctions form a complete orthonormal basis. Under the unit-norm constraint, these eigenfunctions are stationary points of $\mathcal{Q}[f]$, with $\mathcal{Q}[f]=\lambda$.
+
+\subsection{Hermite Basis and Diagonal Correlation Propagation}
+\label{sec:hermite}
+
+A natural orthonormal eigenbasis of \eqref{eq:OU-eigenvalue} is given by the normalized Hermite polynomials; this is the usual Hermite/Ornstein--Uhlenbeck diagonalization of Gaussian channels. Hermite expansions have also been used directly to express neural-network covariance recursions in the infinite-width setting \cite{Arratia2020DeepWideCovariance}.
+\begin{equation}
+h_n(z) \equiv \frac{1}{\sqrt{2^n n!}} H_n\left(\frac{z}{\sqrt{2}}\right), \qquad \langle h_n,h_m\rangle = \delta_{nm},
+\end{equation}
+where $H_n$ are the physicists' Hermite polynomials.\footnote{Equivalently, $h_n(z)=\mathrm{He}_n(z)/\sqrt{n!}$ in terms of the probabilists' Hermite polynomials $\mathrm{He}_n$.} They satisfy
+\begin{equation}
+h_n'(z) = \sqrt{n} h_{n-1}(z), \qquad \left(-\partial_z^2 + z \partial_z\right)h_n(z)=n h_n(z), \qquad \mathcal{Q}[h_n]=n.
+\end{equation}
+Moreover, this basis diagonalizes correlated-Gaussian expectations: if $(z_1,z_2)$ are jointly Gaussian with unit variances and correlation $c\in[-1,1]$, then
+\begin{equation}
+\mathbb{E}\bigl[h_n(z_1) h_m(z_2)\bigr] = c^n \delta_{nm}.
+\label{eq:hermite-diag}
+\end{equation}
+Thus each Hermite degree propagates independently through the Gaussian channel with attenuation $c^n$.
+
+Expanding an arbitrary $f \in L^2(Dz)$ in this basis,
+\begin{equation}
+f(z)=\sum_{n\ge 0} a_n h_n(z), \qquad a_n=\langle f,h_n\rangle, \qquad \sum_{n\ge 0} a_n^2 = \int Dz f^2,
+\end{equation}
+we obtain
+\begin{equation}
+\mathbb{E}\bigl[f(z_1)f(z_2)\bigr] = \sum_{n\ge 0} a_n^2 c^n.
+\end{equation}
+Consequently, the correlation map takes the form
+\begin{equation}
+F(c)=\frac{\sigma_w^2\sum_{n\ge 0} a_n^2 c^n + \sigma_b^2}{q^*}, \qquad q^*=\sigma_w^2\sum_{n\ge 0} a_n^2+\sigma_b^2.
+\end{equation}
+The decay of $|a_n|$ controls the derivatives of $F$ at $c=1$: finite weighted sums $\sum_n n(n-1)\cdots(n-k+1)a_n^2$ give the derivatives needed for a Taylor expansion through order $k$. Smoothness and rapid decay need not give a convergent Taylor series at one; the Landau argument only uses finite-order regularity. The power-law tail produced by an ordinary kink makes the second derivative diverge and gives the fractional-power correction as $c\to1$.
+
+Using $h_n'=\sqrt{n} h_{n-1}$, we can compute the susceptibility
+\begin{equation}
+\chi = F'(1) = \frac{\sigma_w^2}{q^*}\sum_{n\ge 1} n a_n^2 .
+\end{equation}
+In the zero-bias case $\sigma_b^2=0$ this becomes
+\begin{equation}
+\chi=\frac{\sum_{n\ge 1} n a_n^2}{\sum_{n\ge 0} a_n^2}=\mathcal{Q}[f],
+\end{equation}
+so $\chi$ is the mean Hermite degree under weights proportional to $a_n^2$, and criticality $\chi=1$ corresponds to unit mean degree.
+
+For completeness, the variance-channel susceptibility $\chi_q \equiv \partial q^{(\ell+1)}/\partial q^{(\ell)}|_{q^*}$ can be written in the same basis as
+\begin{equation}
+\chi_q = \frac{\sigma_w^2}{q^*} \left( \sum_{n\ge 1} n a_n^2 + \sum_{n\ge 0}\sqrt{(n+1)(n+2)} a_n a_{n+2} \right).
+\end{equation}
+Thus $\chi$ depends only on the distribution $\{a_n^2\}$ across Hermite degrees, whereas $\chi_q$ is additionally sensitive to relative signs/phases within each parity subsector through the $a_n a_{n+2}$ couplings.
+
+Pure modes $f\propto h_n$ are stationary points with $\mathcal{Q}[h_n]=n$. On the mean-zero subspace, $n=1$ is the lowest eigenmode, but by itself it gives a linear network. Moving spectral weight to higher degrees raises $\mathcal{Q}[f]$ and hence $\chi$ at fixed $q^*$ and $\sigma_b^2$. Its effect on correlation depth depends on the stable branch: in the ordered regime $\xi_c=-1/\log\chi$ increases as $\chi$ approaches one, while on the chaotic branch the relevant multiplier is $F^{\prime}(c^*)$. The stationary points of this Rayleigh quotient therefore do not by themselves solve the global correlation-length optimization problem.
+
+\subsection{Smooth and Kinked Activations}
+
+For the smooth examples considered here, the Hermite coefficients decay rapidly and the required derivative moments are finite, allowing the finite-order expansion near $c=1$. For kinked activations such as \relu{}, $\phi'(u)=\theta(u)$ almost everywhere, so
+\begin{equation}
+\chi=\sigma_w^2\int Dz \theta(u)=\frac{\sigma_w^2}{2}, \qquad \chi=1 \Rightarrow \sigma_w^2=2.
+\end{equation}
+\begin{table}[h]
+\caption{Orthonormal Hermite coefficients \(a_{n}=\int Dz f(z)h_{n}(z)\) for two standard activations, shown for the unscaled choices $f(z)=\ReLU(z)$ and $f(z)=\tanh(z)$. For $f(z)=\tanh(s z)$, use \(a_{n}(s)=\int Dz \tanh(s z)h_{n}(z)\), with \(a_{2k}(s)=0\) by odd parity.}
+\centering
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{c c c c}
+\hline
+\(n\) & \(h_{n}(z)\) parity & \(a_{n}\) for \(\ReLU(z)\) & \(a_{n}\) for \(\tanh(z)\) \\
+\hline
+0 & even & \(\frac{1}{\sqrt{2\pi}}\) & \(0\) \\
+1 & odd & \(\frac{1}{2}\) & \(0.60570551\) \\
+2 & even & \(\frac{1}{2\sqrt{\pi}}\) & \(0\) \\
+3 & odd & \(0\) & \(-0.14843719\) \\
+4 & even & \(-\frac{1}{\sqrt{48\pi}}\) & \(0\) \\
+5 & odd & \(0\) & \(0.06254752\) \\
+6 & even & \(\frac{1}{4\sqrt{10\pi}}\) & \(0\) \\
+7 & odd & \(0\) & \(-0.03144542\) \\
+8 & even & \(-\frac{15}{\sqrt{80640\pi}}\) & \(0\) \\
+9 & odd & \(0\) & \(0.01741993\) \\
+10 & even & \(\frac{105}{\sqrt{7257600\pi}}\) & \(0\) \\
+11 & odd & \(0\) & \(-0.01029184\) \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+ \centering
+ \includegraphics[width=0.7\linewidth]{figures/theory/hermite_decomposition.pdf}
+ \caption{Magnitude of Hermite coefficients $|a_n|$ for \relu{} versus $\tanh$. \relu{} exhibits a slow (power-law) decay, reflecting multi-scale support across Hermite degrees, while $\tanh$ decays rapidly and concentrates most spectral mass in the lowest modes. The \relu{} coefficients use their exact expression; tanh uses 220-point Gauss--Hermite quadrature.}
+ \label{fig:hermite-decomposition}
+\end{figure}
+
+\newpage
+
+\subsection{Hermite Decompositions for \relu{} and \texorpdfstring{\(\tanh\)}{tanh}}
+
+Throughout, \(Z\sim\mathcal{N}(0,1)\) and
+\begin{equation}
+Dz \equiv \frac{dz}{\sqrt{2\pi}}e^{-z^{2}/2}.
+\end{equation}
+We expand the fixed point rescaled activation \(f(z)\) in an orthonormal Hermite basis of \(L^{2}(Dz)\),
+\begin{equation}
+f(z)=\sum_{n\ge 0} a_{n} h_{n}(z), \qquad a_{n}=\int Dz f(z) h_{n}(z), \qquad \int Dz h_{n}(z)h_{m}(z)=\delta_{nm}.
+\end{equation}
+With physicists Hermites \(H_{n}\),
+\begin{equation}
+H_{n}(x)\equiv (-1)^{n}e^{x^{2}}\frac{d^{n}}{dx^{n}}e^{-x^{2}}, \qquad h_{n}(z)\equiv \frac{1}{\sqrt{2^{n}n!}} H_{n}\left(\frac{z}{\sqrt{2}}\right).
+\end{equation}
+
+\subsubsection{\relu{}}
+
+Let \(f(z)=\ReLU(z)=\max(0,z)\). The coefficients have a closed form.
+\begin{equation}
+a_{0}=\frac{1}{\sqrt{2\pi}}, \qquad a_{1}=\frac{1}{2}, \qquad a_{2k+1}=0 \ \ \text{for } k\ge 1,
+\end{equation}
+and for \(k\ge 1\),
+\begin{equation}
+a_{2k} = \frac{(-1)^{k-1}(2k-3)!!}{\sqrt{2\pi(2k)!}}.
+\end{equation}
+We use the convention \((-1)!!=1\). If instead \(f(z)=\ReLU(\sqrt{q^{*}} z)\), then all coefficients scale as \(a_{n}\mapsto \sqrt{q^{*}} a_{n}\).
+
+\subsubsection{\texorpdfstring{\(\tanh\)}{tanh}}
+
+Let \(f(z)=\tanh(s z)\) with \(s>0\). The coefficients are
+\begin{equation}
+a_{n}(s)=\int Dz \tanh(s z) h_{n}(z).
+\end{equation}
+Parity gives \(a_{2k}(s)=0\). There is no simple closed form for general \(s\), but the coefficients are easy to compute numerically by Gaussian quadrature using Mathematica, or other specialized packages.

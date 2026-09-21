@@ -91,10 +91,11 @@ def accuracy_gain(uniform, frontloaded):
 
 
 def default_data_path():
-    for parent in Path(__file__).resolve().parents:
-        candidate = parent / "results/confidence_seed_metrics.json"
-        if candidate.is_file():
-            return candidate
+    candidate = (
+        Path(__file__).resolve().parents[1] / "results/confidence_seed_metrics.json"
+    )
+    if candidate.is_file():
+        return candidate
     raise FileNotFoundError("Pass --data pointing to confidence_seed_metrics.json")
 
 
@@ -155,93 +156,6 @@ def _cell(metric):
     )
 
 
-def _identity(row, section):
-    keys = ("dataset", "model")
-    if section == "benchmarks":
-        keys += ("train_size", "weight_decay", "epochs", "n")
-    return tuple(row[key] for key in keys)
-
-
-def _checked_rows(rows, section, evidence=None):
-    """Prevent stale seed evidence from silently disagreeing with main exports."""
-    summaries = summarize(evidence or load_evidence())[section]
-    if rows is None:
-        return summaries
-    indexed = {_identity(row, section): row for row in summaries}
-    selected = []
-    for row in rows:
-        identity = _identity(row, section)
-        if identity not in indexed:
-            raise ValueError(f"Missing confidence seed evidence: {identity}")
-        source = indexed[identity]
-        if source["n"] != row["n"] or source["profile"] != row.get(
-            "profile", row.get("winner")
-        ):
-            raise ValueError(
-                f"Profile or seed count changed; refresh confidence evidence: {identity}"
-            )
-        if section == "original":
-            mappings = {
-                "final_loss": (
-                    "final_loss_reduction_percent",
-                    "uniform_final_loss",
-                    "winner_final_loss",
-                ),
-                "minimum_loss": (
-                    "min_loss_reduction_percent",
-                    "uniform_min_loss",
-                    "winner_min_loss",
-                ),
-                "final_accuracy_percent": (
-                    "accuracy_improvement_pp",
-                    "uniform_accuracy",
-                    "winner_accuracy",
-                ),
-            }
-        else:
-            if (
-                row["seeds"] != source["seeds"]
-                or row["split_hash"] != source["split_hash"]
-            ):
-                raise ValueError(
-                    f"Pairing or split changed; refresh confidence evidence: {identity}"
-                )
-            mappings = {}
-            for endpoint in ("checkpoint", "final"):
-                for kind, suffix in (
-                    ("loss", "loss_reduction_percent"),
-                    ("accuracy", "accuracy_gain_pp"),
-                ):
-                    name = f"{endpoint}_{kind}" + (
-                        "_percent" if kind == "accuracy" else ""
-                    )
-                    mappings[name] = (
-                        f"{endpoint}_{suffix}",
-                        f"uniform_{endpoint}_{kind}_mean",
-                        f"frontloaded_{endpoint}_{kind}_mean",
-                    )
-        metrics = source["metrics"].copy()
-        for name, fields in mappings.items():
-            expected = [row[field] for field in fields]
-            if expected[0] is None:
-                # A newly missing endpoint must remain missing in all exports.
-                metrics[name] = None
-                continue
-            actual = metrics[name]
-            if actual is None or any(
-                value is None
-                or not math.isclose(value, actual[key], rel_tol=1e-10, abs_tol=1e-10)
-                for value, key in zip(
-                    expected, ("estimate", "uniform_mean", "frontloaded_mean")
-                )
-            ):
-                raise ValueError(
-                    f"Endpoint changed; refresh confidence evidence: {identity}/{name}"
-                )
-        selected.append({**source, "metrics": metrics})
-    return selected
-
-
 def _start(caption, label, columns):
     return [
         r"\begin{table*}[t]",
@@ -260,8 +174,7 @@ def _finish(lines):
     return "\n".join(lines + [r"\bottomrule", r"\end{tabular}", r"\end{table*}"]) + "\n"
 
 
-def render_original_table(rows=None, evidence=None):
-    comparisons = _checked_rows(rows, "original", evidence)
+def render_original_table(comparisons):
     caption = (
         r"Original paper experiments. Positive changes favor the named profile over uniform. "
         r"CE reduction is $100(L_U-L_F)/L_U$ using seed means; accuracy gain is in percentage points. "
@@ -292,8 +205,7 @@ def render_original_table(rows=None, evidence=None):
     return _finish(lines)
 
 
-def render_frontloaded_table(rows=None, evidence=None):
-    comparisons = _checked_rows(rows, "benchmarks", evidence)
+def render_frontloaded_table(comparisons):
     caption = (
         r"Frontloaded dropout across tasks. We choose the frontloaded profile with the lowest mean "
         r"minimum validation CE among complete arms with the same paired seeds as uniform; the profile "
@@ -338,20 +250,15 @@ def render_frontloaded_table(rows=None, evidence=None):
     return _finish(lines)
 
 
-def write_outputs(output_dir, evidence, *, original_rows=None, benchmark_rows=None):
+def write_outputs(output_dir, evidence):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    summary = {
-        "schema_version": 1,
-        "inference": evidence["inference"],
-        "original": _checked_rows(original_rows, "original", evidence),
-        "benchmarks": _checked_rows(benchmark_rows, "benchmarks", evidence),
-    }
+    summary = summarize(evidence)
     (output_dir / "original_results_table.tex").write_text(
-        render_original_table(original_rows, evidence)
+        render_original_table(summary["original"])
     )
     (output_dir / "frontloaded_table.tex").write_text(
-        render_frontloaded_table(benchmark_rows, evidence)
+        render_frontloaded_table(summary["benchmarks"])
     )
     (output_dir / "confidence_intervals.json").write_text(
         json.dumps(summary, indent=2, allow_nan=False) + "\n"
@@ -460,13 +367,19 @@ def write_outputs(output_dir, evidence, *, original_rows=None, benchmark_rows=No
         "[Full-precision CSV](confidence_intervals.csv) · [Structured results](confidence_intervals.json)",
         "",
     ]
-    (output_dir / "confidence_intervals.md").write_text("\n".join(markdown).rstrip() + "\n")
+    (output_dir / "confidence_intervals.md").write_text(
+        "\n".join(markdown).rstrip() + "\n"
+    )
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, help="Portable paired seed metrics JSON")
-    parser.add_argument("--output-dir", type=Path, default=Path("paper"))
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path(__file__).resolve().parents[1] / "runs/confidence",
+    )
     args = parser.parse_args()
     write_outputs(args.output_dir, load_evidence(args.data))
 

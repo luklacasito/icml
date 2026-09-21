@@ -10,8 +10,9 @@ I study dropout as a perturbation of critical signal propagation, then use the
 mean-field picture to ask a concrete question: with a fixed dropout budget,
 where should we spend it across depth?
 
-This is the expanded September 21, 2026 version, with additional datasets and
-95% confidence intervals for the main comparisons. The original
+This is the revised September 21, 2026 version, with additional datasets,
+95% confidence intervals, and corrections to the numerical figures and theory's
+scope. The original
 [camera-ready paper is on arXiv](https://arxiv.org/pdf/2605.21648v2).
 
 The notebooks contain the original calculations and training code, including
@@ -19,6 +20,18 @@ the dropout-budget, width, and smooth-activation sweeps. Saved results let you
 inspect the comparisons without rerunning them. The additional experiments
 are reported in the paper's appendix; paired seed metrics and a short analysis
 script reproduce both main confidence-interval tables.
+
+## Where to start
+
+| Path | Contents |
+|---|---|
+| [paper.pdf](paper.pdf) | Current paper, including the experimental appendix |
+| [manuscript](manuscript/) | LaTeX source, split by section, and paper figures |
+| [notebooks](notebooks/) | Seven calculations and training experiments |
+| [results](results/) | Saved measurements, fit inputs, and confidence intervals |
+| [scripts](scripts/) | Reproduce figures and summary tables without training |
+| [utils](utils/) | Shared dropout schedules, training, and result loading |
+| [tests](tests/) | Numerical and utility checks |
 
 ## Experiments
 
@@ -60,6 +73,18 @@ python scripts/plot_results.py
 Plots are written to `runs/figures/`. Add `--sweeps` to include the learning curves
 at every saved dropout strength and width. The paper's figure exports are in
 [manuscript/figures](manuscript/figures/).
+
+To recompute the critical-exponent, scaling-collapse, and Hermite figures on CPU:
+
+```bash
+python scripts/plot_mean_field.py
+```
+
+The figures, raw numerical curves, and fit report go into `runs/mean_field/`.
+The [results guide](results/README.md) explains uncertainty conventions and
+what can be verified from each archive. In particular, the saved CIFAR-100 ViT
+metrics lack the original run configuration; notebook defaults follow the
+reported recipe.
 
 ## Confidence intervals
 

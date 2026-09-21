@@ -14,6 +14,8 @@ def load_json(path: str | Path) -> Any:
 
 def _pack_for_npz(value: Any, arrays: dict[str, np.ndarray]) -> Any:
     if isinstance(value, np.ndarray):
+        if value.dtype.hasobject:
+            raise ValueError("Object arrays cannot be saved without pickle")
         key = f"arr_{len(arrays):05d}"
         arrays[key] = value
         return {"__ndarray__": key}

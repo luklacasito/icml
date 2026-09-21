@@ -1,0 +1,65 @@
+{
+  "source": "notebooks/mean_field.ipynb",
+  "code_cells": [
+    2,
+    3,
+    4,
+    6,
+    8,
+    10
+  ],
+  "source_sha256": "5ffd2b966a93642853afc39d7f8bf12277c7ef4ce76097fb999edeb819a56863",
+  "method": "Deterministic mean-field recursions with 60-point Gauss-Hermite quadrature for tanh.",
+  "uncertainty": "Ordinary least-squares log-log fit standard errors; not seed confidence intervals or numerical discretization errors.",
+  "relu_scope": "The tunable ReLU map is a formal local family; chi > 1 and chi = 1 with dropout need not have nonnegative bias variance.",
+  "fit_windows": {
+    "nu": "All 20 |chi - 1| values from 0.01 to 0.1.",
+    "beta": "The first 10 (smallest chi - 1) values per activation.",
+    "p": "Layers 501 through 7999.",
+    "dropout": "Fields h <= 10 times the smallest field across the two activations."
+  },
+  "critical_tanh": {
+    "sigw2_c": 1.9860728600720843,
+    "q_c": 0.8057993227283148,
+    "g_c": 0.4988074451600251,
+    "h_c": 4.0190073491430667e-14
+  },
+  "fits": {
+    "nu": {
+      "estimate": 1.0189988552334621,
+      "fit_se": 0.0014145074098344792
+    },
+    "beta_tanh": {
+      "estimate": 0.98794273964011,
+      "fit_se": 0.0006618921681092395
+    },
+    "beta_relu": {
+      "estimate": 1.9641978634987305,
+      "fit_se": 0.0019298391195344713
+    },
+    "p_tanh": {
+      "estimate": 1.0048325059741388,
+      "fit_se": 1.7416702634787007e-05
+    },
+    "p_relu": {
+      "estimate": 1.9869684357205086,
+      "fit_se": 5.185777249133157e-05
+    },
+    "inverse_delta_tanh": {
+      "estimate": 0.5170797471525159,
+      "fit_se": 0.0006617233775896562
+    },
+    "inverse_delta_relu": {
+      "estimate": 0.6656409485491714,
+      "fit_se": 8.732139037979347e-05
+    },
+    "nu_dropout_tanh": {
+      "estimate": 0.47155241728760566,
+      "fit_se": 0.0013715553199349056
+    },
+    "nu_dropout_relu": {
+      "estimate": 0.3527995459375214,
+      "fit_se": 0.0009959810401747376
+    }
+  }
+}

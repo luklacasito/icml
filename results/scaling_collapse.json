@@ -1,0 +1,20 @@
+{
+  "source": "notebooks/mean_field.ipynb:cell12",
+  "source_sha256": "55671e627b4e69e476ae79f425cec77f9fe1e093b3cab194b2d1d589b62e7fb3",
+  "smooth_columns": [
+    "proxy",
+    "t",
+    "h",
+    "g",
+    "m"
+  ],
+  "kinked_columns": [
+    "proxy",
+    "t",
+    "h",
+    "m"
+  ],
+  "fixed_parameter": "Each curve holds rho=1/(1+proxy) fixed; legend p=1-rho.",
+  "horizontal_axes": "Smooth: tilde_t=-t/sqrt(2*g*h). Kinked: -u=-t/(kappa**(2/3)*h**(1/3)); u is the positive-t argument defined in the paper.",
+  "scope": "Smooth uses tanh mean-field fixed points. Kinked uses the formal affine arc-cosine map; the exact field varies along each fixed-rho curve."
+}

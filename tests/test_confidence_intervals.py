@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 from scipy.stats import t
 
-from scripts.confidence_intervals import accuracy_gain, fieller_reduction
+from scripts.confidence_intervals import accuracy_gain, fieller_reduction, summarize
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,6 +35,35 @@ def test_uncertain_denominator_is_not_reported_as_a_finite_interval():
     json.dumps(result, allow_nan=False)
 
 
+def test_disjoint_fieller_bounds_still_invert_the_paired_t_statistic():
+    uniform = np.array([0.01, 0.01, 10])
+    frontloaded = np.array([1, 1.01, 0.99])
+    result = fieller_reduction(uniform, frontloaded)
+    assert result["kind"] == "disjoint"
+    for interval in result["intervals"]:
+        bound = next(value for value in interval if value is not None)
+        difference = frontloaded - (1 - bound / 100) * uniform
+        statistic = difference.mean() / (difference.std(ddof=1) / np.sqrt(3))
+        assert abs(statistic) == pytest.approx(t.ppf(0.975, 2))
+
+
+@pytest.mark.parametrize("seeds,values", [([0, 0], [1, 2]), ([0, 1], [1])])
+def test_evidence_rejects_duplicate_or_incomplete_seed_pairs(seeds, values):
+    evidence = {
+        "inference": "test",
+        "original": [
+            {
+                "n": 2,
+                "seeds": seeds,
+                "metrics": {"final_loss": {"uniform": [1, 2], "frontloaded": values}},
+            }
+        ],
+        "benchmarks": [],
+    }
+    with pytest.raises(ValueError, match="[Ss]eed"):
+        summarize(evidence)
+
+
 def test_accuracy_interval_uses_percentage_point_differences():
     # Paired gains are [1, 2, 3] percentage points, with sample SD equal to 1.
     result = accuracy_gain([50, 70, 90], [51, 72, 93])
@@ -57,8 +86,10 @@ def test_standalone_command_reproduces_checked_in_results_and_tables(tmp_path):
         [
             sys.executable,
             str(ROOT / "scripts/confidence_intervals.py"),
-            "--data", str(ROOT / "results/confidence_seed_metrics.json"),
-            "--output-dir", str(tmp_path),
+            "--data",
+            str(ROOT / "results/confidence_seed_metrics.json"),
+            "--output-dir",
+            str(tmp_path),
         ],
         cwd=tmp_path,
         check=True,

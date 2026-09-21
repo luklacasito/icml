@@ -1,0 +1,50 @@
+\section{Mean-Field Theory Background}
+\label{sec:mft_background}
+We first state the mean-field assumptions for MLPs, which provide the baseline for the dropout analysis \cite{poole2016exponentialexpressivitydeepneural,schoenholz2017deepinformationpropagation,Bahri2020StatMechDeepLearning,bahri2024leshoucheslecturesdeep}. We consider fully-connected MLPs at random initialization, where preactivations are well-approximated as Gaussian random variables with self-consistently determined statistics (means, variances, covariances). In the strict infinite width limit this Gaussian description becomes exact \cite{Lee2018DNNasGP}, while at large but finite width deviations from Gaussianity can be organized perturbatively in the depth-to-width aspect ratio (schematically $L/N$), as treated comprehensively in \cite{roberts2022principlesdeeplearningtheory,bahri2024leshoucheslecturesdeep}. The intuition behind this treatment is that as we add more activations, through the CLT, the statistics will become more and more Gaussian, approaching this distribution asymptotically in the large N limit.
+
+We consider an MLP of depth $L$, $N_l$ neurons in layer $l$, and an activation $\phi:\mathbb{R}\to\mathbb{R}$ (e.g.\ $\tanh$, \relu{}, \emph{etc.}). We use the standard i.i.d.\ Gaussian initialization
+\begin{equation}
+W^{l}_{ij}\sim \mathcal{N}\left(0,\frac{\sigma_{w}^{2}}{N_{l-1}}\right), \qquad b^{l}_{i}\sim \mathcal{N}\left(0,\sigma_{b}^{2}\right),
+\end{equation}
+take the input as $y^{0}_{i;a}=x_{i;a}$, and propagate forward via
+\begin{equation}
+z^{l}_{i;a}= \sum_{j=1}^{N_{l-1}} W^{l}_{ij} y^{l-1}_{j;a}+b^{l}_{i}, \qquad y^{l}_{i;a}=\phi\left(z^{l}_{i;a}\right),
+\end{equation}
+where $W^l\in\mathbb R^{N_l\times N_{l-1}}$ and $a$ labels the input. Thus the weight variance is scaled by the number of incoming units. Throughout, expectations $\mathbb{E}[\cdot]$ are over the random weights and biases at initialization, with inputs held fixed. We also use the standard Gaussian measure
+\begin{equation}
+\int Dz (\cdots)\;\equiv\;\frac{1}{\sqrt{2\pi}}\int_{-\infty}^{\infty}dz e^{-z^{2}/2}(\cdots),
+\end{equation}
+and similarly for $\int Dz_1 Dz_2$.
+
+In the infinite-width limit this becomes exact layer-by-layer, while at finite width the first layer is exactly Gaussian (being a linear map of fixed inputs) and subsequent layers are only approximately Gaussian, with controlled non-Gaussian corrections parametrized by the depth-to-width ratio \cite{roberts2022principlesdeeplearningtheory}. A fuller treatment of the MFT background is given in App.~\ref{app:mft_primer}.
+
+We track the single-input preactivation variance $q^l_{aa}$, the two-input covariance $q^l_{ab}$, and the induced correlation $c^l_{ab}$. For $l\ge2$, their recursions are
+\begin{align}
+q^{l}_{aa}&= \sigma_{w}^{2}\int Dz \phi^{2}\left(\sqrt{q^{l-1}_{aa}} z\right)+\sigma_{b}^{2}\\
+q^{l}_{ab}&=\sigma_{w}^{2}\int Dz_{1} Dz_{2} \phi(u_{1}) \phi(u_{2})+\sigma_{b}^{2}\\
+u_{1}&=\sqrt{q^{l-1}_{aa}} z_{1},\qquad c^{l-1}_{ab}=\frac{q^{l-1}_{ab}}{\sqrt{q^{l-1}_{aa} q^{l-1}_{bb}}},\\
+u_{2}&=\sqrt{q^{l-1}_{bb}}\left(c^{l-1}_{ab} z_{1}+\sqrt{1-\left(c^{l-1}_{ab}\right)^{2}} z_{2}\right).
+\label{variancerecursion}
+\end{align}
+The first layer is initialized directly from the inputs, $q^1_{ab}=\sigma_w^2 N_0^{-1}\sum_j x_{j;a}x_{j;b}+\sigma_b^2$.
+In the absence of dropout, for a wide array of activations $q^{l}_{ab},c^{l}_{ab}$ settle to fixed points $q^*,c^*$; in particular, there exists a $c^*=1$ fixed point as a straightforward calculation shows. The variance fixed point sets the typical activation scale, while the correlation fixed point describes whether distinct inputs become indistinguishable under depth iteration. We denote the recurrence relation for $c^{l}_{ab}$ by $c^{l}_{ab}=F(c^{l-1}_{ab})$.
+
+To probe its stability, one linearizes the map at $c=1$, defining the (angular) susceptibility
+\begin{equation}
+\chi_{\perp} \equiv \left.\frac{\partial c^{l}_{ab}}{\partial c^{l-1}_{ab}}\right|_{c_{ab}=1} = \sigma_{w}^{2}\int Dz \big[\phi'(\sqrt{q^{*}} z)\big]^{2}.
+\end{equation}
+This creates a phase diagram with three regimes: $\chi_{\perp}<1$ is the ordered regime, $\chi_{\perp}>1$ is chaotic, and
+ $\chi_{\perp}=1$ defines the critical regime (the so-called "edge-of-chaos"). The depth scale controlling cross-input correlations can become arbitrarily large in the latter, allowing information to penetrate deep into the network. For \relu{}, the criticality condition gives $\sigma_w^2=2$, coinciding with the variance used in He initialization \cite{he2015delvingdeeprectifierssurpassing}\footnote{This is not true for general activations, but rather an idiosyncrasy of \relu{}.} (see App.~\ref{app:mft_primer}), a more fundamental viewpoint than variance preservation.
+
+ This leads to an emergent characteristic depth scale $\xi_c$, which parametrizes both signal propagation and gradient flow. Iterating random affine maps induces an effective coarse-graining in depth akin to renormalization-group flow, called representation group flow in the ML context \cite{roberts2022principlesdeeplearningtheory}; information about norms and angles relaxes exponentially fast,
+\begin{equation}
+|{c^*-c^l_{ab}}|\propto e^{-l/\xi_{c}}, \qquad \xi_{c}^{-1}\equiv -\log|r_{c}|.
+\label{corrq}
+\end{equation}
+An analogous correlation length $\xi_q$ controls how quickly single-input norms settle to $q^{*}$. Heuristically, $\xi_{c}$ controls how far distinctions between different inputs survive with depth; in the ordered phase $c^{*}=1$, so $u_{1}^{*}=u_{2}^{*}$ and $\xi_{c}^{-1}=-\log\chi_{\perp}$, hence $\chi_{\perp}\to 1$ implies $\xi_{c}\to\infty$. Consequently, the edge-of-chaos is primarily about $\xi_{c}$ rather than $\xi_{q}$, except in special cases. For \relu{}, the curvature vanishes everywhere away from the origin, leading to a coincidence between $\xi_c$ and $\xi_q$, both diverging as $\chi_{\perp}\to 1$, provided a finite $q^{*}$ exists. This is one concrete reason why \relu{}-style near-critical initializations are comparatively forgiving in practice.
+
+As previously discussed, mean-field theory is an expansion in non-Gaussian corrections suppressed by powers of \(L/N\). Therefore, in our experiments we work in a controlled regime with \(L/N \ll 1\) (i.e., \(N \gg L\)), where the large-width expansion is perturbatively sound \cite{roberts2022principlesdeeplearningtheory}. The correlation length diverges as we approach criticality, amplifying finite-width and other non-Gaussian corrections. Thus, when probing critical power laws with dropout, we keep the dropout rate small but non-negligible: infinitesimal dropout would require prohibitively deep networks to estimate the correlation length and related quantities.
+
+Although we derive these results for MLPs, analogous large-width limits exist elsewhere. CNNs are the canonical convolutional setting \cite{cnnslecun}, and at infinite channel count their covariance recursions again close through Gaussian activation kernels \cite{xiao2018dynamicalisometrymeanfield}. ResNets are especially suggestive: Yang and Schoenholz \cite{yang2017meanfieldresnets} find qualitatively different tanh/\relu{} large-depth behavior. Skip connections alter global depth dynamics, easing the information propagation by injecting the original signal after every layer, changing exponential convergence to subexponential or polynomial laws and allowing norm drift, but each residual branch still inherits the local nonlinear Gaussian kernel. Thus our smooth/kinked universality split offers a possible theoretical explanation for their observed dichotomy; a dropout-deformed ResNet theory is left for future work. For transformers \cite{vaswani2023attentionneed}, related infinite-width attention analyses use large hidden dimension and/or many heads \cite{Hron2020InfiniteAttention}. Because the exponents are controlled by the local analytic structure of this channel, we expect the mechanism to persist when it controls the wide-limit recursion. In Sec.~\ref{subsec:optimal_dropout}, we test this extrapolation in transformers.
+
+In App.~\ref{app:experimental_info} we probe realistic scenarios across architectures, datasets, and schedules. We focus on overparameterized regimes where dropout improves generalization and accuracy, and thus where it is used in practice, and we explicitly study the trade-off between dropout-driven regularization and stable signal propagation. The local-stationary propagation objective introduced below favors sparse, step-like allocation at fixed budget and is permutation invariant in depth. To choose an ordering within this approximation, we use a regularization-reach heuristic: at a common background decay scale, early masks expose more downstream layers to their perturbation. This motivates testing whether the first layers are the most useful place to inject noise.

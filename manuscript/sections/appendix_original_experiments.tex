@@ -1,0 +1,297 @@
+\section{Experimental Details and Additional Figures}
+\label{app:experimental_info}
+This appendix collects the experimental details and additional figures supporting the scheduling predictions. The original notebooks and saved results are available in the \href{https://github.com/luklacasito/icml}{\texttt{icml}} repository.
+
+\subsection{Mean-Field Fits and Scaling Collapse}
+Table~\ref{tab:mf_vs_fit_exponents} reports fits to the numerical mean-field curves. The repository includes the raw arrays, fitting windows, and a CPU script that regenerates Fig.~\ref{fig:dropout_scaling}. Tanh expectations use 60-point Gauss--Hermite quadrature. The \relu{} calculation uses the formal channel $F(c)=\chi F_{\ReLU}(c)+1-\chi/\rho$, where $F_{\ReLU}$ is the normalized arc-cosine map. Thus $t=\chi-1$ and $h=\chi(1/\rho-1)$. This family probes the local normal form; its independently tuned parameters need not correspond to nonnegative bias variance in a finite-variance \relu{} network.
+\begin{table}[ht]
+\caption{Critical exponents from log--log fits in Fig.~\ref{fig:dropout_scaling}. The $\pm$ values are least-squares fit standard errors, not seed uncertainty or bounds on numerical error. Deviations from the asymptotic predictions reflect the finite fitting windows and numerical approximation; small fit errors do not remove these systematic effects.}
+\label{tab:mf_vs_fit_exponents}
+\centering
+\begin{tabular}{lcc}
+\toprule
+Exponent & Numerical fit & Asymptotic prediction \\
+\midrule
+$\nu$ & $1.0190 \pm 0.0014$ & $1$ \\
+$\beta_{\mathrm{tanh}}$ & $0.9879 \pm 0.0007$ & $1$ \\
+$\beta_{\ReLU}$ & $1.9642 \pm 0.0019$ & $2$ \\
+$\theta_{\mathrm{rel,tanh}}$ & $1.00483 \pm 0.00002$ & $1$ \\
+$\theta_{\mathrm{rel},\ReLU}$ & $1.98697 \pm 0.00005$ & $2$ \\
+$1/\delta_{\mathrm{tanh}}$ & $0.5171 \pm 0.0007$ & $1/2$ \\
+$1/\delta_{\ReLU}$ & $0.6656 \pm 0.0001$ & $2/3$ \\
+$\nu_{\rho,\mathrm{tanh}}$ & $0.4716 \pm 0.0014$ & $1/2$ \\
+$\nu_{\rho,\ReLU}$ & $0.3528 \pm 0.0010$ & $1/3$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The same scaling-collapse diagnostic can be carried out for the kinked universality class, using \relu{} as the representative activation.
+\begin{figure*}[ht]
+ \centering
+ \includegraphics[width=1.0\textwidth]{figures/theory/kinked_scaling_collapse.pdf}
+ \caption{Kinked counterpart to Fig.~\ref{fig:uni_scaling}, using the formal two-parameter \relu{} channel above. Legends give the fixed probability $p=1-\rho$. Rescaling uses $h=\chi(1/\rho-1)$ at each point, and the horizontal coordinate is $-u$ relative to Eq.~\eqref{eq:def_u}. This is a normal-form comparison, not a scan of independently tunable finite-variance \relu{} initializations.}
+ \label{fig:kinked_collapse}
+\end{figure*}
+
+\FloatBarrier
+
+\subsection{Dropout Scheduling Experiments}
+
+We write the mean training dropout probability as $\bar p$, distinct from the theoretical field $h$. In the training figures, the original axis labels $h$ and $\bar h$ denote raw dropout probabilities. Accuracy tables report means $\pm$ sample SEM; best accuracy is each seed's maximum recorded test accuracy, then averaged across seeds.
+
+The scheduling experiments below test Sec.~\ref{subsec:optimal_dropout}: MLP schedules in Fig.~\ref{fig:dropout_regimes_overfit} and Tab.~\ref{tab:dropout_summary_L6_run2}, matched-budget controls in Fig.~\ref{fig:triple_dropout} and Tab.~\ref{tab:triple_summary}, robustness sweeps in Fig.~\ref{fig:mlp_sweeps}, ViT CIFAR-100 schedules in Fig.~\ref{fig:dropout_regimes_transformer} and Tab.~\ref{tab:schedule_comparison_cifar_100}, and transformer ablations in Fig.~\ref{fig:ablations} and Tab.~\ref{tab:ablation_results}.
+
+\FloatBarrier
+
+\subsection{MLPs}
+
+Finite-width experiments support these spatial scheduling predictions. The main finding is that concentrating dropout in early layers, where a mask has the largest downstream regularization reach, yields the best generalization. The theoretically motivated schedules improve over constant dropout at no extra computational cost.
+
+To test this prediction in a controlled finite-width setting, we design an experiment in the overfitting regime, where information propagation and regularization are both important factors in determining performance. In the effective-theory treatment of \cite{roberts2022principlesdeeplearningtheory}, deviations from Gaussian mean-field behavior \cite{neal1996bayesian,Lee2018DNNasGP} generate corrections to the correlation recursions that are suppressed by $1/N$ (with $N$ the layer width) and accumulate across depth as $L/N$. At the same time, deep information propagation suggests that successful learning is controlled by a modest multiple of the correlation length \cite{schoenholz2017deepinformationpropagation}.
+
+We train on 5000 CIFAR-10 images with width 256, depth \(L=6\), and batch size 100. We use Gaussian weights with $\sigma_w^2=1.98$ and bias variance $\sigma_b^2=0.02$, close to the no-dropout He weight scale. This choice does not ensure stationary variance under dropout: the ReLU variance multiplier is $\sigma_w^2/(2\rho)$, which exceeds one at the tested dropout rates. These are finite-depth training experiments, and the tabulated $\xi_{\rm eff}$ values are reference diagnostics, not measured propagation lengths during training.
+
+We compare uniform dropout, increasing and decreasing linear profiles, and step profiles concentrated in the first or last half of the network, all at the same mean dropout probability. No dropout is a separate zero-budget control (Fig.~\ref{fig:dropout_regimes_overfit}). The training code allocates raw dropout probabilities; these are proportional to the theoretical field only to leading order. Front-loaded profiles outperform both uniform and back-loaded profiles here. Early and late steps have the same reference $\xi_{\rm eff}$ but different test performance, so propagation length alone does not explain the ordering. The regularization-reach heuristic motivates the preference for early placement.
+
+\begin{figure*}[ht]
+ \centering
+ \includegraphics[width=0.8\textwidth]{figures/experiments/mlp/dropout_schedules_overfit.pdf}
+ \caption{Finite-width MLP training and test curves at fixed mean dropout probability \(\bar p\) (with \(0 \le p_\ell \le p_{\max}\)). We compare uniform dropout, linear ramps (increasing/decreasing with depth), and step schedules that concentrate dropout in either
+ the first or last half of the network, together with the no-dropout baseline.}
+ \label{fig:dropout_regimes_overfit}
+\end{figure*}
+
+\begin{table}[t]
+\caption{Performance of different dropout schedules in the overfitting regime for MLPs and CIFAR-10, corresponding to Fig.~\ref{fig:dropout_regimes_overfit}.}
+\label{tab:dropout_summary_L6_run2}
+\centering
+\begin{tabular}{lcccc}
+\hline\hline
+Schedule & $\xi_{\mathrm{eff}}$ & $L/\xi_{\mathrm{eff}}$ & Best Test Acc. (\%) & Final Test Acc. (\%) \\
+\hline
+Constant & $3.20$ & $1.87$ & $42.54 \pm 0.10$ & $41.84 \pm 0.10$ \\
+Step (late) & $5.09$ & $1.18$ & $40.56 \pm 0.11$ & $39.60 \pm 0.13$ \\
+Step (early) & $5.09$ & $1.18$ & $43.13 \pm 0.07$ & $42.67 \pm 0.09$ \\
+Linear (increasing) & $3.73$ & $1.61$ & $41.01 \pm 0.08$ & $40.12 \pm 0.12$ \\
+Linear (decreasing) & $3.73$ & $1.61$ & $43.11 \pm 0.09$ & $42.69 \pm 0.10$ \\
+No dropout & $\infty$ & $0$ & $38.77 \pm 0.10$ & $38.34 \pm 0.12$ \\
+\hline\hline
+\end{tabular}
+\end{table}
+
+The budget-control experiment checks a simpler explanation: early-concentrated dropout may only be winning because it raises the local dropout rate, not because the allocation over depth matters. After all, the step schedule applies dropout at rate $2\bar{p}$ to the first half of the network, so perhaps the same improvement could be achieved by applying this higher rate uniformly throughout.
+
+To disentangle allocation from total dropout strength, we compare constant schedules with probabilities $\bar p,2\bar p,3\bar p$ against step schedules using $2\bar p$ in the first half or $3\bar p$ in the first third of the network (Fig.~\ref{fig:triple_dropout}, Tab.~\ref{tab:triple_summary}).
+
+\clearpage
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=1.0\linewidth]{figures/experiments/mlp/dropout_budget_comparison.pdf}
+ \caption{Matched-budget controls comparing front-loaded step schedules against constant dropout probabilities at $\bar p$, $2\bar p$, and $3\bar p$.}
+ \label{fig:triple_dropout}
+ \end{figure}
+\FloatBarrier
+If the step schedules succeed merely because they apply locally higher dropout rates, then the uniform schedules with matching dropout should perform at least as well. In contrast, if spatial allocation genuinely matters, the step schedules should outperform their uniform counterparts despite having lower total dropout.
+The results in Fig.~\ref{fig:triple_dropout} and Table~\ref{tab:triple_summary} confirm that spatial allocation dominates: Big step ($\xi_{\text{eff}} = 6.7$) achieves the highest accuracy despite having only one-third the total dropout of the schedule with $3\bar p$, and front-loaded step ($\xi_{\text{eff}} = 5.1$) outperforms Double despite half the total dropout budget. Moreover, increasing uniform dropout beyond $2\bar{p}$ becomes counterproductive; Triple ($3\bar{p}$) performs worst among all dropout schedules, as excessive regularization throughout the network impairs learning capacity. These controls support a benefit from early allocation beyond simply increasing the uniform dropout rate. They do not establish a monotonic relationship between reference correlation length and generalization: the no-dropout control has infinite reference length and lower accuracy, and early and late steps share a reference length.
+
+Higher-order terms become relevant as dropout increases. The tested probabilities up to $0.3$ probe beyond the strictly weak-dropout limit; the theory does not set a validity threshold at this value. The lower-probability comparisons are reported in the budget sweep below.
+
+\begin{table}[ht]
+\caption{Summary of dropout schedules, correlation lengths, and test performance for MLPs on CIFAR-10, corresponding to Fig.~\ref{fig:triple_dropout}.}
+\label{tab:triple_summary}
+\centering
+\begin{tabular}{lcccc}
+\hline\hline
+Schedule & $\xi_{\mathrm{eff}}$ & $L/\xi_{\mathrm{eff}}$ & Best Test Acc. (\%) & Final Test Acc. (\%) \\
+\hline
+No dropout & $\infty$ & $0.00$ & $38.77 \pm 0.10$ & $38.34 \pm 0.12$ \\
+Constant & $3.20$ & $1.87$ & $42.54 \pm 0.10$ & $41.84 \pm 0.10$ \\
+Step (early) & $5.09$ & $1.18$ & $43.13 \pm 0.07$ & $42.67 \pm 0.09$ \\
+Big step (1/3) & $6.67$ & $0.90$ & $43.29 \pm 0.08$ & $42.92 \pm 0.10$ \\
+Double ($2\bar{p}$) & $2.54$ & $2.36$ & $41.46 \pm 0.09$ & $41.19 \pm 0.10$ \\
+Triple ($3\bar{p}$) & $2.22$ & $2.70$ & $33.94 \pm 0.23$ & $33.82 \pm 0.23$ \\
+\hline\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+ \caption{Experimental and hyperparameter configuration for high overfitting regime. Corresponding performance metrics in Fig.~\ref{fig:dropout_regimes_overfit}.}
+ \label{tab:experiment_config_2}
+ \centering
+ \begin{tabular}{l l}
+ \toprule
+ \textbf{Parameter} & \textbf{Value / Description} \\
+ \midrule
+ \multicolumn{2}{l}{\textit{Network Architecture \& Initialization}} \\
+ \midrule
+ Network Width & 256 \\
+ Depth Multiplier & 2 \\
+ Weight Variance ($\sigma_w^2$) & 1.98 \\
+ Bias Variance ($\sigma_b^2$) & 0.02 \\
+
+ \midrule
+ \multicolumn{2}{l}{\textit{Training Dynamics}} \\
+ \midrule
+ Epochs & 75 \\
+ Batch Size & 100 \\
+ Learning Rate & $1 \times 10^{-4}$ \\
+ LR Schedule & Decay to minimum $1 \times 10^{-7}$ \\
+ Mean Dropout Probability ($\bar{p}$) & 0.1 \\
+ Max Dropout Probability ($p_{\max}$) & 0.2 (Step); 0.3 (Big step) \\
+ Step Active Fraction ($f$) & $1/2$ (Step); $1/3$ (Big step) \\
+ \midrule
+ \multicolumn{2}{l}{\textit{General Setup}} \\
+ \midrule
+ Number of Simulations & 25 \\
+ Dataset Usage & CIFAR-10 5,000 train / 5,000 test samples \\
+ Hardware & GPU A100 \\
+ \bottomrule
+ \end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\subsection{Robustness Sweeps}
+\label{app:sweeps}
+\setlength{\textfloatsep}{6pt plus 1pt minus 2pt}
+\setlength{\floatsep}{6pt plus 1pt minus 2pt}
+\setlength{\dbltextfloatsep}{6pt plus 1pt minus 2pt}
+\setlength{\dblfloatsep}{6pt plus 1pt minus 2pt}
+
+To test whether scheduling is tied to one budget, width, or activation, we ran CIFAR-10 MLP sweeps (Figs.~\ref{fig:mlp_sweeps} and \ref{fig:gelu_h_sweep}). The \relu{} sweeps probe mean-field boundaries: at \(\bar p=0.15\), Step/Big step use large local dropout probabilities \(0.30/0.45\); at \(N=64\), finite-width non-Gaussianity weakens the correlation-length prediction. The GELU MLP sweep gives the same best-accuracy ordering at \(\bar p=0.1\)--constant \(41.96\pm0.16\), Step \(42.24\pm0.15\), Big step \(42.46\pm0.12\)--and Big step falls to \(38.97\pm0.23\) at \(\bar p=0.15\), matching this perturbative-boundary picture. The final-epoch gains summarized in Table~\ref{tab:loss_improvements} use the last recorded epoch, giving \(+2.04\) pp for the \relu{} \(\bar p=0.1\) sweep and \(+0.62\) pp for the GELU \(\bar p=0.1\) sweep.
+
+\begin{figure*}[t]
+ \centering
+ \subfigure[Sweep over mean dropout probability at width \(N=256\).]{
+ \includegraphics[width=0.45\textwidth]{figures/experiments/sweeps/h_sweep_schedule_comparison.pdf}
+ }
+ \subfigure[Schedule advantage over constant dropout at \(\bar p=0.1\).]{
+ \includegraphics[width=0.45\textwidth]{figures/experiments/sweeps/width_sweep_baseline_advantage.pdf}
+ }
+ \caption{Robustness sweeps for depth-6 near-critical \relu{} MLPs on CIFAR-10. Early schedules improve over constant dropout throughout the large-width regime, while \(N=64\) illustrates the expected finite-width boundary.}
+ \label{fig:mlp_sweeps}
+\end{figure*}
+
+\begin{figure*}[t]
+ \centering
+ \includegraphics[width=0.72\textwidth]{figures/experiments/sweeps/gelu_h_sweep_delta.pdf}
+ \caption{Smooth-activation dropout sweep for depth-6 near-critical GELU MLPs on CIFAR-10 at width \(N=256\). Step-like schedules improve over constant dropout around \(\bar p=0.1\), while the largest probability leaves the small-dropout regime where the mean-field perturbation is expected to be predictive.}
+ \label{fig:gelu_h_sweep}
+\end{figure*}
+
+\FloatBarrier
+
+\subsection{Transformers on CIFAR-100}
+Table~\ref{tab:vit_config} and Fig.~\ref{fig:dropout_regimes_transformer} detail the architectural parameters and corresponding test dynamics for the CIFAR-100 Vision Transformer evaluation \cite{dosovitskiy2021vit,krizhevsky2009cifar}; Table~\ref{tab:schedule_comparison_cifar_100} reports the schedule comparison.
+\begin{figure*}[h]
+ \centering
+ \includegraphics[width=0.95\textwidth]{figures/experiments/transformer/dropout_schedules_cropped.pdf}
+ \caption{Finite-width Vision Transformer training and test curves at fixed mean dropout probability \(\bar p\). We compare the no-dropout baseline, uniform dropout, decreasing linear ramps, and early step schedules. The cropped view shows epochs 20--75 for readability; the full curve is also in App.~\ref{app:experimental_info}.}
+ \label{fig:dropout_regimes_transformer}
+\end{figure*}
+\begin{figure}[t]
+ \centering
+ \includegraphics[width=0.95\linewidth]{figures/experiments/transformer/dropout_schedules_full.pdf}
+ \caption{Extended training curves for Figure~\ref{fig:dropout_regimes_transformer}, showing the full 75 epochs.}
+ \label{fig:transformer_full}
+\end{figure}
+
+\begin{table}[h]
+ \caption{Reported recipe for the CIFAR-100 Vision Transformer. The saved metrics contain ten 75-epoch runs per profile but no run configuration. The archived notebook was set to a one-seed, small-data pilot; the current defaults follow this table. Dataset size and training settings for the historical metrics therefore cannot be independently verified from that archive.}
+ \label{tab:vit_config}
+ \centering
+ \footnotesize
+ \setlength{\tabcolsep}{3pt}
+ \renewcommand{\arraystretch}{0.9}
+ \begin{tabular}{l l}
+ \toprule
+ \textbf{Parameter} & \textbf{Value / Description} \\
+ \midrule
+ \multicolumn{2}{l}{\textit{ViT Architecture}} \\
+ \midrule
+ Embedding Dimension & 128 \\
+ Depth & 10 \\
+ Number of Heads & 16 \\
+ MLP Ratio & 4.0 \\
+ Patch Size & 4 \\
+ \midrule
+ \multicolumn{2}{l}{\textit{Training Dynamics}} \\
+ \midrule
+ Epochs & 75 \\
+ Batch Size & 250 \\
+ Learning Rate & $5 \times 10^{-4}$ \\
+ LR Minimum & $5 \times 10^{-6}$ \\
+ Weight Decay & 0.00 \\
+ Mean Dropout Probability ($\bar{p}$) & 0.1 \\
+ Max Dropout Probability ($p_{\max}$) & 0.2 \\
+ Schedules & None, Constant, Step (early), Linear (decreasing) \\
+ \midrule
+ \multicolumn{2}{l}{\textit{General Setup}} \\
+ \midrule
+ Number of Simulations & 10 \\
+ Dataset Usage & Full CIFAR-100 \\
+ Evaluation Frequency & Every 1 Epoch \\
+ Hardware & GPU A100 \\
+ \bottomrule
+ \end{tabular}
+\end{table}
+
+Accuracy curves are shown in Fig.~\ref{fig:dropout_regimes_transformer}, with explicit results in Table~\ref{tab:schedule_comparison_cifar_100}. Errors in this accuracy table and its accompanying curves are SEM. On CIFAR-100 (and similarly on CIFAR-10), concentrating dropout earlier consistently improved accuracy and reduced overfitting. Interestingly, linear decreasing schedules, which put more dropout in early layers, often performed especially well in transformers; residual connections were introduced in \cite{he2016resnet}, and mean-field analyses show that they ease information propagation \cite{yang2017meanfieldresnets}. We suspect this makes distributing regularization early preferable empirically, though both early weighted and step-like schedules outperformed the constant baseline.
+
+These experiments test a scheduling idea motivated by MLP initialization theory. Attention, residual connections, and feature learning are outside the derived model, so the observed Transformer gains are empirical evidence for transfer of the schedule, not a verification of its mean-field mechanism. We leave ImageNet-scale evaluation \cite{imagenet} to future work.
+
+\begin{table}[H]
+ \caption{Test accuracy across different dropout schedules for ViT architecture on CIFAR-100, corresponding to Fig.~\ref{fig:dropout_regimes_transformer}.}
+ \label{tab:schedule_comparison_cifar_100}
+ \centering
+ \footnotesize
+ \begin{tabular}{l c c}
+ \toprule
+ \textbf{Schedule} & \textbf{Best Test Acc} & \textbf{Final Test Acc} \\
+ \midrule
+ No dropout & $44.61 \pm 0.25$ & $44.50 \pm 0.25$ \\
+ Constant & $48.69 \pm 0.18$ & $48.61 \pm 0.20$ \\
+ Step (early) & $49.10 \pm 0.11$ & $49.01 \pm 0.12$ \\
+ Linear (decreasing) & $49.38 \pm 0.14$ & $49.27 \pm 0.14$ \\
+ \bottomrule
+ \end{tabular}
+\end{table}
+
+\FloatBarrier
+
+\subsection{Transformer Ablations}
+To isolate the effect of dropout scheduling on distinct transformer components, we performed component-level ablations. We tested transformers with dropout applied exclusively to the attention block, the MLP block, or both, comparing step-like and constant schedules against a no-dropout baseline. We use the full CIFAR-10 dataset, five seeds, and a 12-block ViT with embedding dimension 128, 16 attention heads, MLP ratio 4, and patch size 4. Training runs for 75 epochs on an A100 with batch size 1000, learning rate $5\times10^{-4}$ decaying to $5\times10^{-6}$, and zero weight decay. Regularized profiles use $\bar p=0.1$ and $p_{\max}=0.2$; evaluation is recorded every epoch.
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=1\linewidth]{figures/experiments/transformer/component_ablations.pdf}
+ \caption{Component ablations applying dropout schedules to the attention block, MLP block, or both. The figure compares no dropout, constant dropout, and step-like dropout.}
+ \label{fig:ablations}
+\end{figure}
+
+
+
+\begin{table}[H]
+ \caption{Component-level ablations on CIFAR-10, comparing Constant and Step-like dropout schedules applied exclusively to the MLP block, Attention block, or both. Means $\pm$ sample SEM over five seeds. Best accuracy averages each seed's maximum recorded test accuracy; final accuracy uses the last epoch. The early-step mean exceeds the uniform mean in all three configurations, without establishing significance for each comparison.}
+ \label{tab:ablation_results}
+ \centering
+ \begin{tabular}{l c c}
+ \toprule
+ \textbf{Configuration} & \textbf{Best Test Acc} & \textbf{Final Test Acc} \\
+ \midrule
+ No dropout & $72.22 \pm 0.16$ & $72.15 \pm 0.16$ \\
+ \midrule
+ MLP only (Constant) & $72.96 \pm 0.13$ & $72.82 \pm 0.14$ \\
+ MLP only (Step early) & $73.38 \pm 0.28$ & $73.30 \pm 0.30$ \\
+ \midrule
+ Attn only (Constant) & $74.00 \pm 0.10$ & $73.95 \pm 0.11$ \\
+ Attn only (Step early) & $74.48 \pm 0.10$ & $74.38 \pm 0.10$ \\
+ \midrule
+ Both (Constant) & $74.92 \pm 0.11$ & $74.78 \pm 0.11$ \\
+ Both (Step early) & $75.47 \pm 0.14$ & $75.30 \pm 0.13$ \\
+ \bottomrule
+ \end{tabular}
+\end{table}
+
+\FloatBarrier

@@ -1,0 +1,1446 @@
+{
+  "schema_version": 1,
+  "description": "Paired seed endpoints for the two main experimental comparison tables. Selected profiles are fixed; all accuracy vectors use percent units.",
+  "pairing": {
+    "original": "Seed 42 + simulation index was reset before model construction for each profile in the saved notebook loops. The original arrays preserve simulation order; they do not carry explicit seed identifiers. This does not imply identical dropout masks or minibatch orders.",
+    "benchmarks": "Uniform and frontloaded runs share the listed explicit seed IDs and data split within each cohort. Rows preserve that seed order."
+  },
+  "inference": "Nominal 95% paired Fieller confidence sets for percentage loss reduction (ratio of means), and paired Student-t intervals for mean accuracy gain in percentage points; degrees of freedom n-1. Independent seed pairs and approximately normal across-seed outcomes are assumed. Intervals condition on the fixed data split and selected profiles; they exclude schedule/hyperparameter/epoch-selection uncertainty and are not adjusted for multiple comparisons.",
+  "endpoint_definitions": {
+    "original_final": "Last recorded epoch of training.",
+    "original_minimum": "Minimum recorded test loss separately for each seed and profile; this retrospective endpoint uses the test set to choose an epoch.",
+    "benchmark_checkpoint": "Test evaluation at each run's minimum-validation-loss checkpoint.",
+    "benchmark_final": "Last training epoch; absent where not recorded for all pairs."
+  },
+  "original": [
+    {
+      "dataset": "CIFAR-10",
+      "model": "MLP schedules",
+      "n": 25,
+      "epochs": 75,
+      "profile": "Step early",
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66
+      ],
+      "source": {
+        "results_file": "mlp_schedules.npz",
+        "results_sha256": "0c347bca4756e65f7409388daf43519a02d58807f3b44dae0af62ba6f48496a7",
+        "uniform_key": "constant",
+        "frontloaded_key": "reverse_step",
+        "notebook_sha256": "8cd4c658a3059943fc21380588db55c832f325f504b19c3a637b1dc1b6658116"
+      },
+      "metrics": {
+        "final_loss": {
+          "uniform": [
+            2.202641291618347,
+            2.18611287355423,
+            2.2687201356887816,
+            2.2241072821617127,
+            2.182138934135437,
+            2.2293946647644045,
+            2.2639035749435426,
+            2.1809393429756163,
+            2.221347544193268,
+            2.2097827863693236,
+            2.2103427600860597,
+            2.2185025358200074,
+            2.1897562313079835,
+            2.15440997838974,
+            2.2382130575180055,
+            2.2534013175964356,
+            2.259591863155365,
+            2.2873616886138914,
+            2.174131009578705,
+            2.306880922317505,
+            2.166359238624573,
+            2.1661031436920166,
+            2.2974491500854493,
+            2.262847249507904,
+            2.2269900321960447
+          ],
+          "frontloaded": [
+            1.8311470913887025,
+            1.801298668384552,
+            1.8399008631706237,
+            1.862005934715271,
+            1.7849481010437012,
+            1.8702057456970216,
+            1.8417358231544494,
+            1.7990827369689941,
+            1.821844871044159,
+            1.829190034866333,
+            1.8287436747550965,
+            1.8113503193855285,
+            1.806647379398346,
+            1.824654324054718,
+            1.783087396621704,
+            1.82254075050354,
+            1.858018069267273,
+            1.83790522813797,
+            1.8099016070365905,
+            1.8416004991531372,
+            1.8005564856529235,
+            1.8022328543663024,
+            1.8345114588737488,
+            1.861219172477722,
+            1.8477624654769897
+          ]
+        },
+        "minimum_loss": {
+          "uniform": [
+            1.6704661822319031,
+            1.6712388753890992,
+            1.688596441745758,
+            1.6774643659591675,
+            1.672250852584839,
+            1.673851101398468,
+            1.6799743938446046,
+            1.662978527545929,
+            1.6755569577217102,
+            1.6722765946388245,
+            1.673380162715912,
+            1.6800376462936402,
+            1.6836256861686707,
+            1.6651568627357483,
+            1.685068016052246,
+            1.6944966316223145,
+            1.6723043704032898,
+            1.6755222725868224,
+            1.6925846242904663,
+            1.6890618538856506,
+            1.6665742230415344,
+            1.6633072638511657,
+            1.6873787021636963,
+            1.6872546672821045,
+            1.6751188278198241
+          ],
+          "frontloaded": [
+            1.6526159048080444,
+            1.6407855892181396,
+            1.659833459854126,
+            1.6542804193496705,
+            1.6570217418670654,
+            1.6641052293777465,
+            1.6704629969596863,
+            1.6438763809204102,
+            1.647062075138092,
+            1.6523601412773132,
+            1.6532942628860474,
+            1.643052728176117,
+            1.637169167995453,
+            1.6547357964515685,
+            1.6525485396385193,
+            1.664274582862854,
+            1.650980839729309,
+            1.6493729162216186,
+            1.6535051608085631,
+            1.6559744763374329,
+            1.652483003139496,
+            1.6396863627433778,
+            1.6655028176307678,
+            1.6649704217910766,
+            1.658743782043457
+          ]
+        },
+        "final_accuracy_percent": {
+          "uniform": [
+            42.22,
+            41.88,
+            41.94,
+            42.16,
+            41.9,
+            42.76,
+            42.36,
+            42.18,
+            41.84,
+            41.92,
+            42.04,
+            41.16,
+            42.02,
+            42.04,
+            41.04,
+            40.82,
+            41.72,
+            42.48,
+            41.52,
+            41.96,
+            41.78,
+            42.48,
+            41.22,
+            40.88,
+            41.68
+          ],
+          "frontloaded": [
+            42.56,
+            42.58,
+            42.18,
+            43.16,
+            42.4,
+            42.56,
+            42.08,
+            42.8,
+            43.16,
+            43.08,
+            43.28,
+            43.56,
+            42.78,
+            43.18,
+            42.66,
+            42.52,
+            41.96,
+            42.76,
+            42.88,
+            42.94,
+            42.28,
+            41.94,
+            42.3,
+            42.32,
+            42.78
+          ]
+        }
+      }
+    },
+    {
+      "dataset": "CIFAR-10",
+      "model": "MLP budget controls",
+      "n": 25,
+      "epochs": 75,
+      "profile": "Big step",
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66
+      ],
+      "source": {
+        "results_file": "mlp_budget_controls.npz",
+        "results_sha256": "93955792a59e75a39b88dec27c5e9fe85f63b245d9668fe404e1501bbe38e4e5",
+        "uniform_key": "constant",
+        "frontloaded_key": "big_step",
+        "notebook_sha256": "84bf2a2e6317f2f6f7bdcc19d29ad80fc521a73d8e9608226db29d316f90a41b"
+      },
+      "metrics": {
+        "final_loss": {
+          "uniform": [
+            2.202641291618347,
+            2.18611287355423,
+            2.2687201356887816,
+            2.2241072821617127,
+            2.182138934135437,
+            2.2293946647644045,
+            2.2639035749435426,
+            2.1809393429756163,
+            2.221347544193268,
+            2.2097827863693236,
+            2.2103427600860597,
+            2.2185025358200074,
+            2.1897562313079835,
+            2.15440997838974,
+            2.2382130575180055,
+            2.2534013175964356,
+            2.259591863155365,
+            2.2873616886138914,
+            2.174131009578705,
+            2.306880922317505,
+            2.166359238624573,
+            2.1661031436920166,
+            2.2974491500854493,
+            2.262847249507904,
+            2.2269900321960447
+          ],
+          "frontloaded": [
+            1.7135524868965148,
+            1.7063720607757569,
+            1.724365975856781,
+            1.7318848061561585,
+            1.7136578273773193,
+            1.7123877573013306,
+            1.7405716824531554,
+            1.6933933877944947,
+            1.7325986862182616,
+            1.7172667026519775,
+            1.7270919132232665,
+            1.702820954322815,
+            1.7229932236671448,
+            1.7241662526130677,
+            1.7220961833000183,
+            1.728866446018219,
+            1.7248939323425292,
+            1.707282793521881,
+            1.7106800603866577,
+            1.736837179660797,
+            1.7239370846748352,
+            1.70864577293396,
+            1.7411342406272887,
+            1.7193990755081177,
+            1.7273271894454956
+          ]
+        },
+        "minimum_loss": {
+          "uniform": [
+            1.6704661822319031,
+            1.6712388753890992,
+            1.688596441745758,
+            1.6774643659591675,
+            1.672250852584839,
+            1.673851101398468,
+            1.6799743938446046,
+            1.662978527545929,
+            1.6755569577217102,
+            1.6722765946388245,
+            1.673380162715912,
+            1.6800376462936402,
+            1.6836256861686707,
+            1.6651568627357483,
+            1.685068016052246,
+            1.6944966316223145,
+            1.6723043704032898,
+            1.6755222725868224,
+            1.6925846242904663,
+            1.6890618538856506,
+            1.6665742230415344,
+            1.6633072638511657,
+            1.6873787021636963,
+            1.6872546672821045,
+            1.6751188278198241
+          ],
+          "frontloaded": [
+            1.6400886607170104,
+            1.6229537677764894,
+            1.6445484256744385,
+            1.6425902915000916,
+            1.648678433895111,
+            1.6416163897514344,
+            1.6571348476409913,
+            1.6150670313835145,
+            1.6463471937179566,
+            1.6554743456840515,
+            1.6366150879859924,
+            1.6271001863479615,
+            1.637238585948944,
+            1.6472787022590638,
+            1.640647053718567,
+            1.6532588052749633,
+            1.638332736492157,
+            1.6405628323554993,
+            1.6486764240264893,
+            1.6433298659324647,
+            1.6415298628807067,
+            1.642443745136261,
+            1.6665907859802247,
+            1.643114149570465,
+            1.6468628287315368
+          ]
+        },
+        "final_accuracy_percent": {
+          "uniform": [
+            42.22,
+            41.88,
+            41.94,
+            42.16,
+            41.9,
+            42.76,
+            42.36,
+            42.18,
+            41.84,
+            41.92,
+            42.04,
+            41.16,
+            42.02,
+            42.04,
+            41.04,
+            40.82,
+            41.72,
+            42.48,
+            41.52,
+            41.96,
+            41.78,
+            42.48,
+            41.22,
+            40.88,
+            41.68
+          ],
+          "frontloaded": [
+            43.52,
+            42.48,
+            43.36,
+            43.02,
+            43.46,
+            43.7,
+            42.74,
+            43.32,
+            42.74,
+            43.38,
+            42.88,
+            43.0,
+            42.8,
+            43.02,
+            42.0,
+            42.64,
+            43.2,
+            42.76,
+            43.36,
+            42.78,
+            42.36,
+            42.96,
+            42.12,
+            43.38,
+            41.94
+          ]
+        }
+      }
+    },
+    {
+      "dataset": "CIFAR-10",
+      "model": "ReLU p=0.1",
+      "n": 3,
+      "epochs": 125,
+      "profile": "Big step",
+      "seeds": [
+        42,
+        43,
+        44
+      ],
+      "source": {
+        "results_file": "mlp_dropout_sweep.npz",
+        "results_sha256": "932478a2e7a9943993472be172e6430fa9b61ded4be2f284b535abb1485d82f5",
+        "uniform_key": "(0.1, 'constant')",
+        "frontloaded_key": "(0.1, 'big_step')",
+        "notebook_sha256": "03435284fcb1da042b43de216ef113944c347162ff32d5ac59b173f858fd8bb5"
+      },
+      "metrics": {
+        "final_loss": {
+          "uniform": [
+            3.095840406417847,
+            3.170425395965576,
+            3.128244137763977
+          ],
+          "frontloaded": [
+            1.9759820222854614,
+            2.0472865509986877,
+            2.0426293206214905
+          ]
+        },
+        "minimum_loss": {
+          "uniform": [
+            1.6999198698997497,
+            1.6983173036575316,
+            1.6945222735404968
+          ],
+          "frontloaded": [
+            1.636935977935791,
+            1.6705096864700317,
+            1.6624337196350099
+          ]
+        },
+        "final_accuracy_percent": {
+          "uniform": [
+            40.62,
+            40.36,
+            40.38
+          ],
+          "frontloaded": [
+            42.94,
+            41.82,
+            42.72
+          ]
+        }
+      }
+    },
+    {
+      "dataset": "CIFAR-10",
+      "model": "GELU p=0.1",
+      "n": 10,
+      "epochs": 75,
+      "profile": "Big step",
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51
+      ],
+      "source": {
+        "results_file": "mlp_gelu.npz",
+        "results_sha256": "1c28fead70e1420a5d23cf9c0593a4173e6feb6f41256cb2f218748f2238ccb1",
+        "uniform_key": "(0.1, 'constant')",
+        "frontloaded_key": "(0.1, 'big_step')",
+        "notebook_sha256": "a56b2946de759226195976cdb80495875cd8700e48404c075aa4622035ca12ec"
+      },
+      "metrics": {
+        "final_loss": {
+          "uniform": [
+            2.6521602761745453,
+            2.6258700460195543,
+            2.6466793328523637,
+            2.649025647640228,
+            2.5202870845794676,
+            2.5543971711397173,
+            2.648015175461769,
+            2.554043471813202,
+            2.6017688423395158,
+            2.602543467283249
+          ],
+          "frontloaded": [
+            1.8392380398511887,
+            1.8528285378217697,
+            1.8286012405157088,
+            1.8552032995224,
+            1.789071170091629,
+            1.8534204578399658,
+            1.8120476251840592,
+            1.811186091899872,
+            1.8284692466259003,
+            1.8224951231479645
+          ]
+        },
+        "minimum_loss": {
+          "uniform": [
+            1.7240308624505998,
+            1.7184512275457382,
+            1.7136315339803696,
+            1.7055783718824387,
+            1.7059613293409348,
+            1.6990938061475753,
+            1.7370843225717545,
+            1.7110239219665528,
+            1.7230858093500137,
+            1.7224535554647447
+          ],
+          "frontloaded": [
+            1.6945042806863784,
+            1.6820274597406388,
+            1.6792687565088271,
+            1.6728465008735656,
+            1.6496248829364777,
+            1.674699833393097,
+            1.674839443564415,
+            1.6640427613258362,
+            1.6843915516138077,
+            1.6634725093841554
+          ]
+        },
+        "final_accuracy_percent": {
+          "uniform": [
+            41.06,
+            41.12,
+            41.36,
+            41.9,
+            41.96,
+            42.06,
+            40.7,
+            41.32,
+            41.78,
+            41.18
+          ],
+          "frontloaded": [
+            41.8,
+            42.38,
+            41.66,
+            41.36,
+            42.54,
+            42.2,
+            42.1,
+            41.76,
+            42.08,
+            42.74
+          ]
+        }
+      }
+    },
+    {
+      "dataset": "CIFAR-100",
+      "model": "ViT",
+      "n": 10,
+      "epochs": 75,
+      "profile": "Linear decreasing",
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51
+      ],
+      "source": {
+        "results_file": "vit_schedules.json",
+        "results_sha256": "9301bcbd5c3404970da872bbac3966585a0ca5d20e49ce96ad8833c100ccefb6",
+        "uniform_key": "constant",
+        "frontloaded_key": "reverse_linear",
+        "notebook_sha256": "eff714d208e0d42002af3bb8a9c00775c3807216596c04b02501f8f2e6bab372"
+      },
+      "metrics": {
+        "final_loss": {
+          "uniform": [
+            3.7664732217788695,
+            3.6891314506530763,
+            3.7460561871528624,
+            3.6317699193954467,
+            3.7990259647369387,
+            3.728182375431061,
+            3.772419846057892,
+            3.6767353653907775,
+            3.7352808594703673,
+            3.733689379692078
+          ],
+          "frontloaded": [
+            3.5995357513427733,
+            3.5055762410163878,
+            3.6015207886695864,
+            3.5538106083869936,
+            3.57802928686142,
+            3.613431084156036,
+            3.6408687591552735,
+            3.508698809146881,
+            3.5490715503692627,
+            3.579764151573181
+          ]
+        },
+        "minimum_loss": {
+          "uniform": [
+            2.1478593587875365,
+            2.0969417989254,
+            2.1332763910293577,
+            2.083480620384216,
+            2.148615097999573,
+            2.1186380982398987,
+            2.133551299571991,
+            2.0996258735656737,
+            2.158151626586914,
+            2.1466948628425597
+          ],
+          "frontloaded": [
+            2.0990518391132356,
+            2.0977799773216246,
+            2.100428318977356,
+            2.075290155410767,
+            2.09324711561203,
+            2.1246810376644136,
+            2.120365011692047,
+            2.0566375613212586,
+            2.091986757516861,
+            2.111007958650589
+          ]
+        },
+        "final_accuracy_percent": {
+          "uniform": [
+            48.4,
+            49.09,
+            48.42,
+            49.7,
+            47.93,
+            48.65,
+            47.78,
+            49.42,
+            48.24,
+            48.51
+          ],
+          "frontloaded": [
+            48.94,
+            49.78,
+            48.91,
+            49.98,
+            49.4,
+            48.98,
+            48.68,
+            49.58,
+            49.47,
+            49.03
+          ]
+        }
+      }
+    },
+    {
+      "dataset": "CIFAR-10",
+      "model": "ViT both-block ablation",
+      "n": 5,
+      "epochs": 75,
+      "profile": "Step early",
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "source": {
+        "results_file": "vit_ablation.json",
+        "results_sha256": "86e2d0df7937cdf75336f8d47fa476ed3953c4aab253a15d362c84ece0e07470",
+        "uniform_key": "both_constant",
+        "frontloaded_key": "both_reverse_step",
+        "notebook_sha256": "22249e12af4e76823623e43b690ad7235a1ca0091ea5f46b4eee97cd576a7359"
+      },
+      "metrics": {
+        "final_loss": {
+          "uniform": [
+            1.6993825078010558,
+            1.6305712819099427,
+            1.6527786254882812,
+            1.6473681569099425,
+            1.6466687321662903
+          ],
+          "frontloaded": [
+            1.5207329511642456,
+            1.5463510155677795,
+            1.5658332586288453,
+            1.5705438375473022,
+            1.5501359581947327
+          ]
+        },
+        "minimum_loss": {
+          "uniform": [
+            0.8493762910366058,
+            0.8461534380912781,
+            0.8643668949604034,
+            0.8499861359596252,
+            0.8419680953025818
+          ],
+          "frontloaded": [
+            0.8421179831027985,
+            0.8496100664138794,
+            0.8584372818470001,
+            0.8270627737045289,
+            0.8355941832065582
+          ]
+        },
+        "final_accuracy_percent": {
+          "uniform": [
+            74.35,
+            74.92,
+            74.88,
+            74.76,
+            74.98
+          ],
+          "frontloaded": [
+            75.71,
+            75.19,
+            74.89,
+            75.35,
+            75.36
+          ]
+        }
+      }
+    }
+  ],
+  "benchmarks": [
+    {
+      "dataset": "Speech Commands",
+      "model": "MLP",
+      "n": 5,
+      "epochs": 50,
+      "train_size": 20020,
+      "weight_decay": 0,
+      "profile": "Step early",
+      "profile_id": "step_early",
+      "seeds": [
+        100,
+        101,
+        102,
+        103,
+        104
+      ],
+      "split_hash": "30e95358a6f2810d2ae0e7c69fdf0538715f2cec4407047226ce753b37be587e",
+      "source": {
+        "confirmation_sha256": "a38b3e751dac74bb4d90ee0a88b666a071ace6562c1593ced5240c034fa531d1"
+      },
+      "selection": "Lowest mean per-run minimum validation loss among complete paired frontloaded profiles in saved results; not a fresh blind confirmation.",
+      "metrics": {
+        "checkpoint_loss": {
+          "uniform": [
+            1.087451309829087,
+            1.0658924368592528,
+            1.0644847244768592,
+            1.0609646718580643,
+            1.086778269804917
+          ],
+          "frontloaded": [
+            0.9300405769081382,
+            0.9292395198738184,
+            0.9468305485350984,
+            0.9363100106185014,
+            0.9412890255629838
+          ]
+        },
+        "checkpoint_accuracy_percent": {
+          "uniform": [
+            71.86813186813187,
+            72.41758241758241,
+            72.3976023976024,
+            72.46753246753246,
+            71.998001998002
+          ],
+          "frontloaded": [
+            74.31568431568432,
+            74.23576423576424,
+            73.63636363636363,
+            73.8961038961039,
+            74.21578421578423
+          ]
+        },
+        "final_loss": null,
+        "final_accuracy_percent": null
+      }
+    },
+    {
+      "dataset": "Speech Commands",
+      "model": "Transformer",
+      "n": 5,
+      "epochs": 50,
+      "train_size": 20020,
+      "weight_decay": 0,
+      "profile": "Big step",
+      "profile_id": "big_step",
+      "seeds": [
+        100,
+        101,
+        102,
+        103,
+        104
+      ],
+      "split_hash": "30e95358a6f2810d2ae0e7c69fdf0538715f2cec4407047226ce753b37be587e",
+      "source": {
+        "confirmation_sha256": "a38b3e751dac74bb4d90ee0a88b666a071ace6562c1593ced5240c034fa531d1"
+      },
+      "selection": "Lowest mean per-run minimum validation loss among complete paired frontloaded profiles in saved results; not a fresh blind confirmation.",
+      "metrics": {
+        "checkpoint_loss": {
+          "uniform": [
+            0.7804442419991507,
+            0.7736842023028241,
+            0.7336110257959508,
+            0.6853566719935491,
+            0.7428810739374304
+          ],
+          "frontloaded": [
+            0.6865208649254226,
+            0.6632285103812203,
+            0.7074590677267069,
+            0.6327532881027931,
+            0.8437423971864012
+          ]
+        },
+        "checkpoint_accuracy_percent": {
+          "uniform": [
+            77.54245754245754,
+            79.47052947052947,
+            79.67032967032966,
+            81.3986013986014,
+            79.64035964035963
+          ],
+          "frontloaded": [
+            81.78821178821178,
+            81.81818181818183,
+            81.43856143856144,
+            82.70729270729271,
+            77.61238761238761
+          ]
+        },
+        "final_loss": null,
+        "final_accuracy_percent": null
+      }
+    },
+    {
+      "dataset": "Jannis",
+      "model": "MLP",
+      "n": 5,
+      "epochs": 100,
+      "train_size": 3840,
+      "weight_decay": 0,
+      "profile": "Step early",
+      "profile_id": "step_early",
+      "seeds": [
+        100,
+        101,
+        102,
+        103,
+        104
+      ],
+      "split_hash": "a140d27d614c131e6b3f9486d5cafabbebb6b4a4c0e574378d1a53cbd820a6de",
+      "source": {
+        "confirmation_sha256": "a38b3e751dac74bb4d90ee0a88b666a071ace6562c1593ced5240c034fa531d1"
+      },
+      "selection": "Lowest mean per-run minimum validation loss among complete paired frontloaded profiles in saved results; not a fresh blind confirmation.",
+      "metrics": {
+        "checkpoint_loss": {
+          "uniform": [
+            1.099744470914205,
+            1.1419925928115844,
+            1.127668301264445,
+            1.131513627370199,
+            1.1163686474164327
+          ],
+          "frontloaded": [
+            1.1002601583798726,
+            1.0806390563646953,
+            1.0956318219502768,
+            1.0960936228434244,
+            1.0805923700332642
+          ]
+        },
+        "checkpoint_accuracy_percent": {
+          "uniform": [
+            53.385416666666664,
+            52.864583333333336,
+            52.864583333333336,
+            52.29166666666667,
+            53.385416666666664
+          ],
+          "frontloaded": [
+            55.15624999999999,
+            54.6875,
+            52.96875,
+            53.59374999999999,
+            54.84375
+          ]
+        },
+        "final_loss": null,
+        "final_accuracy_percent": null
+      }
+    },
+    {
+      "dataset": "Jannis",
+      "model": "Transformer",
+      "n": 5,
+      "epochs": 100,
+      "train_size": 3840,
+      "weight_decay": 0,
+      "profile": "Big step",
+      "profile_id": "big_step",
+      "seeds": [
+        100,
+        101,
+        102,
+        103,
+        104
+      ],
+      "split_hash": "a140d27d614c131e6b3f9486d5cafabbebb6b4a4c0e574378d1a53cbd820a6de",
+      "source": {
+        "confirmation_sha256": "a38b3e751dac74bb4d90ee0a88b666a071ace6562c1593ced5240c034fa531d1"
+      },
+      "selection": "Lowest mean per-run minimum validation loss among complete paired frontloaded profiles in saved results; not a fresh blind confirmation.",
+      "metrics": {
+        "checkpoint_loss": {
+          "uniform": [
+            0.997858464717865,
+            0.9787081321080524,
+            0.9941684047381084,
+            0.9998104254404704,
+            0.9958290815353392
+          ],
+          "frontloaded": [
+            0.9923327326774596,
+            0.9915196816126506,
+            0.9931079228719076,
+            0.9827712257703144,
+            0.999102811018626
+          ]
+        },
+        "checkpoint_accuracy_percent": {
+          "uniform": [
+            59.47916666666667,
+            58.333333333333336,
+            59.166666666666664,
+            58.802083333333336,
+            59.114583333333336
+          ],
+          "frontloaded": [
+            59.32291666666667,
+            59.635416666666664,
+            59.32291666666667,
+            60.729166666666664,
+            57.1875
+          ]
+        },
+        "final_loss": null,
+        "final_accuracy_percent": null
+      }
+    },
+    {
+      "dataset": "Jannis",
+      "model": "Transformer",
+      "n": 10,
+      "epochs": 100,
+      "train_size": 3840,
+      "weight_decay": 1e-07,
+      "profile": "Step early",
+      "profile_id": "step_early",
+      "seeds": [
+        100,
+        101,
+        102,
+        103,
+        104,
+        105,
+        106,
+        107,
+        108,
+        109
+      ],
+      "split_hash": "a140d27d614c131e6b3f9486d5cafabbebb6b4a4c0e574378d1a53cbd820a6de",
+      "source": {
+        "confirmation_sha256": "a38b3e751dac74bb4d90ee0a88b666a071ace6562c1593ced5240c034fa531d1"
+      },
+      "selection": "Lowest mean per-run minimum validation loss among complete paired frontloaded profiles in saved results; not a fresh blind confirmation.",
+      "metrics": {
+        "checkpoint_loss": {
+          "uniform": [
+            0.9916935761769612,
+            0.9814098397890728,
+            0.9991297364234925,
+            0.9836544632911682,
+            0.9860318740208944,
+            0.9806342204411824,
+            0.9814405560493468,
+            0.9879024108250936,
+            0.9930963158607484,
+            0.993189799785614
+          ],
+          "frontloaded": [
+            1.0137922366460164,
+            0.9785101056098938,
+            0.9974882284800212,
+            0.9918551842371622,
+            1.0013237357139588,
+            0.9927472114562989,
+            0.9717782417933146,
+            0.9813437342643738,
+            0.9760884920756022,
+            1.0000380992889404
+          ]
+        },
+        "checkpoint_accuracy_percent": {
+          "uniform": [
+            59.635416666666664,
+            60.15625,
+            58.28124999999999,
+            59.791666666666664,
+            59.010416666666664,
+            60.520833333333336,
+            58.958333333333336,
+            59.166666666666664,
+            60.26041666666667,
+            58.802083333333336
+          ],
+          "frontloaded": [
+            59.947916666666664,
+            60.46875000000001,
+            59.166666666666664,
+            59.895833333333336,
+            58.90625000000001,
+            58.854166666666664,
+            60.364583333333336,
+            60.62499999999999,
+            59.947916666666664,
+            60.3125
+          ]
+        },
+        "final_loss": null,
+        "final_accuracy_percent": null
+      }
+    },
+    {
+      "dataset": "Tiny ImageNet",
+      "model": "MLP",
+      "n": 5,
+      "epochs": 75,
+      "train_size": 20000,
+      "weight_decay": 0,
+      "profile": "Step early",
+      "profile_id": "step_early",
+      "seeds": [
+        100,
+        101,
+        102,
+        103,
+        104
+      ],
+      "split_hash": "9f041191830f47b075efc213e715e1ef79fbf146fa1c838b8d101cf3ba196df7",
+      "source": {
+        "confirmation_sha256": "a38b3e751dac74bb4d90ee0a88b666a071ace6562c1593ced5240c034fa531d1"
+      },
+      "selection": "Lowest mean per-run minimum validation loss among complete paired frontloaded profiles in saved results; not a fresh blind confirmation.",
+      "metrics": {
+        "checkpoint_loss": {
+          "uniform": [
+            4.862531732177734,
+            4.884683738708496,
+            4.85716259765625,
+            4.857034246826172,
+            4.879540361022949
+          ],
+          "frontloaded": [
+            4.774929306793213,
+            4.752942779541016,
+            4.773302308654785,
+            4.789371556091308,
+            4.778017682647705
+          ]
+        },
+        "checkpoint_accuracy_percent": {
+          "uniform": [
+            3.42,
+            3.55,
+            3.4099999999999997,
+            3.5900000000000003,
+            3.27
+          ],
+          "frontloaded": [
+            4.82,
+            4.82,
+            4.92,
+            4.93,
+            4.73
+          ]
+        },
+        "final_loss": null,
+        "final_accuracy_percent": null
+      }
+    },
+    {
+      "dataset": "Tiny ImageNet",
+      "model": "Transformer",
+      "n": 5,
+      "epochs": 75,
+      "train_size": 20000,
+      "weight_decay": 0,
+      "profile": "Step early",
+      "profile_id": "step_early",
+      "seeds": [
+        100,
+        101,
+        102,
+        103,
+        104
+      ],
+      "split_hash": "9f041191830f47b075efc213e715e1ef79fbf146fa1c838b8d101cf3ba196df7",
+      "source": {
+        "confirmation_sha256": "a38b3e751dac74bb4d90ee0a88b666a071ace6562c1593ced5240c034fa531d1"
+      },
+      "selection": "Lowest mean per-run minimum validation loss among complete paired frontloaded profiles in saved results; not a fresh blind confirmation.",
+      "metrics": {
+        "checkpoint_loss": {
+          "uniform": [
+            3.990263176727295,
+            3.9537806770324706,
+            3.9692790100097657,
+            3.975557232666016,
+            3.9916299842834473
+          ],
+          "frontloaded": [
+            3.8738723686218264,
+            3.8873067115783697,
+            3.919365379333496,
+            3.888351838684082,
+            3.8797681510925295
+          ]
+        },
+        "checkpoint_accuracy_percent": {
+          "uniform": [
+            14.299999999999999,
+            14.979999999999999,
+            15.07,
+            14.26,
+            14.549999999999999
+          ],
+          "frontloaded": [
+            16.46,
+            16.27,
+            15.870000000000001,
+            16.32,
+            16.39
+          ]
+        },
+        "final_loss": null,
+        "final_accuracy_percent": null
+      }
+    },
+    {
+      "dataset": "Tiny ImageNet",
+      "model": "MLP",
+      "n": 5,
+      "epochs": 75,
+      "train_size": 80000,
+      "weight_decay": 0,
+      "profile": "Step early",
+      "profile_id": "step_early",
+      "seeds": [
+        100,
+        101,
+        102,
+        103,
+        104
+      ],
+      "split_hash": "bf3910f5b7db5b94c0193d03e82df60305244afa7dafb2a206032afc88c7f8bf",
+      "source": {
+        "confirmation_sha256": "a38b3e751dac74bb4d90ee0a88b666a071ace6562c1593ced5240c034fa531d1"
+      },
+      "selection": "Lowest mean per-run minimum validation loss among complete paired frontloaded profiles in saved results; not a fresh blind confirmation.",
+      "metrics": {
+        "checkpoint_loss": {
+          "uniform": [
+            4.576557961273194,
+            4.5780498405456544,
+            4.578753890991211,
+            4.565603968048095,
+            4.578347233581543
+          ],
+          "frontloaded": [
+            4.519166919708252,
+            4.524171034240723,
+            4.521020113372803,
+            4.52301907119751,
+            4.502058271026612
+          ]
+        },
+        "checkpoint_accuracy_percent": {
+          "uniform": [
+            6.69,
+            7.3999999999999995,
+            6.87,
+            7.41,
+            7.06
+          ],
+          "frontloaded": [
+            7.829999999999999,
+            7.8100000000000005,
+            8.290000000000001,
+            7.779999999999999,
+            8.04
+          ]
+        },
+        "final_loss": {
+          "uniform": [
+            5.637554521179199,
+            5.620546712112427,
+            5.6196446670532225,
+            5.6339327857971195,
+            5.625089591217041
+          ],
+          "frontloaded": [
+            5.1399987583160405,
+            5.138963148498535,
+            5.099320372772217,
+            5.119270985412598,
+            5.152802919769287
+          ]
+        },
+        "final_accuracy_percent": {
+          "uniform": [
+            7.8,
+            7.22,
+            7.61,
+            7.180000000000001,
+            7.5600000000000005
+          ],
+          "frontloaded": [
+            8.27,
+            7.9799999999999995,
+            8.41,
+            8.450000000000001,
+            8.219999999999999
+          ]
+        }
+      }
+    },
+    {
+      "dataset": "Tiny ImageNet",
+      "model": "Transformer",
+      "n": 5,
+      "epochs": 75,
+      "train_size": 80000,
+      "weight_decay": 0,
+      "profile": "Linear decreasing",
+      "profile_id": "linear_early",
+      "seeds": [
+        100,
+        101,
+        102,
+        103,
+        104
+      ],
+      "split_hash": "bf3910f5b7db5b94c0193d03e82df60305244afa7dafb2a206032afc88c7f8bf",
+      "source": {
+        "confirmation_sha256": "a38b3e751dac74bb4d90ee0a88b666a071ace6562c1593ced5240c034fa531d1"
+      },
+      "selection": "Lowest mean per-run minimum validation loss among complete paired frontloaded profiles in saved results; not a fresh blind confirmation.",
+      "metrics": {
+        "checkpoint_loss": {
+          "uniform": [
+            3.02848030090332,
+            3.0222613636016846,
+            3.0769046730041505,
+            3.0514488636016845,
+            2.9942713470458986
+          ],
+          "frontloaded": [
+            3.0021907947540285,
+            3.045990147781372,
+            3.02628406829834,
+            2.990609101486206,
+            2.954914655303955
+          ]
+        },
+        "checkpoint_accuracy_percent": {
+          "uniform": [
+            31.46,
+            31.759999999999998,
+            30.86,
+            31.59,
+            31.78
+          ],
+          "frontloaded": [
+            31.209999999999997,
+            31.269999999999996,
+            31.900000000000002,
+            32.12,
+            32.379999999999995
+          ]
+        },
+        "final_loss": {
+          "uniform": [
+            6.051573226928711,
+            6.075113330078125,
+            6.2399398086547855,
+            6.157398249816895,
+            5.997447693634033
+          ],
+          "frontloaded": [
+            6.050995129394531,
+            6.141523843383789,
+            5.949303926849365,
+            5.964527296447754,
+            5.901680679321289
+          ]
+        },
+        "final_accuracy_percent": {
+          "uniform": [
+            34.42,
+            34.14,
+            32.81,
+            33.51,
+            35.120000000000005
+          ],
+          "frontloaded": [
+            34.28,
+            33.42,
+            33.900000000000006,
+            34.29,
+            34.64
+          ]
+        }
+      }
+    },
+    {
+      "dataset": "FI-2010",
+      "model": "MLP",
+      "n": 5,
+      "epochs": 50,
+      "train_size": 40000,
+      "weight_decay": 0,
+      "profile": "Big step",
+      "profile_id": "big_step",
+      "seeds": [
+        100,
+        101,
+        102,
+        103,
+        104
+      ],
+      "split_hash": "1d21d01b0d60dcb234322a26a6989c15a559b09efd744248b00ec2ed6b668ca6",
+      "source": {
+        "confirmation_sha256": "a38b3e751dac74bb4d90ee0a88b666a071ace6562c1593ced5240c034fa531d1"
+      },
+      "selection": "Lowest mean per-run minimum validation loss among complete paired frontloaded profiles in saved results; not a fresh blind confirmation.",
+      "metrics": {
+        "checkpoint_loss": {
+          "uniform": [
+            1.0926675771713257,
+            1.1060223291397095,
+            1.0851065937042237,
+            1.0872960958480835,
+            1.096037886810303
+          ],
+          "frontloaded": [
+            1.0570715169906617,
+            1.066051432800293,
+            1.0497488180160524,
+            1.0589782264709473,
+            1.0400733501434327
+          ]
+        },
+        "checkpoint_accuracy_percent": {
+          "uniform": [
+            47.12,
+            48.06,
+            48.16,
+            46.565,
+            48.615
+          ],
+          "frontloaded": [
+            47.57,
+            48.555,
+            47.765,
+            48.209999999999994,
+            49.76
+          ]
+        },
+        "final_loss": null,
+        "final_accuracy_percent": null
+      }
+    }
+  ]
+}

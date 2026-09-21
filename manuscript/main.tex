@@ -29,7 +29,13 @@
 % If accepted, instead use the following line for the camera-ready submission:
 % \usepackage[accepted]{icml2026}
 
-
+% arXiv-preprint notice: accepted but proceedings not yet published.
+\makeatletter
+\renewcommand{\ICML@appearing}{\textit{To appear in the Proceedings of the
+$\mathit{43}^{rd}$ International Conference on Machine Learning},
+Seoul, South Korea, 2026.
+Copyright 2026 by the author(s).}
+\makeatother
 
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -113,12 +119,12 @@
 
 % Use ONE of the following lines. DO NOT remove the command.
 % If you have no special notice, KEEP empty braces:
-\printAffiliationsAndNotice{} % no special notice (required even if empty)
+\printAffiliationsAndNotice{Expanded revision, September 21, 2026.}
 % Or, if applicable, use the standard equal contribution text:
 % \printAffiliationsAndNotice{\icmlEqualContribution}
 
 \begin{abstract}
-We develop a mean-field theory of dropout as a perturbation of critical signal propagation at the edge of chaos, and show that it predicts a simple, no-cost change to standard practice: \emph{front-loaded} dropout schedules cut test loss by \(18\)--\(35\%\) over constant dropout in MLPs and Vision Transformers at fixed budget. The theoretical mechanism is that dropout shifts the perfect-alignment fixed point, making the depth scale for information propagation finite even at critical initialization. We derive critical and crossover scaling laws for correlation decay and establish that smooth activations and kinked, \relu{}-like activations constitute distinct universality classes, with different critical exponents and a universal two-parameter scaling collapse in detuning and dropout strength. The distinction traces to the analytic structure of the correlation map: smooth activations admit a Taylor expansion near perfect alignment, while kinked activations develop a branch point with universal non-analyticity. As a corollary, the framework yields saturated dropout profiles under fixed budget; a regularization-reach argument then selects front-loaded schedules, with accuracy gains as a consistent secondary effect. We also discuss how the same Gaussian-kernel structure extends the theory beyond MLPs toward CNNs and residual architectures.
+We develop a mean-field theory of dropout as a perturbation of critical signal propagation at the edge of chaos, and show that it predicts a simple, no-cost change to standard practice: \emph{front-loaded} dropout schedules cut final test loss by \(18\)--\(35\%\) in MLPs and \(4\)--\(6\%\) in Vision Transformers over constant dropout at fixed budget. The theoretical mechanism is that dropout shifts the perfect-alignment fixed point, making the depth scale for information propagation finite even at critical initialization. We derive critical and crossover scaling laws for correlation decay and establish that smooth activations and kinked, \relu{}-like activations constitute distinct universality classes, with different critical exponents and a universal two-parameter scaling collapse in detuning and dropout strength. The distinction traces to the analytic structure of the correlation map: smooth activations admit a Taylor expansion near perfect alignment, while kinked activations develop a branch point with universal non-analyticity. As a corollary, the framework yields saturated dropout profiles under fixed budget; a regularization-reach argument then selects front-loaded schedules, with accuracy gains as a consistent secondary effect. We also discuss how the same Gaussian-kernel structure extends the theory beyond MLPs toward CNNs and residual architectures.
 \end{abstract}
 
 
@@ -132,13 +138,13 @@ We develop a mean-field theory of dropout as a perturbation of critical signal p
 
 \section{Introduction}
 
-Mean-field analyses of randomly initialized deep networks reveal an order-to-chaos phase diagram that controls both signal propagation and gradient penetration with depth \cite{poole2016exponentialexpressivitydeepneural,schoenholz2017deepinformationpropagation,Bahri2020StatMechDeepLearning,bahri2024leshoucheslecturesdeep}. In this work, we study how this picture is modified by dropout, and use the resulting theory to derive a no-cost change to standard practice: we find that front-loaded dropout schedules cut test loss by \(18\)--\(35\%\) over constant dropout at fixed budget in MLPs and Vision Transformers (Table~\ref{tab:loss_improvements}). Using the representation-group (coarse-graining) language of \cite{roberts2022principlesdeeplearningtheory,bahri2024leshoucheslecturesdeep}, we show that dropout behaves as a relevant perturbation: it displaces the critical fixed point and grows under depth coarse-graining, pushing the dynamics away from criticality and determining the macroscopic phase. Concretely, dropout deforms the correlation map \cite{schoenholz2017deepinformationpropagation} by adding a correlation-independent shift at perfect alignment, so that perfect correlation between inputs is no longer a fixed point for any nonzero dropout. Thus, even at the edge-of-chaos \cite{sompolinsky1988chaos,packard1988adaptation,bertschinger2004real}, the depth correlation length is finite. We interpret this shift using Landau theory, as an equation of state for the decorrelation order parameter $m \equiv 1-c^\ast$ (with $c^\ast$ the asymptotic inter-signal correlation), derive the resulting scaling laws, and show that smooth and kinked, \relu{}-like activations exhibit the same qualitative phase diagram but different critical scaling in the presence of dropout.
+Mean-field analyses of randomly initialized deep networks reveal an order-to-chaos phase diagram that controls both signal propagation and gradient penetration with depth \cite{poole2016exponentialexpressivitydeepneural,schoenholz2017deepinformationpropagation,Bahri2020StatMechDeepLearning,bahri2024leshoucheslecturesdeep}. In this work, we study how this picture is modified by dropout, and use the resulting theory to derive a no-cost change to standard practice: we find that front-loaded dropout schedules cut final test loss by \(18\)--\(35\%\) over constant dropout at fixed budget in MLPs, with smaller improvements in Vision Transformers (Table~\ref{tab:loss_improvements}). Using the representation-group (coarse-graining) language of \cite{roberts2022principlesdeeplearningtheory,bahri2024leshoucheslecturesdeep}, we show that dropout behaves as a relevant perturbation: it displaces the critical fixed point and grows under depth coarse-graining, pushing the dynamics away from criticality and determining the macroscopic phase. Concretely, dropout deforms the correlation map \cite{schoenholz2017deepinformationpropagation} by adding a correlation-independent shift at perfect alignment, so that perfect correlation between inputs is no longer a fixed point for any nonzero dropout. Thus, even at the edge-of-chaos \cite{sompolinsky1988chaos,packard1988adaptation,bertschinger2004real}, the depth correlation length is finite. We interpret this shift using Landau theory, as an equation of state for the decorrelation order parameter $m \equiv 1-c^\ast$ (with $c^\ast$ the asymptotic inter-signal correlation), derive the resulting scaling laws, and show that smooth and kinked, \relu{}-like activations exhibit the same qualitative phase diagram but different critical scaling in the presence of dropout.
 
 Additionally, we show that the two control parameters (dropout strength and distance to criticality) admit a scaling collapse into a single universal form,\footnote{This is analogous to the homogeneous scaling of connected correlation functions near a critical point; related scaling forms hold for one-particle-irreducible vertex functions after the usual Legendre transform \cite{ZinnJustin2002QFTCritical}.} and we illustrate how these predictions compare with mean-field recursions.
 
 The main conceptual contributions are threefold: first, while dropout was previously shown to destroy the order-to-chaos critical point \cite{schoenholz2017deepinformationpropagation}, we show that the deformed mean-field map still retains a nontrivial $c^\ast<1$ fixed point. This allows us to have a well-defined correlation length recursion even in the presence of dropout, and yields a Landau equation of state for $m=1-c^\ast$ together with a two-parameter scaling collapse. Second, we show that universality classes and scaling laws are set by the analytic structure of activations: smooth and kinked activations have distinct critical exponents (Table~\ref{tab:critical_exponents}), a distinction reflected in their Hermite spectral structure (App.~\ref{sec:var-opt-act}). Since the same Gaussian activation kernels arise beyond MLPs, including CNNs and residual branches (App.~\ref{app:cnn_extension}), we expect the qualitative smooth/kinked split to be a well-motivated heuristic. Third, we treat dropout as a depth-dependent dynamical field; treating classically fixed hyperparameters as fields that can change through the network opens a new dimension for hyperparameter optimization across depth, and potentially over training time.
 
-This work complements prior studies of depth-dependent regularization: stochastic depth drops whole residual blocks with increasing probability \cite{huang2016deep}, curriculum dropout anneals dropout over training time \cite{morerio2017curriculum}, and LayerDrop removes transformer layers for efficiency \cite{fan2019reducing}. Our schedules are spatial depth profiles, so they are complementary to temporal curricula and layer-dropping mechanisms. Qualitatively different edge-of-chaos behavior for smooth and \relu{}-like activations was previously observed in \cite{hayou2019impact}; here we extract the scaling exponents and identify the corresponding universality classes.\footnote{Code, configurations, seeds, and figure-generation scripts are available in the commit-pinned \href{https://github.com/luklacasito/dropout-universality-experiments/tree/ce1baa41915ba1601186c604e91fecf9f13b83fe}{\texttt{dropout-universality-experiments}} repository. See App.~\ref{app:experimental_info} for the full reproducibility statement.}
+This work complements prior studies of depth-dependent regularization: stochastic depth drops whole residual blocks with increasing probability \cite{huang2016deep}, curriculum dropout anneals dropout over training time \cite{morerio2017curriculum}, and LayerDrop removes transformer layers for efficiency \cite{fan2019reducing}. Our schedules are spatial depth profiles, so they are complementary to temporal curricula and layer-dropping mechanisms. Qualitatively different edge-of-chaos behavior for smooth and \relu{}-like activations was previously observed in \cite{hayou2019impact}; here we extract the scaling exponents and identify the corresponding universality classes.\footnote{The original notebooks, saved results, and seed-level confidence-interval calculations are available in the \href{https://github.com/luklacasito/icml}{\texttt{icml}} repository. See App.~\ref{app:experimental_info} for the full reproducibility statement.}
 
 \paragraph{Conflict of Interest Disclosure.}
 The author declares no financial conflicts of interest related to this work.
@@ -555,44 +561,12 @@ The readout perturbation \(C h_\ell e^{-(L-\ell)/\xi_c}\) is larger for later dr
 \end{align}
 Since \(w_\ell=\xi_c(1-e^{-(L-\ell)/\xi_c})\) decreases with \(\ell\), maximizing \(\sum_{\ell=1}^L h_\ell w_\ell\) subject to \(\sum_{\ell=1}^L h_\ell=L\bar h\) and \(0\le h_\ell\le h_{\max}\) is a linear program solved by filling the earliest layers first.
 
-\begin{table*}[t]
-\caption{Final-epoch improvements over the corresponding constant-dropout baseline. Loss reductions are relative reductions in cross-entropy. Accuracy gains are shown as percentage-point differences and relative percent improvements over the baseline final accuracy. Detailed appendix tables list best and final test accuracy where applicable.}
-\label{tab:loss_improvements}
-\centering
-\scriptsize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}L{0.27\textwidth}L{0.23\textwidth}rrr@{}}
-\toprule
-\textbf{Experiment} & \textbf{Schedule} & Loss reduction & \(\Delta\) acc. (pp) & Acc. gain \\
-\midrule
-MLP overfitting, Fig.~\ref{fig:dropout_regimes_overfit}
-& Step (early)
-& \(+17.9\%\) & \(+0.83\) & \(+2.0\%\) \\
-\addlinespace[1pt]
-MLP budget controls, Fig.~\ref{fig:triple_dropout}
-& Big step (1/3)
-& \(+22.6\%\) & \(+1.08\) & \(+2.6\%\) \\
-\addlinespace[1pt]
-\relu{} \(h\)-sweep at \(\bar h=0.1\), Fig.~\ref{fig:mlp_sweeps}
-& Big step (1/3)
-& \(+35.4\%\) & \(+2.04\) & \(+5.0\%\) \\
-\addlinespace[1pt]
-GELU \(h\)-sweep at \(\bar h=0.1\), Fig.~\ref{fig:gelu_h_sweep}
-& Big step (1/3)
-& \(+29.8\%\) & \(+0.62\) & \(+1.5\%\) \\
-\addlinespace[1pt]
-ViT CIFAR-100, Fig.~\ref{fig:dropout_regimes_transformer}
-& Linear (decreasing)
-& \(+4.2\%\) & \(+0.66\) & \(+1.4\%\) \\
-\addlinespace[1pt]
-ViT CIFAR-10 ablations, Fig.~\ref{fig:ablations}
-& Both blocks, step (early)
-& \(+6.3\%\) & \(+0.52\) & \(+0.7\%\) \\
-\bottomrule
-\end{tabular}
-\end{table*}
+\input{sections/original_results_table}
 
-To test these predictions, we deliberately work in controlled regimes where mean-field assumptions remain valid (width $\gg$ depth, moderate dropout) rather than pursuing benchmark performance. We evaluate MLPs and Vision Transformers \cite{dosovitskiy2021vit} using CIFAR-10/100 \cite{krizhevsky2009cifar} (full details in App.~\ref{app:experimental_info}), where finite-width corrections and extensive data augmentation do not obscure the signal-propagation effects central to our analysis. The clearest experimental signal is loss: Table~\ref{tab:loss_improvements} shows final cross-entropy reductions of \(18\)--\(35\%\) in the MLP and activation-sweep settings, with smaller but consistent reductions in the transformer runs. Accuracy improves as well (e.g., ViT on CIFAR-100: linearly decreasing achieves $49.38\%$ vs $48.69\%$ constant, $p < 0.05$), but we treat it mainly as a confirmatory metric. The appendices check that this is not a single-run effect: the gains persist across \(\bar h\)-sweeps and large-width sweeps for kinked \relu{} MLPs (App.~\ref{app:sweeps}, Fig.~\ref{fig:mlp_sweeps}), across the smooth GELU activation class (App.~\ref{app:sweeps}, Fig.~\ref{fig:gelu_h_sweep}), and across transformer schedules and component ablations (Figs.~\ref{fig:dropout_regimes_transformer} and~\ref{fig:ablations}). The advantage weakens only at high dropout or in overly narrow networks, precisely where the theory exits its regime of validity.
+
+
+
+To test these predictions, we deliberately work in controlled regimes where mean-field assumptions remain valid (width $\gg$ depth, moderate dropout) rather than pursuing benchmark performance. We evaluate MLPs and Vision Transformers \cite{dosovitskiy2021vit} using CIFAR-10/100 \cite{krizhevsky2009cifar} (full details in App.~\ref{app:experimental_info}), where finite-width corrections and extensive data augmentation do not obscure the signal-propagation effects central to our analysis. The clearest experimental signal is loss: Table~\ref{tab:loss_improvements} shows final cross-entropy reductions of \(18\)--\(35\%\) in the MLP and activation-sweep settings, with smaller but consistent reductions in the transformer runs. Keeping the same schedules and averaging each seed's minimum recorded test loss gives reductions of only \(0.9\)--\(2.5\%\) across the six comparisons, so the largest differences develop after the loss minimum. This retrospective minimum uses test data to select the epoch; it is separate from the validation-selected checkpoints in the broader benchmark. Accuracy improves as well (e.g., ViT on CIFAR-100: linearly decreasing achieves final accuracy $49.27\%$ vs $48.61\%$ constant), but we treat it mainly as a secondary metric. The appendices check that this is not a single-run effect: the gains persist across \(\bar h\)-sweeps and large-width sweeps for kinked \relu{} MLPs (App.~\ref{app:sweeps}, Fig.~\ref{fig:mlp_sweeps}), across the smooth GELU activation class (App.~\ref{app:sweeps}, Fig.~\ref{fig:gelu_h_sweep}), and across transformer schedules and component ablations (Figs.~\ref{fig:dropout_regimes_transformer} and~\ref{fig:ablations}). In these controlled CIFAR experiments, the advantage weakens at high dropout or in overly narrow networks, where the theory exits its regime of validity.
 
 
 
@@ -602,9 +576,17 @@ To test these predictions, we deliberately work in controlled regimes where mean
 
 
 
+
+
+\paragraph{Uncertainty across seeds.}
+Tables~\ref{tab:loss_improvements} and~\ref{tab:frontloaded_results} report nominal $95\%$ confidence intervals, pairing runs by their recorded seed or original simulation index. Loss reductions use ratios of seed means, with paired Fieller intervals \cite{fieller1954interval}; accuracy gains use paired Student-$t$ intervals in percentage points. Both use $n-1$ degrees of freedom and assume independent seed pairs with approximately bivariate normal losses or normal accuracy differences, assumptions that three or five seeds cannot establish reliably. We hold the reported schedules and hyperparameters fixed, without adjusting for their selection or for multiple comparisons, so the intervals describe variation across training seeds on the recorded split. They do not include uncertainty from new data or new splits. In the original experiments, the minimum-loss intervals include zero for the three-seed ReLU sweep and the five-seed ViT ablation; the latter's accuracy interval also includes zero. The MLP schedule and budget-control rows share their uniform runs and should not be counted as independent replications.
+
+\input{sections/frontloaded_table}
+
+\input{sections/benchmark_discussion}
 
 \section{Conclusions and Further Scope for Research}
-By extending mean-field signal propagation to include multiplicative dropout, we established that activation non-analyticity fundamentally dictates universality. This formalism yields a Landau equation of state for the decorrelation order parameter, a universal two-parameter scaling collapse, and distinct critical exponents for smooth versus kinked channels. Mean-field theory is often best at clarifying the mechanisms inside wide networks, and less often at producing directly testable design rules; here it gives one such rule. Treating dropout as a depth-dependent field leads to front-loaded schedules: the mean-field objective fixes the saturated allocation, and regularization reach places that allocation near the input. These schedules reduce test loss by \(18\)--\(35\%\) in MLP settings and by \(4\)--\(6\%\) in Vision Transformer settings relative to constant dropout at the same budget (Table~\ref{tab:loss_improvements}), with consistent secondary accuracy gains and no extra computational cost. Extending this mean-field analysis to attention mechanisms and incorporating finite-width corrections are natural directions for future work.
+By extending mean-field signal propagation to include multiplicative dropout, we established that activation non-analyticity fundamentally dictates universality. This formalism yields a Landau equation of state for the decorrelation order parameter, a universal two-parameter scaling collapse, and distinct critical exponents for smooth versus kinked channels. Mean-field theory is often best at clarifying the mechanisms inside wide networks, and less often at producing directly testable design rules; here it gives one such rule. Treating dropout as a depth-dependent field leads to front-loaded schedules: the mean-field objective fixes the saturated allocation, and regularization reach places that allocation near the input. These schedules reduce final test loss by \(18\)--\(35\%\) in MLP settings and by \(4\)--\(6\%\) in Vision Transformer settings relative to constant dropout at the same budget (Table~\ref{tab:loss_improvements}), with secondary accuracy gains and no extra computational cost. Comparing minimum recorded test loss gives smaller reductions of \(0.9\)--\(2.5\%\) for the same schedules. The broader comparisons select checkpoints and profiles from validation loss and show smaller, task-dependent gains, including losses to uniform dropout in the extended Jannis Transformer cohort. Extending this mean-field analysis to attention mechanisms and incorporating finite-width corrections are natural directions for future work.
 
 
 
@@ -631,6 +613,8 @@ Finally, the theory is an initialization theory of \emph{forward} correlation dy
 
 
 
+
+
 \noindent\emph{Acknowledgments.} The author thanks Riccardo Penco for support and discussions, and the anonymous ICML reviewers for feedback that sharpened the scheduling discussion and the treatment of the kinked-class scaling path. This work is partially supported by the U.S. Department of Energy under grant DE-SC0010118.
 
 
@@ -641,7 +625,7 @@ Finally, the theory is an initialization theory of \emph{forward} correlation dy
 
 
 \section*{Reproducibility Statement}
-All code, configurations, seeds, dropout schedules, and figure scripts are available in the commit-pinned repository linked in the introduction. App.~\ref{app:experimental_info} reports the run counts, hyperparameters, dataset splits, hardware, and sweep details; uncertainties are standard errors across runs. The mean-field fits use deterministic recursion code from the same repository.
+The repository linked in the introduction contains the original notebooks and saved results, the manuscript source, and the paired seed endpoints and analysis script underlying Tables~\ref{tab:loss_improvements} and~\ref{tab:frontloaded_results}. App.~\ref{app:experimental_info} reports the original run counts, hyperparameters, dataset splits, hardware, and sweep details. App.~\ref{app:extended_experiments} reports the recovered benchmark and profile-pilot evidence, including incomplete coverage. The two main gain tables report nominal $95\%$ confidence intervals; existing curve bands and $\pm$ summaries retain their SEM convention. The mean-field fits use deterministic recursion code from the same repository.
 
 \section*{Impact Statement}
 The main practical benefit is improved performance at fixed training cost, or potentially reduced training cost when targeting a fixed performance level. We do not anticipate additional ethical risks.
@@ -1581,7 +1565,7 @@ Parity gives \(a_{2k}(s)=0\). There is no simple closed form for general \(s\), 
 
 \section{Experimental Details and Additional Figures}
 \label{app:experimental_info}
-This appendix collects the experimental details and additional figures supporting the scheduling predictions. Code for the experiments and figure generation is available in the commit-pinned \href{https://github.com/luklacasito/dropout-universality-experiments/tree/ce1baa41915ba1601186c604e91fecf9f13b83fe}{\texttt{dropout-universality-experiments}} repository.
+This appendix collects the experimental details and additional figures supporting the scheduling predictions. The original notebooks and saved results are available in the \href{https://github.com/luklacasito/icml}{\texttt{icml}} repository.
 
 
 
@@ -1655,7 +1639,7 @@ Finite-width experiments support these spatial scheduling predictions. The main 
 
 To test this prediction in a controlled finite-width setting, we design an experiment in the overfitting regime, where information propagation and regularization are both important factors in determining performance. In the effective-theory treatment of \cite{roberts2022principlesdeeplearningtheory}, deviations from Gaussian mean-field behavior \cite{neal1996bayesian,Lee2018DNNasGP} generate corrections to the correlation recursions that are suppressed by $1/N$ (with $N$ the layer width) and accumulate across depth as $L/N$. At the same time, deep information propagation suggests that successful learning is controlled by a modest multiple of the correlation length \cite{schoenholz2017deepinformationpropagation}.
 
-We train on 5000 CIFAR-10 images with width 256 and depth \(L=6\), roughly \(2\xi\) for the constant-dropout baseline, using a batch size of 75 to ensure the regularizing effect of dropout through injected stochastic noise. We initialize close to the edge-of-chaos at $\sigma_w^2 = 1.98$ and $\sigma_b^2 = 0.02$, near standard He initialization but avoiding the instabilities due to the divergence of the variance fixed point $q^\ast$ as $\sigma_w^2 \to 2$.
+We train on 5000 CIFAR-10 images with width 256 and depth \(L=6\), roughly \(2\xi\) for the constant-dropout baseline, using a batch size of 100 to ensure the regularizing effect of dropout through injected stochastic noise. We initialize close to the edge-of-chaos at $\sigma_w^2 = 1.98$ and $\sigma_b^2 = 0.02$, near standard He initialization but avoiding the instabilities due to the divergence of the variance fixed point $q^\ast$ as $\sigma_w^2 \to 2$.
 
 We compare six depth profiles at fixed mean dropout budget: (i) no dropout, (ii) uniform dropout, (iii) a linearly increasing schedule, (iv) a linearly decreasing schedule, (v) a step schedule concentrated in the final half (Step (late)), and (vi) a step schedule concentrated in the first half (Step (early)), as summarized in Fig.~\ref{fig:dropout_regimes_overfit}. Front-loaded dropout consistently outperforms back-loaded dropout: early masks are visible to a longer downstream suffix before they decay over the correlation length, while late masks have little computation left to regularize. The effective correlation length heuristic remains predictive; constant dropout is most damaging, and regularization reach breaks the permutation symmetry of Eq.~\eqref{eff_corr} in favor of early regularization.
 
@@ -1744,8 +1728,8 @@ Triple ($3\bar{h}$) & $2.22$ & $2.70$ & $33.94 \pm 0.22$ & $33.82 \pm 0.23$ \\
  \midrule
  \multicolumn{2}{l}{\textit{Training Dynamics}} \\
  \midrule
- Epochs & 50 \\
- Batch Size & 75 \\
+ Epochs & 75 \\
+ Batch Size & 100 \\
  Learning Rate & $1 \times 10^{-4}$ \\
  LR Schedule & Decay to minimum $1 \times 10^{-7}$ \\
  Mean Dropout Field ($\bar{h}$) & 0.1 \\
@@ -1754,8 +1738,8 @@ Triple ($3\bar{h}$) & $2.22$ & $2.70$ & $33.94 \pm 0.22$ & $33.82 \pm 0.23$ \\
  \midrule
  \multicolumn{2}{l}{\textit{General Setup}} \\
  \midrule
- Number of Simulations & 20 \\
- Dataset Usage & CIFAR-10 5,000 samples \\
+ Number of Simulations & 25 \\
+ Dataset Usage & CIFAR-10 5,000 train / 5,000 test samples \\
  Hardware & GPU A100 \\
  \bottomrule
  \end{tabular}
@@ -1840,7 +1824,7 @@ Table~\ref{tab:vit_config} and Fig.~\ref{fig:dropout_regimes_transformer} detail
  \multicolumn{2}{l}{\textit{ViT Architecture}} \\
  \midrule
  Embedding Dimension & 128 \\
- Depth & 12 \\
+ Depth & 10 \\
  Number of Heads & 16 \\
  MLP Ratio & 4.0 \\
  Patch Size & 4 \\
@@ -1866,7 +1850,7 @@ Table~\ref{tab:vit_config} and Fig.~\ref{fig:dropout_regimes_transformer} detail
  \end{tabular}
 \end{table}
 
-Accuracy curves are shown in Fig.~\ref{fig:dropout_regimes_transformer}, with explicit results in Table~\ref{tab:schedule_comparison_cifar_100}. All reported errors are SEM. On CIFAR-100 (and similarly on CIFAR-10), concentrating dropout earlier consistently improved accuracy and reduced overfitting. Interestingly, linear decreasing schedules, which put more dropout in early layers, often performed especially well in transformers; residual connections were introduced in \cite{he2016resnet}, and mean-field analyses show that they ease information propagation \cite{yang2017meanfieldresnets}. We suspect this makes distributing regularization early preferable empirically, though both early weighted and step-like schedules outperformed the constant baseline.
+Accuracy curves are shown in Fig.~\ref{fig:dropout_regimes_transformer}, with explicit results in Table~\ref{tab:schedule_comparison_cifar_100}. Errors in this accuracy table and its accompanying curves are SEM. On CIFAR-100 (and similarly on CIFAR-10), concentrating dropout earlier consistently improved accuracy and reduced overfitting. Interestingly, linear decreasing schedules, which put more dropout in early layers, often performed especially well in transformers; residual connections were introduced in \cite{he2016resnet}, and mean-field analyses show that they ease information propagation \cite{yang2017meanfieldresnets}. We suspect this makes distributing regularization early preferable empirically, though both early weighted and step-like schedules outperformed the constant baseline.
 
 We focus on controlled regimes rather than ImageNet-scale benchmarking because our central claims are mechanistic and derived in a mean-field initialization framework, which is most cleanly tested when finite-width corrections remain subdominant. The experimental validation is designed to test the theory in settings where MFT predictions apply cleanly, rather than to establish state-of-the-art performance on large-scale datasets such as ImageNet \cite{imagenet}. ImageNet-scale training introduces substantial confounders from augmentation and extensive hyperparameter tuning that can obscure MFT effects; we leave that evaluation as future work. In these controlled runs, the predicted schedules outperform constant dropout, illustrating the practical utility of the mean-field framework.
 
@@ -1973,6 +1957,11 @@ To isolate the effect of dropout scheduling on distinct transformer components, 
 \end{table}
 
 \FloatBarrier
+
+\input{sections/experimental_appendix}
+
+\clearpage
+\input{planned_profile_mup_protocol}
 
 \end{document}
 

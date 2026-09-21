@@ -1,6 +1,25 @@
 # Saved results
 
-These are the numerical results used in the camera-ready paper.
+The original archives below contain the numerical results used in the
+camera-ready paper. The expanded paper adds paired endpoint data and
+confidence intervals for its two main comparison tables.
+
+## Main comparison tables
+
+| File | Contents |
+|---|---|
+| [Confidence intervals](confidence_intervals.md) | Both main tables, endpoint definitions, and statistical assumptions |
+| [Paired seed metrics](confidence_seed_metrics.json) | Uniform and selected-schedule endpoints, seed pairing, and source hashes |
+| [Calculated intervals, JSON](confidence_intervals.json) | Unrounded point estimates and confidence bounds |
+| [Calculated intervals, CSV](confidence_intervals.csv) | The same comparisons as a flat table |
+
+Run the [analysis script](../scripts/confidence_intervals.py) to reproduce these
+results. The selected schedules remain fixed during the calculation. The
+additional benchmark data contain test metrics at validation-selected
+checkpoints, plus final-epoch metrics where recorded; they are not full training
+histories or a new independent confirmation study.
+
+## Original experiment archives
 
 | File | Comparison |
 |---|---|

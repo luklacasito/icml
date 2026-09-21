@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use these experiments, please cite Dropout Universality."
 title: "Dropout Universality: Scaling Laws and Optimal Scheduling at the Edge-of-Chaos"
 type: software
-version: "ICML 2026 camera-ready"
+version: "2026-09-21 expanded revision"
 authors:
   - family-names: "Fernandez Sarmiento"
     given-names: "Lucas"

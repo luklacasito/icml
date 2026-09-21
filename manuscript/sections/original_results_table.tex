@@ -1,0 +1,20 @@
+\begin{table*}[t]
+\centering
+\caption{Original paper experiments. Positive changes favor the named profile over uniform. CE reduction is $100(L_U-L_F)/L_U$ using seed means; accuracy gain is in percentage points. Brackets give nominal paired 95\% confidence intervals (Fieller for CE; Student-$t$ for accuracy), conditional on the selected profiles and fixed data split. Profiles minimize mean final test CE among the compared nonuniform schedules and stay fixed across columns. Final CE and accuracy use the last epoch. Minimum CE averages each seed's lowest recorded test loss; this retrospective endpoint uses test data to choose an epoch, not validation. The first two rows share the same uniform runs. See the main text for the assumptions and selection limits.}
+\label{tab:loss_improvements}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}lrlrrr@{}}
+\toprule
+Experiment & $n$ & Profile & \shortstack{Final CE\\reduction (\%)} & \shortstack{Min. test CE\\reduction (\%)} & \shortstack{Final accuracy\\gain (pp)} \\
+\midrule
+\shortstack[l]{CIFAR-10\\MLP schedules} & 25 & Step early & \shortstack{$+17.86$\\[-1pt]{\scriptsize $[17.31, 18.41]$}} & \shortstack{$+1.42$\\[-1pt]{\scriptsize $[1.19, 1.65]$}} & \shortstack{$+0.83$\\[-1pt]{\scriptsize $[0.55, 1.11]$}} \\
+\shortstack[l]{CIFAR-10\\MLP budget controls} & 25 & Big step & \shortstack{$+22.61$\\[-1pt]{\scriptsize $[22.06, 23.15]$}} & \shortstack{$+2.07$\\[-1pt]{\scriptsize $[1.80, 2.33]$}} & \shortstack{$+1.08$\\[-1pt]{\scriptsize $[0.85, 1.31]$}} \\
+\shortstack[l]{CIFAR-10\\ReLU p=0.1} & 3 & Big step & \shortstack{$+35.43$\\[-1pt]{\scriptsize $[33.64, 37.27]$}} & \shortstack{$+2.41$\\[-1pt]{\scriptsize $[-0.40, 5.21]$}} & \shortstack{$+2.04$\\[-1pt]{\scriptsize $[0.79, 3.29]$}} \\
+\shortstack[l]{CIFAR-10\\GELU p=0.1} & 10 & Big step & \shortstack{$+29.79$\\[-1pt]{\scriptsize $[28.96, 30.61]$}} & \shortstack{$+2.45$\\[-1pt]{\scriptsize $[1.90, 3.00]$}} & \shortstack{$+0.62$\\[-1pt]{\scriptsize $[0.16, 1.08]$}} \\
+\shortstack[l]{CIFAR-100\\ViT} & 10 & Linear decreasing & \shortstack{$+4.15$\\[-1pt]{\scriptsize $[3.40, 4.90]$}} & \shortstack{$+1.39$\\[-1pt]{\scriptsize $[0.56, 2.21]$}} & \shortstack{$+0.66$\\[-1pt]{\scriptsize $[0.36, 0.96]$}} \\
+\shortstack[l]{CIFAR-10\\ViT both-block ablation} & 5 & Step early & \shortstack{$+6.32$\\[-1pt]{\scriptsize $[3.23, 9.30]$}} & \shortstack{$+0.92$\\[-1pt]{\scriptsize $[-0.47, 2.30]$}} & \shortstack{$+0.52$\\[-1pt]{\scriptsize $[-0.11, 1.16]$}} \\
+\bottomrule
+\end{tabular}
+\end{table*}

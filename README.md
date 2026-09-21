@@ -1,6 +1,6 @@
 # Dropout Universality
 
-**[Read the camera-ready paper](paper.pdf)** · [LaTeX source](manuscript/)
+**[Read the paper](paper.pdf)** · [LaTeX source](manuscript/) · [Confidence intervals](results/confidence_intervals.md)
 
 *Dropout Universality: Scaling Laws and Optimal Scheduling at the Edge-of-Chaos*
 
@@ -10,10 +10,15 @@ I study dropout as a perturbation of critical signal propagation, then use the
 mean-field picture to ask a concrete question: with a fixed dropout budget,
 where should we spend it across depth?
 
-This repo contains the camera-ready paper and its experiments, including the
-dropout-budget, width, and smooth-activation sweeps. The notebooks contain the
-calculations and training code; saved results are included so you can inspect
-the comparisons without rerunning them.
+This is the expanded September 21, 2026 version, with additional datasets and
+95% confidence intervals for the main comparisons. The original
+[camera-ready paper is on arXiv](https://arxiv.org/pdf/2605.21648v2).
+
+The notebooks contain the original calculations and training code, including
+the dropout-budget, width, and smooth-activation sweeps. Saved results let you
+inspect the comparisons without rerunning them. The additional experiments
+are reported in the paper's appendix; paired seed metrics and a short analysis
+script reproduce both main confidence-interval tables.
 
 ## Experiments
 
@@ -56,8 +61,21 @@ Plots are written to `runs/figures/`. Add `--sweeps` to include the learning cur
 at every saved dropout strength and width. The paper's figure exports are in
 [manuscript/figures](manuscript/figures/).
 
-The PDF is the unchanged May 29 camera-ready release. Its historical code link
-now points to a private archive; the experiments are maintained here.
+## Confidence intervals
+
+[Read the results and methods](results/confidence_intervals.md). Loss reductions
+use paired Fieller intervals; accuracy changes use paired Student-t intervals
+in percentage points. These describe variation across seeds with the selected
+schedules and data splits held fixed. The paper distinguishes minimum recorded
+test loss from test loss at the validation-selected checkpoint.
+
+To reproduce the intervals and the two LaTeX tables:
+
+```bash
+python scripts/confidence_intervals.py --data results/confidence_seed_metrics.json --output-dir runs/confidence
+```
+
+The script uses saved endpoint metrics and does not train models.
 
 ## Checks
 

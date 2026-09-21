@@ -1,0 +1,37 @@
+\begin{table*}[t]
+\centering
+\caption{Cross-dataset and standalone financial results. Positive values favor the named profile over uniform. Loss reduction is $100(L_U-L_P)/L_U$; accuracy gain is $100(A_P-A_U)/A_U$, with the percentage-point change $A_P-A_U$ in parentheses. All comparisons use seed means and keep the same profile across columns. Final CE uses the last training epoch. Checkpoint CE and accuracy use each run's minimum-validation-loss checkpoint. Minimum test CE over training is unavailable because test histories were not recorded. A dash means an endpoint or matching uniform baseline is missing. Benchmark profiles minimize mean per-seed minimum validation CE among complete nonuniform arms. The standalone vanilla-MLP aggregates lack validation losses, so those four rows retain their explicitly retrospective choice by mean checkpoint test CE. A dagger marks incomplete candidate coverage. For vanilla MLPs, $d$ and $w$ denote depth and width.}
+\label{tab:benchmark_results}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}llrlrrrr@{}}
+\toprule
+Dataset / setting & Model & $n$ & Nonuniform profile & \shortstack{Final CE\\reduction (\%)} & \shortstack{Min. CE\\reduction (\%)} & \shortstack{Checkpoint CE\\reduction (\%)} & \shortstack{Accuracy gain\\\% (pp)} \\
+\midrule
+\multicolumn{8}{l}{\textit{Multi-dataset benchmark}} \\
+Speech Commands & MLP & 5 & Step early & -- & -- & +12.71 & +2.53 (+1.83) \\
+Speech Commands & Transformer & 5 & Big step & -- & -- & +4.91 & +1.92 (+1.53) \\
+Tiny ImageNet & MLP & 5 & Step early & -- & -- & +1.94 & +40.49 (+1.40) \\
+Tiny ImageNet & Transformer & 5 & Step early & -- & -- & +2.17 & +11.14 (+1.63) \\
+FI-2010 & MLP & 5 & Big step & -- & -- & +3.57 & +1.40 (+0.67) \\
+Jannis & MLP & 5 & Step early & -- & -- & +2.92 & +2.44 (+1.29) \\
+Jannis & Transformer & 5 & Big step & -- & -- & +0.15 & +0.44 (+0.26) \\
+\addlinespace[3pt]
+\multicolumn{8}{l}{\textit{Data-regime comparisons}} \\
+Tiny ImageNet 80,000 train & MLP & 5 & Step early & +8.84 & -- & +1.26 & +12.19 (+0.86) \\
+Tiny ImageNet 80,000 train & Transformer & 5 & Linear decreasing & +1.68 & -- & +1.01 & +0.91 (+0.29) \\
+\addlinespace[3pt]
+\multicolumn{8}{l}{\textit{Architecture and duration follow-ups}} \\
+FI-2010 (linear) & Transformer & 5 & Linear decreasing & -- & -- & -- & -- \\
+Jannis (linear) & Transformer & 5 & Linear decreasing & -- & -- & -- & -- \\
+Jannis (100 ep.) & Transformer & 10 & Linear increasing & -- & -- & -0.41 & -0.10 (-0.06) \\
+\addlinespace[3pt]
+\multicolumn{8}{l}{\textit{Standalone vanilla MLPs}} \\
+FI-2010 (d=6, w=256) & MLP & 5 & Step late & -- & -- & +1.32 & +0.03 (+0.02) \\
+FI-2010 (d=6, w=512) & MLP & 5 & Linear decreasing & -- & -- & +0.62 & +0.01 (+0.01) \\
+FI-2010 (d=12, w=256) & MLP & 5 & Linear decreasing & -- & -- & +0.43 & -0.08 (-0.06) \\
+FI-2010 (d=12, w=512) & MLP & 5 & Step early & -- & -- & +0.81 & +0.02 (+0.02) \\
+\addlinespace[3pt]
+\bottomrule
+\end{tabular}
+\end{table*}

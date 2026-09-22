@@ -28,7 +28,7 @@ experiments.
 | `introduction.tex`, `background.tex`, `theory.tex` | The question, mean-field assumptions, critical scaling, and scheduling argument |
 | `experiments.tex`, `discussion.tex` | Main comparisons, uncertainty, conclusions, and limitations |
 | `original_results_table.tex`, `frontloaded_table.tex` | Tables computed from paired seed measurements |
-| `appendix_mean_field.tex`, `appendix_critical_scaling.tex`, `appendix_hermite.tex` | Derivations |
+| `appendix_mean_field.tex`, `appendix_critical_scaling.tex`, `appendix_hermite.tex` | Dropout recursions, critical-exponent derivations, and the Hermite spectral interpretation |
 | `appendix_original_experiments.tex` | CIFAR experiments and numerical fits |
 | `experimental_appendix.tex`, `benchmark_methods.tex`, `benchmark_table.tex`, `benchmark_discussion.tex` | Additional datasets, reproducible protocols, and validation-selected comparisons |
 

@@ -82,75 +82,26 @@ The analogous variance length $\xi_q$ tracks relaxation of $q^l_{aa}$ to $q^*$, 
 
 \subsection{Derivation of Correlation Map and Derivatives with Dropout}\label{app:price_dropout}
 
-This subsection supplies the steps leading to Eqs.~\eqref{eq:chi_dropout} and \eqref{eq:g_dropout}, starting from the two-input correlation recursion that underlies the perfect-alignment shift \(\bar F_\rho(1)=1-\Delta\) in \eqref{eq:Delta_exact}.
-
-Fix a layer where the single-input variance has converged to the dropout-shifted fixed point \(\bar q^*\) defined by \eqref{eq:qstar-dropout}. For two inputs, let \((u_1,u_2)\) be jointly Gaussian with
+Fix the positive dropout-shifted variance \(\bar q^*\) from \eqref{eq:qstar-dropout}, and let \((u_1,u_2)\) be centered Gaussian with marginal variance \(\bar q^*\) and correlation \(c\). Independent inverted-dropout masks across inputs give the normalized map
 \begin{equation}
-\mathbb E[u_1^2]=\mathbb E[u_2^2]=\bar q^*, \qquad \mathbb E[u_1u_2]=c \bar q^*, \qquad c\in[-1,1].
-\end{equation}
-The normalized correlation map is
-\begin{equation}
-\bar F_\rho(c) \;\equiv\; \frac{\bar q^{l+1}_{ab}}{\bar q^*} \;=\; \frac{\sigma_w^2 \mathbb E\big[\phi(u_1)\phi(u_2)\big]+\sigma_b^2}{\bar q^*}.
+\bar F_\rho(c)=\frac{\sigma_w^2\mathbb E_c[\phi(u_1)\phi(u_2)]+\sigma_b^2}{\bar q^*},
+\qquad h=1-\bar F_\rho(1),
 \label{eq:Frho_def_app}
 \end{equation}
-At \(c=1\), \(u_1=u_2\) and \(\bar F_\rho(1)=1-\Delta\) by definition, giving \eqref{eq:Delta_exact}.
+with \(h\) given by \eqref{eq:Delta_exact}.
 
-Since \(\bar q^*\) is independent of \(c\), differentiating \eqref{eq:Frho_def_app} yields
+Assume \(\phi\in C^2\) and \(\phi,\phi',\phi''\in L^2(\mathcal N(0,\bar q^*))\). Price's theorem \cite{Price1958GaussianInputs,Voigtlaender2021Price}, applied at fixed \(\bar q^*\), states that for \(|c|<1\),
 \begin{equation}
-\bar F_\rho'(c) \;=\; \frac{\sigma_w^2}{\bar q^*} \frac{\partial}{\partial c} \mathbb E\big[\phi(u_1)\phi(u_2)\big].
-\label{eq:Frho_prime_step1}
+\frac{\mathrm d^k}{\mathrm dc^k}\mathbb E_c[\phi(u_1)\phi(u_2)]
+=(\bar q^*)^k\mathbb E_c[\phi^{(k)}(u_1)\phi^{(k)}(u_2)],
+\qquad k=1,2.
 \end{equation}
-Write \(u_i=\sqrt{\bar q^*} v_i\), where \((v_1,v_2)\) are standard Gaussians with \(\mathbb E[v_1v_2]=c\), and define
-\begin{equation}
-G(c)\;\equiv\;\mathbb E\Big[\phi\big(\sqrt{\bar q^*} v_1\big) \phi\big(\sqrt{\bar q^*} v_2\big)\Big].
-\end{equation}
-Price's theorem \cite{Price1958GaussianInputs} gives
-\begin{equation}
-\frac{\mathrm d}{\mathrm dc}G(c) \;=\; \mathbb E\left[ \frac{\partial^2}{\partial v_1 \partial v_2} \Big( \phi\big(\sqrt{\bar q^*} v_1\big) \phi\big(\sqrt{\bar q^*} v_2\big) \Big) \right].
-\label{eq:price_step}
-\end{equation}
-A direct differentiation yields
-\begin{equation}
-\frac{\partial^2}{\partial v_1 \partial v_2} \Big( \phi\big(\sqrt{\bar q^*} v_1\big) \phi\big(\sqrt{\bar q^*} v_2\big) \Big) = \bar q^* \phi'\big(\sqrt{\bar q^*} v_1\big) \phi'\big(\sqrt{\bar q^*} v_2\big).
-\end{equation}
-Therefore,
-\begin{equation}
-G'(c) = \bar q^* \mathbb E\Big[ \phi'\big(\sqrt{\bar q^*} v_1\big) \phi'\big(\sqrt{\bar q^*} v_2\big) \Big].
-\end{equation}
-Taking \(c\to 1\) collapses \(v_1=v_2=z\) with \(z\sim\mathcal N(0,1)\), hence
-\begin{equation}
-G'(1) = \bar q^*\int Dz \big[\phi'(\sqrt{\bar q^*} z)\big]^2.
-\end{equation}
-Substituting into \eqref{eq:Frho_prime_step1} gives
-\begin{equation}
-\bar F_\rho'(1) = \sigma_w^2\int Dz \big[\phi'(\sqrt{\bar q^*} z)\big]^2,
-\end{equation}
-which is Eq.~\eqref{eq:chi_dropout}. Differentiating \eqref{eq:Frho_prime_step1} once more:
-\begin{equation}
-\bar F_\rho''(c) \;=\; \frac{\sigma_w^2}{\bar q^*} \frac{\partial^2}{\partial c^2} \mathbb E\big[\phi(u_1)\phi(u_2)\big].
-\label{eq:Frho_second_step1}
-\end{equation}
-Applying Price's theorem again to
-\(
-f(v_1,v_2)=\phi'(\sqrt{\bar q^*} v_1)\phi'(\sqrt{\bar q^*} v_2)
-\)
-yields
-\begin{equation}
-\frac{\mathrm d}{\mathrm dc} \mathbb E\Big[ \phi'(\sqrt{\bar q^*} v_1)\phi'(\sqrt{\bar q^*} v_2) \Big] = \bar q^* \mathbb E\Big[ \phi''(\sqrt{\bar q^*} v_1)\phi''(\sqrt{\bar q^*} v_2) \Big].
-\end{equation}
-Combining with the previous step gives
-\begin{equation}
-\frac{\partial^2}{\partial c^2} \mathbb E\big[\phi(u_1)\phi(u_2)\big] = (\bar q^*)^2 \mathbb E\Big[ \phi''(\sqrt{\bar q^*} v_1)\phi''(\sqrt{\bar q^*} v_2) \Big].
-\end{equation}
-Evaluating at \(c=1\) again collapses \(v_1=v_2=z\), so
-\begin{equation}
-\left.\frac{\partial^2}{\partial c^2} \mathbb E\big[\phi(u_1)\phi(u_2)\big]\right|_{c=1} = (\bar q^*)^2\int Dz \big[\phi''(\sqrt{\bar q^*} z)\big]^2.
-\end{equation}
-Substituting into \eqref{eq:Frho_second_step1} yields
-\begin{equation}
-\bar F_\rho''(1) = \sigma_w^2 \bar q^*\int Dz \big[\phi''(\sqrt{\bar q^*} z)\big]^2,
-\end{equation}
-which is Eq.~\eqref{eq:g_dropout}.
+Strong continuity of Gaussian correlation operators in \(L^2\) then justifies \(c\to1^-\), giving the one-sided derivatives
+\begin{align}
+\bar F_\rho'(1^-)&=\sigma_w^2\int Dz\,[\phi'(\sqrt{\bar q^*}z)]^2=\chi_\rho,\\
+\bar F_\rho''(1^-)&=\sigma_w^2\bar q^*\int Dz\,[\phi''(\sqrt{\bar q^*}z)]^2=g_\rho,
+\end{align}
+as used in Eqs.~\eqref{eq:chi_dropout}--\eqref{eq:g_dropout}. The boundary passage requires the stated Gaussian square-integrability conditions; the theorem for nondegenerate \(|c|<1\) alone does not establish finite derivatives at perfect alignment.
 
 \FloatBarrier
 

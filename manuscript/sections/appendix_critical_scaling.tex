@@ -213,60 +213,10 @@ In a continuum-depth approximation \(m_{\ell+1}-m_\ell\to \partial_\ell m\), we 
 \end{equation}
 which reproduces the characteristic \(1-c_\ell\sim \ell^{-2}\) relaxation of \relu{} activations at the edge-of-chaos \cite{hayou2019impact} and gives \(\theta_{\rm rel}=2\).
 
-\subsection{Non-Analytic Expansion of the \relu{} Correlation Map Near $c=1$}
-\label{app:relu_non-analytic}
-
-Here we derive the non-analytic expansion
-\begin{align}
-F_{\ReLU}(1-m) = 1-m+\kappa m^{3/2}+{\cal O}(m^{2}), \qquad \kappa=\frac{2\sqrt{2}}{3\pi},
-\label{eq:app_relu_expand}
-\end{align}
-starting from the closed form \relu{} correlation map \cite{ChoSaul2009ArcCosine}
-\begin{align}
-F_{\ReLU}(c) &= \frac{1}{\pi} \Bigl[ \sqrt{1-c^{2}} + \bigl(\pi-\cos^{-1}c\bigr)c \Bigr], \qquad c\in[-1,1].
-\label{eq:app_relu_map}
-\end{align}
-Set $c=1-m$ with $0<m\ll 1$.
-
-First expand the square root term,
-\begin{align}
-\sqrt{1-c^{2}}&=\sqrt{1-(1-m)^2}=\sqrt{2m-m^{2}}=\sqrt{2m} \sqrt{1-\frac{m}{2}}\nonumber\\
-&=\sqrt{2m}\left(1-\frac{m}{4}+{\cal O}(m^{2})\right)=\sqrt{2} m^{1/2}-\frac{\sqrt{2}}{4}m^{3/2}+{\cal O}(m^{5/2}).
-\label{eq:app_relu_sqrt}
-\end{align}
-Next expand $\cos^{-1}(1-m)$. Write $\theta=\cos^{-1}(1-m)$ and use
-\begin{align}
-\cos\theta = 1-\frac{\theta^{2}}{2}+\frac{\theta^{4}}{24}+{\cal O}(\theta^{6}),
-\label{eq:app_cos_series}
-\end{align}
-together with an ansatz $\theta=a m^{1/2}+b m^{3/2}+{\cal O}(m^{5/2})$. Matching
-$\cos\theta=1-m$ order by order gives $a=\sqrt{2}$ and $b=\sqrt{2}/12$, hence
-\begin{align}
-\cos^{-1}(1-m) = \sqrt{2} m^{1/2}+\frac{\sqrt{2}}{12}m^{3/2}+{\cal O}(m^{5/2}).
-\label{eq:app_relu_arccos}
-\end{align}
-Now expand the product term in \eqref{eq:app_relu_map},
-\begin{align}
-\bigl(\pi-\cos^{-1}c\bigr)c &= \Bigl(\pi-\cos^{-1}(1-m)\Bigr)(1-m)\nonumber\\
-&= \Bigl(\pi-\sqrt{2} m^{1/2}-\frac{\sqrt{2}}{12}m^{3/2}+{\cal O}(m^{5/2})\Bigr)(1-m)\nonumber\\
-&= \pi(1-m)-\sqrt{2} m^{1/2}+\frac{11\sqrt{2}}{12}m^{3/2}+{\cal O}(m^{2}).
-\label{eq:app_relu_prod}
-\end{align}
-Adding \eqref{eq:app_relu_sqrt} and \eqref{eq:app_relu_prod} cancels the
-${\cal O}(m^{1/2})$ terms and yields
-\begin{align}
-\sqrt{1-c^{2}}+\bigl(\pi-\cos^{-1}c\bigr)c &= \pi(1-m) + \left( -\frac{\sqrt{2}}{4}+\frac{11\sqrt{2}}{12} \right)m^{3/2} + {\cal O}(m^{2})\nonumber\\
-&= \pi(1-m) +\frac{2\sqrt{2}}{3}m^{3/2} +{\cal O}(m^{2}).
-\end{align}
-Dividing by $\pi$ gives \eqref{eq:app_relu_expand} with $\kappa=2\sqrt{2}/(3\pi)$.
-
-The key structural point is the cancellation of the ${\cal O}(m^{1/2})$ pieces, leaving a
-leading non-analytic correction $\kappa m^{3/2}$, which encodes the kink.
-
 \subsection{Origin of the $m^{3/2}$ Term for Kinked Activations}
 \label{app:tube_argument_kink}
 
-The \(m^{3/2}\) term is a near-alignment effect. Write \(c=1-m\) with \(m\ll 1\). Then the two Gaussian preactivations differ only by a small transverse fluctuation. Away from a kink, the activation is locally smooth and the usual Taylor expansion produces only integer powers of \(m\). The non-analytic term comes from the small set of samples where the two nearly identical preactivations fall on opposite sides of the kink. For \relu{}, the main text gives the closed-form expansion
+The \(m^{3/2}\) term is a near-alignment effect. Write \(c=1-m\) with \(m\ll 1\). Then the two Gaussian preactivations differ only by a small transverse fluctuation. Away from a kink, the activation is locally smooth and the usual Taylor expansion produces only integer powers of \(m\). The non-analytic term comes from the small set of samples where the two nearly identical preactivations fall on opposite sides of the kink. For \relu{}, Eq.~\eqref{eq:relu_expand} gives
 \begin{equation}
 F(1-m)=1-m+\kappa m^{3/2}+O(m^{2}),
 \end{equation}

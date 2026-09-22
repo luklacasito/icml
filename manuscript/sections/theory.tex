@@ -10,7 +10,7 @@ This distinction originally emerged from the following variational question: amo
 
 Our classification is orthogonal to the scale-invariant vs. non-scale-invariant distinction of \cite{roberts2022principlesdeeplearningtheory}: the multi-scale Hermite spectrum highlighted above is controlled primarily by analytic structure, not by scale invariance per se. The criterion is based on two facts: (a) near-critical scaling laws differ between smooth and kinked activations, and (b) ordinary kinks produce power-law Hermite tails, whereas the smooth examples considered here have much faster decay (Apps.~\ref{ap:exponent_derivations} and~\ref{sec:var-opt-act}).
 
- Extending the aforementioned mean-field framework to include dropout, one finds that for a single input dropout largely acts as a renormalization of the effective weight variance, $\sigma_w^2\mapsto \sigma_w^2/\rho$, but for two inputs the perfect-alignment fixed point at $c^*=1$ is lost for any $\rho<1$ when the two dropout masks are chosen independently \cite{schoenholz2017deepinformationpropagation}. In other words, dropout acts as an explicit symmetry-breaking ``field'' for alignment: even if two inputs are perfectly aligned at some depth, the next layer produces $\bar c_{ab}<1$, cutting off the divergence of the depth correlation length at the edge.
+Consider sending exactly the same input through the same network twice. Without dropout, the two representations remain identical at every layer. With independently sampled dropout masks, different coordinates are erased on the two passes, so even identical inputs no longer produce perfectly aligned representations. Rescaling the surviving activations preserves their mean, but does not restore the missing agreement between the two passes. Perfect alignment therefore ceases to be a fixed point, cutting off the divergence of the depth correlation length at the edge \cite{schoenholz2017deepinformationpropagation}. For a single input, the corresponding variance increase can instead be absorbed into an effective weight variance, $\sigma_w^2\mapsto\sigma_w^2/\rho$.
 
 Introducing multiplicative Bernoulli noise with keep probability $\rho$, the perturbed preactivations read
 \begin{equation}
@@ -76,7 +76,9 @@ For the $\mathcal O(m^3)$ remainder used below, we additionally assume that the 
 For kinked, \relu{}-like activations, \(\bar F_\rho''(1)\) is not finite and the analytic expansion below is not the
 correct organizing principle; we treat that universality class separately.
 
-The Landau equation of state follows by expanding \(\bar F_\rho(c)\) around \(c=1\). Writing \(c^*=1-m\) with \(0<m\ll 1\) acting as the order parameter,
+For \relu{}, imagine two nearly identical signals arriving on opposite sides of zero: one passes through, while the other is clipped. At a fixed nonzero Gaussian variance and correlation $c$ close to one, the signals differ by an amount of order $\sqrt{1-c}$, so a fraction of this order can straddle the kink. Within this small region, their squared activation difference is of order $1-c$, giving a contribution of order $(1-c)^{3/2}$. At the fixed point, where $m=1-c^*$, this produces the $m^{3/2}$ correction, while the smooth class above has an $m^2$ term (App.~\ref{app:tube_argument_kink}).
+
+For the smooth class, the Landau equation of state follows by expanding \(\bar F_\rho(c)\) around \(c=1\). Writing \(c^*=1-m\) with \(0<m\ll 1\) acting as the order parameter,
 \begin{align}
 \bar F_\rho(1-m)&=\bar F_\rho(1)-\chi_\rho m+\frac{g_\rho}{2}m^2+\mathcal O(m^3)\\
 &=(1-h)-\chi_\rho m+\frac{g_\rho}{2}m^2+\mathcal O(m^3),
@@ -160,7 +162,7 @@ Critical scaling from the mean-field calculation. The top row shows the depth sc
 \end{figure*}
 
 \subsection{Scaling Collapse and Crossover Region}
-At leading normal-form order, dropout and detuning enter the same local equation of state. The collapse below is exact for the truncated Landau normal form, while the full mean-field recursion receives higher-order corrections such as \(\mathcal O(m^3)\) in the smooth case, \(\mathcal O(m^2)\) in the kinked case, and corrections from the nonlinear microscopic map \(h=\Delta(\rho)\). These corrections become visible away from the asymptotic near-critical regime. From the field-theory point of view, the resulting collapse is the standard signature of criticality: in the massless limit, connected \(n\)-point functions become homogeneous scaling functions of their separations, so the data collapse after rescaling by the appropriate critical dimensions \cite{ZinnJustin2002QFTCritical}.
+A scaling collapse asks whether curves that look different are the same response measured with different rulers. Here, changing the dropout strength changes both the natural scale of decorrelation and the amount of detuning needed to compete with it. Measuring each axis in its corresponding scale brings the different curves onto a common curve determined by the relative strength of dropout and detuning. This correspondence is exact for the leading equation of state \cite{ZinnJustin2002QFTCritical}; farther from criticality, higher-order terms produce visible departures. These include $\mathcal O(m^3)$ corrections in the smooth case, $\mathcal O(m^2)$ corrections in the kinked case, and corrections from the nonlinear microscopic map $h=\Delta(\rho)$.
 In practice, experiments are rarely tuned exactly to the correlation edge \(t=0\) while simultaneously taking the dropout field to zero, \(h\to 0\). The useful near-critical description is therefore a two-parameter scaling function.
 
 For smooth activations, the order parameter \(m\equiv 1-c^*\) obeys \eqref{eq:EoS_correct},

@@ -79,9 +79,7 @@ No dropout & $\infty$ & $0$ & $38.77 \pm 0.10$ & $38.34 \pm 0.12$ \\
 \end{tabular}
 \end{table}
 
-The budget-control experiment checks a simpler explanation: early-concentrated dropout may only be winning because it raises the local dropout rate, not because the allocation over depth matters. After all, the step schedule applies dropout at rate $2\bar{p}$ to the first half of the network, so perhaps the same improvement could be achieved by applying this higher rate uniformly throughout.
-
-To disentangle allocation from total dropout strength, we compare constant schedules with probabilities $\bar p,2\bar p,3\bar p$ against step schedules using $2\bar p$ in the first half or $3\bar p$ in the first third of the network (Fig.~\ref{fig:triple_dropout}, Tab.~\ref{tab:triple_summary}).
+With six layers, uniform dropout at probability $0.1$ uses the same budget as dropout at probability $0.2$ in the first three layers. The early schedule changes where dropout acts, but also doubles its local strength, so an improvement could come from either change. We therefore also test probability $0.2$ in every layer: this matches the stronger local rate while spending twice the budget. The big-step control repeats the comparison with probability $0.3$ in the first two layers versus $0.3$ throughout (Fig.~\ref{fig:triple_dropout}, Table~\ref{tab:triple_summary}).
 
 \clearpage
 

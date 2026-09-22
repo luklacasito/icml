@@ -21,6 +21,11 @@ for the earlier choice of schedule or hyperparameters. The additional benchmark
 file contains checkpoint and final test measurements, without full learning
 curves or a new independent confirmation study.
 
+The saved Speech Commands records contain test measurements at the checkpoint
+selected by validation loss, but no final-epoch test measurements for either
+the MLP or the Transformer. All 50 epochs finished. Their final learning-curve
+values are validation losses and cannot fill the missing test-loss columns.
+
 ## CIFAR experiments
 
 | File | Comparison |

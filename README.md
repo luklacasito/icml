@@ -18,9 +18,12 @@ MLPs and transformers. The gains depend on the task and on when we measure
 them: final loss, lowest recorded loss, and loss at a validation-selected
 checkpoint can tell quite different stories.
 
-The PDF is the revised September 22, 2026 paper, with the additional experiments,
-confidence intervals, and corrections to the numerical figures and theoretical
-claims. The original [camera-ready version is on arXiv](https://arxiv.org/pdf/2605.21648v2).
+The PDF is the revised September 22, 2026 paper, including 114 additional fits
+with the selected schedules held fixed. The headline comparisons now have at
+least ten paired seeds; some final-epoch measurements cover only the five new
+pairs because the historical runs did not save that endpoint. The
+[updated tables](results/confidence_intervals.md) give the counts and confidence
+intervals. The original [camera-ready version is on arXiv](https://arxiv.org/pdf/2605.21648v2).
 
 ## Finding things
 
@@ -102,6 +105,11 @@ The [results table](results/confidence_intervals.md) gives paired 95% intervals:
 Fieller intervals for relative loss reductions and Student-t intervals for
 accuracy gains. They describe variation across seeds on the recorded split,
 conditional on the selected schedules and hyperparameters.
+
+The [seed-extension guide](results/seed_extension.md) records which comparisons
+received new seeds and links their saved learning curves and exact settings.
+Historical multi-profile figures retain their original run counts; the main
+tables combine those measurements with the fixed-profile extensions.
 
 The endpoint matters. Taking the lowest recorded test loss uses the test set to
 choose an epoch, whereas a validation-selected checkpoint is chosen before its

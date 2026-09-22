@@ -2,7 +2,8 @@
 """Reproduce the paper's paired-seed intervals and two comparison tables.
 
 Only NumPy and SciPy are required. The portable input contains endpoint vectors
-in matching seed order; it does not select profiles or checkpoints again.
+in matching seed order; it does not select profiles or checkpoints again. An
+endpoint can name a subset of the row's seeds when historical values are absent.
 """
 
 from __future__ import annotations
@@ -121,11 +122,18 @@ def summarize(evidence):
                 if pair is None:
                     summary["metrics"][name] = None
                     continue
+                endpoint_seeds = pair.get("seeds", seeds)
+                if (
+                    len(set(endpoint_seeds)) != len(endpoint_seeds)
+                    or not set(endpoint_seeds).issubset(seeds)
+                ):
+                    raise ValueError("Endpoint seeds must be a unique subset of row seeds")
                 if any(
-                    len(pair[arm]) != len(seeds) for arm in ("uniform", "frontloaded")
+                    len(pair[arm]) != len(endpoint_seeds)
+                    for arm in ("uniform", "frontloaded")
                 ):
                     raise ValueError(
-                        "Every endpoint must contain the same paired seeds"
+                        "Endpoint vectors must match their paired seed identifiers"
                     )
                 function = (
                     accuracy_gain
@@ -133,6 +141,7 @@ def summarize(evidence):
                     else fieller_reduction
                 )
                 metric = function(pair["uniform"], pair["frontloaded"])
+                metric.update(n=len(endpoint_seeds), seeds=list(endpoint_seeds))
                 for arm in ("uniform", "frontloaded"):
                     metric[f"{arm}_mean"] = float(np.mean(pair[arm]))
                 summary["metrics"][name] = metric
@@ -154,6 +163,20 @@ def _cell(metric):
     return (
         rf"\shortstack{{${metric['estimate']:+.2f}$\\[-1pt]{{\scriptsize {bounds}}}}}"
     )
+
+
+def _dataset_label(row):
+    extended = row["dataset"] == "Jannis" and row.get("weight_decay") == 1e-7
+    return row["dataset"] + (" extended" if extended else "")
+
+
+def _sample_sizes(row, endpoints):
+    """Use the observations available for the displayed endpoints."""
+    counts = [
+        str(row["metrics"][name]["n"]) if row["metrics"][name] else "--"
+        for name in endpoints
+    ]
+    return counts[0] if len(set(counts)) == 1 else "/".join(counts)
 
 
 def _start(caption, label, columns):
@@ -179,8 +202,9 @@ def render_original_table(comparisons):
         r"Original paper experiments. Positive changes favor the named profile over uniform. "
         r"CE reduction is $100(L_U-L_F)/L_U$ using seed means; accuracy gain is in percentage points. "
         r"Brackets give nominal paired 95\% confidence intervals (Fieller for CE; Student-$t$ for accuracy), "
-        r"conditional on the selected profiles and fixed data split. Profiles minimize mean final test CE "
-        r"among the compared nonuniform schedules and stay fixed across columns. Final CE and accuracy "
+        r"conditional on the selected profiles and fixed data split. Profiles were selected by mean final "
+        r"test CE among the historical nonuniform runs, then frozen for the additional seeds; they stay "
+        r"fixed across columns. Pooled intervals do not account for the earlier selection. Final CE and accuracy "
         r"use the last epoch. Minimum CE averages each seed's lowest recorded test loss; this "
         r"retrospective endpoint uses test data to choose an epoch, not validation. The first two rows "
         r"share the same uniform runs. See the main text for the assumptions and selection limits."
@@ -207,13 +231,15 @@ def render_original_table(comparisons):
 
 def render_frontloaded_table(comparisons):
     caption = (
-        r"Frontloaded dropout across tasks. We choose the frontloaded profile with the lowest mean "
-        r"minimum validation CE among complete arms with the same paired seeds as uniform; the profile "
-        r"stays fixed across columns. This reanalyzes saved validation histories, not a fresh blind confirmation. "
+        r"Frontloaded dropout across tasks. Profiles were selected by lowest mean minimum validation CE "
+        r"among complete paired arms in the historical cohorts, then frozen for the additional seeds. "
+        r"Each profile stays fixed across columns; pooled intervals do not account for the earlier selection. "
         r"Positive values favor frontloading. CE reduction is $100(L_U-L_F)/L_U$ using seed means; "
         r"accuracy gain is in percentage points. Brackets give nominal paired 95\% confidence intervals "
         r"(Fieller for CE; Student-$t$ for accuracy); see the main text for assumptions and selection limits. "
         r"Checkpoint metrics use each run's minimum-validation-loss checkpoint; final metrics use its last epoch. "
+        r"The $n$ column gives checkpoint/final (C/F) paired seed counts. Where historical final evaluations were "
+        r"absent, final results use only the five additional pairs. "
         r"The extended Jannis Transformer uses weight decay $10^{-7}$ and fixed mean dropout $0.10$; "
         r"other rows use zero weight decay and allow profile-specific dropout budgets. Learning rate and "
         r"mean dropout follow each cohort's validation protocol. Per-epoch test histories were not recorded. "
@@ -223,18 +249,20 @@ def render_frontloaded_table(comparisons):
     lines += [
         r"& & & \multicolumn{2}{c}{Validation-selected test} & \multicolumn{2}{c}{Final-epoch test} \\",
         r"\cmidrule(lr){4-5}\cmidrule(l){6-7}",
-        r"Experiment (training $N$) & $n$ & Profile & \shortstack{CE reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} & \shortstack{CE reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} \\",
+        r"Experiment (training $N$) & \shortstack{$n$\\C/F} & Profile & \shortstack{CE reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} & \shortstack{CE reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} \\",
         r"\midrule",
     ]
     for index, row in enumerate(comparisons):
         if index and comparisons[index - 1]["dataset"] != row["dataset"]:
             lines.append(r"\addlinespace[3pt]")
-        dataset = row["dataset"] + (
-            " extended" if row["dataset"] == "Jannis" and row["n"] == 10 else ""
+        dataset = _dataset_label(row)
+        checkpoint_n = _sample_sizes(
+            row, ("checkpoint_loss", "checkpoint_accuracy_percent")
         )
+        final_n = _sample_sizes(row, ("final_loss", "final_accuracy_percent"))
         cells = [
             rf"\shortstack[l]{{{_tex(dataset)} ({row['train_size']:,})\\{_tex(row['model'])}}}",
-            str(row["n"]),
+            f"{checkpoint_n}/{final_n}",
             _tex(row["profile"]),
         ]
         cells.extend(
@@ -275,7 +303,7 @@ def write_outputs(output_dir, evidence):
                         "model": row["model"],
                         "train_size": row.get("train_size"),
                         "weight_decay": row.get("weight_decay"),
-                        "n": row["n"],
+                        "n": metric["n"] if metric else None,
                         "profile": row["profile"],
                         "endpoint": endpoint,
                         "units": "percentage points"
@@ -305,6 +333,7 @@ def write_outputs(output_dir, evidence):
     markdown += [
         "",
         "Positive values favor frontloading. Loss changes are percentages; accuracy changes are percentage points.",
+        "Seed counts refer to the displayed endpoints. If counts differ within a table, they follow the endpoint column order.",
         "",
     ]
     for title, section, endpoints in (
@@ -343,13 +372,15 @@ def write_outputs(output_dir, evidence):
         for row in summary[section]:
             if all(row["metrics"][endpoint] is None for endpoint, _ in endpoints):
                 continue
-            dataset = row["dataset"] + (
-                " extended" if row["dataset"] == "Jannis" and row["n"] == 10 else ""
-            )
+            dataset = _dataset_label(row)
             experiment = f"{dataset} / {row['model']}"
             if row.get("train_size"):
                 experiment += f" (N={row['train_size']:,})"
-            cells = [experiment, str(row["n"]), row["profile"]]
+            cells = [
+                experiment,
+                _sample_sizes(row, [endpoint for endpoint, _ in endpoints]),
+                row["profile"],
+            ]
             for endpoint, _ in endpoints:
                 metric = row["metrics"][endpoint]
                 if metric is None:

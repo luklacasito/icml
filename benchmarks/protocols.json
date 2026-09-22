@@ -4151,7 +4151,7 @@
     "test_endpoint": "restore minimum-validation-loss weights before the saved test evaluation",
     "precision": "CUDA autocast: bfloat16 when supported, float16 otherwise; CUDA GradScaler. CPU uses float32.",
     "randomization": "sha256_named_streams_v1; initialization and minibatch streams depend on base seed, dropout stream depends on full trial spec with early/late profile family collapsed",
-    "final_test_availability": "Recorded only for retained Tiny ImageNet 80k cohorts. Saved per-epoch curves are train/validation, not test."
+    "final_test_availability": "Historical final endpoints exist only for retained Tiny ImageNet 80k cohorts. The September 22 extension retains final endpoints for all new fits: five fresh pairs in nine main-table comparisons, pooled to ten final pairs only for Tiny ImageNet 80k. Extended-search Jannis received no new runs and has no final endpoints. Per-epoch curves are train/validation, not test."
   },
   "shared_models": {
     "mlp": {
@@ -5991,5 +5991,30 @@
         }
       }
     }
+  },
+  "seed_extension": {
+    "date": "2026-09-22",
+    "scope": "Nine existing main-table uniform/frontloaded benchmark comparisons; frozen per-arm specs, no retuning or profile reselection. Historical seed lists above are unchanged.",
+    "seeds": [
+      105,
+      106,
+      107,
+      108,
+      109
+    ],
+    "task_manifest_and_curves": "../results/seed_extension.npz",
+    "paired_endpoint_evidence": "../results/confidence_seed_metrics.json",
+    "guide": "../results/seed_extension.md",
+    "comparisons": [
+      "speech_commands-mlp-zero-decay",
+      "speech_commands-transformer-zero-decay",
+      "openml_jannis-mlp-zero-decay",
+      "openml_jannis-transformer-zero-decay",
+      "tiny_imagenet-mlp-20k",
+      "tiny_imagenet-transformer-20k",
+      "tiny_imagenet-mlp-80k",
+      "tiny_imagenet-transformer-80k",
+      "fi2010-mlp-zero-decay"
+    ]
   }
 }

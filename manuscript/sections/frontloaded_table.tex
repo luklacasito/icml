@@ -1,6 +1,6 @@
 \begin{table*}[t]
 \centering
-\caption{Frontloaded dropout across tasks. We choose the frontloaded profile with the lowest mean minimum validation CE among complete arms with the same paired seeds as uniform; the profile stays fixed across columns. This reanalyzes saved validation histories, not a fresh blind confirmation. Positive values favor frontloading. CE reduction is $100(L_U-L_F)/L_U$ using seed means; accuracy gain is in percentage points. Brackets give nominal paired 95\% confidence intervals (Fieller for CE; Student-$t$ for accuracy); see the main text for assumptions and selection limits. Checkpoint metrics use each run's minimum-validation-loss checkpoint; final metrics use its last epoch. The extended Jannis Transformer uses weight decay $10^{-7}$ and fixed mean dropout $0.10$; other rows use zero weight decay and allow profile-specific dropout budgets. Learning rate and mean dropout follow each cohort's validation protocol. Per-epoch test histories were not recorded. Dashes mean missing final test evaluations, not zero change.}
+\caption{Frontloaded dropout across tasks. Profiles were selected by lowest mean minimum validation CE among complete paired arms in the historical cohorts, then frozen for the additional seeds. Each profile stays fixed across columns; pooled intervals do not account for the earlier selection. Positive values favor frontloading. CE reduction is $100(L_U-L_F)/L_U$ using seed means; accuracy gain is in percentage points. Brackets give nominal paired 95\% confidence intervals (Fieller for CE; Student-$t$ for accuracy); see the main text for assumptions and selection limits. Checkpoint metrics use each run's minimum-validation-loss checkpoint; final metrics use its last epoch. The $n$ column gives checkpoint/final (C/F) paired seed counts. Where historical final evaluations were absent, final results use only the five additional pairs. The extended Jannis Transformer uses weight decay $10^{-7}$ and fixed mean dropout $0.10$; other rows use zero weight decay and allow profile-specific dropout budgets. Learning rate and mean dropout follow each cohort's validation protocol. Per-epoch test histories were not recorded. Dashes mean missing final test evaluations, not zero change.}
 \label{tab:frontloaded_results}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
@@ -9,21 +9,21 @@
 \toprule
 & & & \multicolumn{2}{c}{Validation-selected test} & \multicolumn{2}{c}{Final-epoch test} \\
 \cmidrule(lr){4-5}\cmidrule(l){6-7}
-Experiment (training $N$) & $n$ & Profile & \shortstack{CE reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} & \shortstack{CE reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} \\
+Experiment (training $N$) & \shortstack{$n$\\C/F} & Profile & \shortstack{CE reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} & \shortstack{CE reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} \\
 \midrule
-\shortstack[l]{Speech Commands (20,020)\\MLP} & 5 & Step early & \shortstack{$+12.71$\\[-1pt]{\scriptsize $[11.01, 14.36]$}} & \shortstack{$+1.83$\\[-1pt]{\scriptsize $[1.20, 2.46]$}} & -- & -- \\
-\shortstack[l]{Speech Commands (20,020)\\Transformer} & 5 & Big step & \shortstack{$+4.91$\\[-1pt]{\scriptsize $[-9.25, 18.60]$}} & \shortstack{$+1.53$\\[-1pt]{\scriptsize $[-1.30, 4.36]$}} & -- & -- \\
+\shortstack[l]{Speech Commands (20,020)\\MLP} & 10/5 & Step early & \shortstack{$+12.56$\\[-1pt]{\scriptsize $[11.36, 13.73]$}} & \shortstack{$+1.72$\\[-1pt]{\scriptsize $[1.28, 2.16]$}} & \shortstack{$+12.59$\\[-1pt]{\scriptsize $[9.95, 15.13]$}} & \shortstack{$+1.71$\\[-1pt]{\scriptsize $[0.78, 2.64]$}} \\
+\shortstack[l]{Speech Commands (20,020)\\Transformer} & 10/5 & Big step & \shortstack{$+9.04$\\[-1pt]{\scriptsize $[2.52, 15.24]$}} & \shortstack{$+2.06$\\[-1pt]{\scriptsize $[0.72, 3.41]$}} & \shortstack{$+15.51$\\[-1pt]{\scriptsize $[6.44, 23.04]$}} & \shortstack{$+1.10$\\[-1pt]{\scriptsize $[-0.10, 2.30]$}} \\
 \addlinespace[3pt]
-\shortstack[l]{Jannis (3,840)\\MLP} & 5 & Step early & \shortstack{$+2.92$\\[-1pt]{\scriptsize $[0.49, 5.27]$}} & \shortstack{$+1.29$\\[-1pt]{\scriptsize $[0.42, 2.16]$}} & -- & -- \\
-\shortstack[l]{Jannis (3,840)\\Transformer} & 5 & Big step & \shortstack{$+0.15$\\[-1pt]{\scriptsize $[-1.24, 1.52]$}} & \shortstack{$+0.26$\\[-1pt]{\scriptsize $[-1.58, 2.11]$}} & -- & -- \\
-\shortstack[l]{Jannis extended (3,840)\\Transformer} & 10 & Step early & \shortstack{$-0.27$\\[-1pt]{\scriptsize $[-1.16, 0.61]$}} & \shortstack{$+0.39$\\[-1pt]{\scriptsize $[-0.31, 1.10]$}} & -- & -- \\
+\shortstack[l]{Jannis (3,840)\\MLP} & 10/5 & Step early & \shortstack{$+2.60$\\[-1pt]{\scriptsize $[1.44, 3.74]$}} & \shortstack{$+1.56$\\[-1pt]{\scriptsize $[0.94, 2.19]$}} & \shortstack{$+16.23$\\[-1pt]{\scriptsize $[14.83, 17.60]$}} & \shortstack{$+3.03$\\[-1pt]{\scriptsize $[1.96, 4.11]$}} \\
+\shortstack[l]{Jannis (3,840)\\Transformer} & 10/5 & Big step & \shortstack{$+0.15$\\[-1pt]{\scriptsize $[-0.62, 0.92]$}} & \shortstack{$+0.32$\\[-1pt]{\scriptsize $[-0.51, 1.15]$}} & \shortstack{$+13.02$\\[-1pt]{\scriptsize $[8.96, 16.81]$}} & \shortstack{$-0.19$\\[-1pt]{\scriptsize $[-1.36, 0.98]$}} \\
+\shortstack[l]{Jannis extended (3,840)\\Transformer} & 10/-- & Step early & \shortstack{$-0.27$\\[-1pt]{\scriptsize $[-1.16, 0.61]$}} & \shortstack{$+0.39$\\[-1pt]{\scriptsize $[-0.31, 1.10]$}} & -- & -- \\
 \addlinespace[3pt]
-\shortstack[l]{Tiny ImageNet (20,000)\\MLP} & 5 & Step early & \shortstack{$+1.94$\\[-1pt]{\scriptsize $[1.33, 2.55]$}} & \shortstack{$+1.40$\\[-1pt]{\scriptsize $[1.28, 1.51]$}} & -- & -- \\
-\shortstack[l]{Tiny ImageNet (20,000)\\Transformer} & 5 & Step early & \shortstack{$+2.17$\\[-1pt]{\scriptsize $[1.28, 3.05]$}} & \shortstack{$+1.63$\\[-1pt]{\scriptsize $[0.92, 2.34]$}} & -- & -- \\
-\shortstack[l]{Tiny ImageNet (80,000)\\MLP} & 5 & Step early & \shortstack{$+1.26$\\[-1pt]{\scriptsize $[0.93, 1.59]$}} & \shortstack{$+0.86$\\[-1pt]{\scriptsize $[0.29, 1.44]$}} & \shortstack{$+8.84$\\[-1pt]{\scriptsize $[8.38, 9.29]$}} & \shortstack{$+0.79$\\[-1pt]{\scriptsize $[0.42, 1.16]$}} \\
-\shortstack[l]{Tiny ImageNet (80,000)\\Transformer} & 5 & Linear decreasing & \shortstack{$+1.01$\\[-1pt]{\scriptsize $[-0.34, 2.35]$}} & \shortstack{$+0.29$\\[-1pt]{\scriptsize $[-0.50, 1.08]$}} & \shortstack{$+1.68$\\[-1pt]{\scriptsize $[-1.26, 4.54]$}} & \shortstack{$+0.11$\\[-1pt]{\scriptsize $[-0.88, 1.09]$}} \\
+\shortstack[l]{Tiny ImageNet (20,000)\\MLP} & 10/5 & Step early & \shortstack{$+2.04$\\[-1pt]{\scriptsize $[1.72, 2.37]$}} & \shortstack{$+1.28$\\[-1pt]{\scriptsize $[0.99, 1.57]$}} & \shortstack{$+21.48$\\[-1pt]{\scriptsize $[19.59, 23.35]$}} & \shortstack{$+0.80$\\[-1pt]{\scriptsize $[0.47, 1.14]$}} \\
+\shortstack[l]{Tiny ImageNet (20,000)\\Transformer} & 10/5 & Step early & \shortstack{$+2.21$\\[-1pt]{\scriptsize $[1.69, 2.73]$}} & \shortstack{$+1.49$\\[-1pt]{\scriptsize $[1.06, 1.92]$}} & \shortstack{$+21.06$\\[-1pt]{\scriptsize $[20.27, 21.83]$}} & \shortstack{$+0.73$\\[-1pt]{\scriptsize $[-0.19, 1.66]$}} \\
+\shortstack[l]{Tiny ImageNet (80,000)\\MLP} & 10/10 & Step early & \shortstack{$+1.17$\\[-1pt]{\scriptsize $[0.92, 1.42]$}} & \shortstack{$+0.77$\\[-1pt]{\scriptsize $[0.50, 1.05]$}} & \shortstack{$+8.65$\\[-1pt]{\scriptsize $[8.26, 9.04]$}} & \shortstack{$+0.68$\\[-1pt]{\scriptsize $[0.48, 0.88]$}} \\
+\shortstack[l]{Tiny ImageNet (80,000)\\Transformer} & 10/10 & Linear decreasing & \shortstack{$+0.76$\\[-1pt]{\scriptsize $[-0.24, 1.76]$}} & \shortstack{$+0.13$\\[-1pt]{\scriptsize $[-0.41, 0.67]$}} & \shortstack{$+1.66$\\[-1pt]{\scriptsize $[0.51, 2.81]$}} & \shortstack{$-0.00$\\[-1pt]{\scriptsize $[-0.41, 0.40]$}} \\
 \addlinespace[3pt]
-\shortstack[l]{FI-2010 (40,000)\\MLP} & 5 & Big step & \shortstack{$+3.57$\\[-1pt]{\scriptsize $[2.41, 4.73]$}} & \shortstack{$+0.67$\\[-1pt]{\scriptsize $[-0.29, 1.63]$}} & -- & -- \\
+\shortstack[l]{FI-2010 (40,000)\\MLP} & 10/5 & Big step & \shortstack{$+4.25$\\[-1pt]{\scriptsize $[2.57, 5.88]$}} & \shortstack{$+0.81$\\[-1pt]{\scriptsize $[0.38, 1.25]$}} & \shortstack{$+68.23$\\[-1pt]{\scriptsize $[67.30, 69.12]$}} & \shortstack{$-2.48$\\[-1pt]{\scriptsize $[-2.86, -2.09]$}} \\
 \bottomrule
 \end{tabular}
 \end{table*}

@@ -1,5 +1,7 @@
 """Check paired inference and reproduction of the published tables."""
 
+import copy
+import csv
 import json
 from pathlib import Path
 import subprocess
@@ -9,7 +11,13 @@ import numpy as np
 import pytest
 from scipy.stats import t
 
-from scripts.confidence_intervals import accuracy_gain, fieller_reduction, summarize
+from scripts.confidence_intervals import (
+    accuracy_gain,
+    fieller_reduction,
+    render_frontloaded_table,
+    summarize,
+    write_outputs,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -70,6 +78,109 @@ def test_accuracy_interval_uses_percentage_point_differences():
     radius = t.ppf(0.975, 2) / np.sqrt(3)
     assert result["estimate"] == 2
     assert result["ci95"] == pytest.approx([2 - radius, 2 + radius])
+
+
+@pytest.fixture
+def partial_endpoint_evidence():
+    """Historical checkpoint values exist; only the fresh seeds have final values."""
+    seeds = list(range(100, 110))
+    row = {
+        "dataset": "Jannis",
+        "model": "Transformer",
+        "train_size": 3840,
+        "weight_decay": 0,
+        "profile": "Big step",
+        "n": 10,
+        "seeds": seeds,
+        "metrics": {
+            "checkpoint_loss": {
+                "uniform": [1 + 0.1 * i for i in range(10)],
+                "frontloaded": [0.9 + 0.08 * i for i in range(10)],
+            },
+            "checkpoint_accuracy_percent": {
+                "uniform": [70 + 0.1 * i for i in range(10)],
+                "frontloaded": [71 + 0.1 * i for i in range(10)],
+            },
+            "final_loss": {
+                "seeds": seeds[5:],
+                "uniform": [1.4 + 0.1 * i for i in range(5)],
+                "frontloaded": [1.2 + 0.09 * i for i in range(5)],
+            },
+            "final_accuracy_percent": {
+                "seeds": seeds[5:],
+                "uniform": [68 + 0.1 * i for i in range(5)],
+                "frontloaded": [70 + 0.2 * i for i in range(5)],
+            },
+        },
+    }
+    return {
+        "schema_version": 1,
+        "inference": "Fixed profiles and split; paired seed variation.",
+        "endpoint_definitions": {},
+        "original": [],
+        "benchmarks": [row],
+    }
+
+
+def test_endpoint_subset_uses_its_own_pairs_and_degrees_of_freedom(
+    partial_endpoint_evidence,
+):
+    row = summarize(partial_endpoint_evidence)["benchmarks"][0]
+    checkpoint = row["metrics"]["checkpoint_loss"]
+    final = row["metrics"]["final_loss"]
+    assert (checkpoint["n"], checkpoint["df"]) == (10, 9)
+    assert checkpoint["seeds"] == row["seeds"]
+    assert (final["n"], final["df"]) == (5, 4)
+    assert final["seeds"] == [105, 106, 107, 108, 109]
+    assert final["uniform_mean"] == pytest.approx(1.6)
+    assert final["frontloaded_mean"] == pytest.approx(1.38)
+    assert final["estimate"] == pytest.approx(13.75)
+
+
+@pytest.mark.parametrize(
+    "endpoint_seeds",
+    [
+        [105, 105, 107, 108, 109],  # Duplicate identifiers cannot identify pairs.
+        [105, 106, 107, 108, 999],  # Every pair must belong to the row's cohort.
+        [105, 106],  # Five outcomes cannot describe two identified pairs.
+    ],
+)
+def test_invalid_endpoint_seed_subsets_are_rejected(
+    partial_endpoint_evidence, endpoint_seeds
+):
+    partial_endpoint_evidence["benchmarks"][0]["metrics"]["final_loss"]["seeds"] = (
+        endpoint_seeds
+    )
+    with pytest.raises(ValueError, match="[Ss]eed"):
+        summarize(partial_endpoint_evidence)
+
+
+def test_exports_use_endpoint_counts_and_identify_extended_jannis_by_recipe(
+    tmp_path, partial_endpoint_evidence
+):
+    extended = copy.deepcopy(partial_endpoint_evidence["benchmarks"][0])
+    extended["weight_decay"] = 1e-7
+    extended["metrics"]["final_loss"] = None
+    extended["metrics"]["final_accuracy_percent"] = None
+    partial_endpoint_evidence["benchmarks"].append(extended)
+    write_outputs(tmp_path, partial_endpoint_evidence)
+
+    with (tmp_path / "confidence_intervals.csv").open(newline="") as stream:
+        records = list(csv.DictReader(stream))
+    assert [record["n"] for record in records] == ["10", "10", "5", "5", "10", "10", "", ""]
+
+    markdown = (tmp_path / "confidence_intervals.md").read_text()
+    checkpoints, final = markdown.split("## Recorded final-epoch test results")
+    assert "| Jannis / Transformer (N=3,840) | 10 |" in checkpoints
+    assert "| Jannis extended / Transformer (N=3,840) | 10 |" in checkpoints
+    assert "| Jannis / Transformer (N=3,840) | 5 |" in final
+    assert "| Jannis extended /" not in final
+
+    latex = render_frontloaded_table(summarize(partial_endpoint_evidence)["benchmarks"])
+    assert "Jannis (3,840)" in latex
+    assert latex.count("Jannis extended (3,840)") == 1
+    assert " & 10/5 & " in latex
+    assert " & 10/-- & " in latex
 
 
 @pytest.mark.parametrize(

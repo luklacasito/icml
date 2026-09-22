@@ -3,7 +3,8 @@
 **[Read the paper](../paper.pdf).**
 
 This is the source for the expanded September 22, 2026 version, including the
-additional experiments and confidence intervals. The original camera-ready
+additional experiments, the 114-fit seed extension, and confidence intervals
+with separate checkpoint/final seed counts. The original camera-ready
 version is on [arXiv](https://arxiv.org/pdf/2605.21648v2).
 
 ## Build

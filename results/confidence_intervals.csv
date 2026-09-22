@@ -5,55 +5,55 @@ original,CIFAR-10,MLP schedules,,,25,Step early,final_accuracy_percent,percentag
 original,CIFAR-10,MLP budget controls,,,25,Big step,final_loss,percent reduction,2.223257144355774,1.7205689470291137,22.61043886006819,22.060435796523347,23.15224380676314,bounded
 original,CIFAR-10,MLP budget controls,,,25,Big step,minimum_loss,percent reduction,1.6774210441589354,1.6427232416152953,2.0685207607513822,1.8046825488744145,2.3318533663788776,bounded
 original,CIFAR-10,MLP budget controls,,,25,Big step,final_accuracy_percent,percentage points,41.84,42.9168,1.0768000000000009,0.8470273679476436,1.3065726320523583,bounded
-original,CIFAR-10,ReLU p=0.1,,,3,Big step,final_loss,percent reduction,3.1315033133824666,2.021965964635213,35.43146015543558,33.64052987254023,37.26974592850515,bounded
-original,CIFAR-10,ReLU p=0.1,,,3,Big step,minimum_loss,percent reduction,1.6975864823659261,1.6566264613469441,2.4128385472235863,-0.3967780674247301,5.20776710805645,bounded
-original,CIFAR-10,ReLU p=0.1,,,3,Big step,final_accuracy_percent,percentage points,40.453333333333326,42.49333333333333,2.039999999999999,0.7919834539308217,3.2880165460691764,bounded
+original,CIFAR-10,ReLU p=0.1,,,10,Big step,final_loss,percent reduction,3.157712972998619,2.055698685348034,34.899127852145895,34.35711185063054,35.437091858178945,bounded
+original,CIFAR-10,ReLU p=0.1,,,10,Big step,minimum_loss,percent reduction,1.6929589696526528,1.6499223693013192,2.5420935251705186,2.0259378184472876,3.055975847404524,bounded
+original,CIFAR-10,ReLU p=0.1,,,10,Big step,final_accuracy_percent,percentage points,41.278000000000006,42.833999999999996,1.5559999999999996,1.2214317906419754,1.8905682093580238,bounded
 original,CIFAR-10,GELU p=0.1,,,10,Big step,final_loss,percent reduction,2.605479051530361,1.8292560832500455,29.79194815726464,28.96201505687952,30.60519877549227,bounded
 original,CIFAR-10,GELU p=0.1,,,10,Big step,minimum_loss,percent reduction,1.7160394740700724,1.6739717980027202,2.4514398825323522,1.90326982250546,2.9972349172288526,bounded
 original,CIFAR-10,GELU p=0.1,,,10,Big step,final_accuracy_percent,percentage points,41.444,42.062,0.6179999999999992,0.15742519671646904,1.0785748032835294,bounded
 original,CIFAR-100,ViT,,,10,Linear decreasing,final_loss,percent reduction,3.727876456975937,3.5730307030677793,4.153725470660282,3.3959285373238113,4.904289177516397,bounded
 original,CIFAR-100,ViT,,,10,Linear decreasing,minimum_loss,percent reduction,2.1266835027933118,2.0970475733280187,1.3935279709635895,0.5636923665034099,2.2137461874726316,bounded
 original,CIFAR-100,ViT,,,10,Linear decreasing,final_accuracy_percent,percentage points,48.614,49.275,0.6609999999999978,0.3588432011830171,0.9631567988169785,bounded
-original,CIFAR-10,ViT both-block ablation,,,5,Step early,final_loss,percent reduction,1.6553538608551026,1.550719404220581,6.320972156398684,3.231786744952503,9.299497967993764,bounded
-original,CIFAR-10,ViT both-block ablation,,,5,Step early,minimum_loss,percent reduction,0.8503701710700989,0.8425644576549528,0.9179194756235963,-0.47022249277082206,2.3033555403349393,bounded
-original,CIFAR-10,ViT both-block ablation,,,5,Step early,final_accuracy_percent,percentage points,74.77799999999999,75.3,0.521999999999997,-0.11497484127621294,1.158974841276207,bounded
-benchmarks,Speech Commands,MLP,20020,0,5,Step early,checkpoint_loss,percent reduction,1.0731142825656361,0.9367419362997081,12.708091624676227,11.010278266861107,14.362828048716336,bounded
-benchmarks,Speech Commands,MLP,20020,0,5,Step early,checkpoint_accuracy_percent,percentage points,72.22977022977022,74.05994005994008,1.8301698301698337,1.1962539139609412,2.4640857463787262,bounded
-benchmarks,Speech Commands,MLP,20020,0,5,Step early,final_loss,percent reduction,,,,,,missing
-benchmarks,Speech Commands,MLP,20020,0,5,Step early,final_accuracy_percent,percentage points,,,,,,missing
-benchmarks,Speech Commands,Transformer,20020,0,5,Big step,checkpoint_loss,percent reduction,0.743195443205781,0.7067408256645089,4.905118549169885,-9.251032581687024,18.59570369949102,bounded
-benchmarks,Speech Commands,Transformer,20020,0,5,Big step,checkpoint_accuracy_percent,percentage points,79.54445554445554,81.07292707292706,1.5284715284715304,-1.3035543099519862,4.360497366895047,bounded
-benchmarks,Speech Commands,Transformer,20020,0,5,Big step,final_loss,percent reduction,,,,,,missing
-benchmarks,Speech Commands,Transformer,20020,0,5,Big step,final_accuracy_percent,percentage points,,,,,,missing
-benchmarks,Jannis,MLP,3840,0,5,Step early,checkpoint_loss,percent reduction,1.1234575279553733,1.0906434059143066,2.9208155381526955,0.4940112710724476,5.26906976113799,bounded
-benchmarks,Jannis,MLP,3840,0,5,Step early,checkpoint_accuracy_percent,percentage points,52.958333333333336,54.25,1.291666666666663,0.4247509053867191,2.158582427946607,bounded
-benchmarks,Jannis,MLP,3840,0,5,Step early,final_loss,percent reduction,,,,,,missing
-benchmarks,Jannis,MLP,3840,0,5,Step early,final_accuracy_percent,percentage points,,,,,,missing
-benchmarks,Jannis,Transformer,3840,0,5,Big step,checkpoint_loss,percent reduction,0.9932749017079671,0.9917668747901918,0.15182372122583554,-1.2364446943678553,1.5154408061808566,bounded
-benchmarks,Jannis,Transformer,3840,0,5,Big step,checkpoint_accuracy_percent,percentage points,58.979166666666664,59.23958333333333,0.26041666666666574,-1.584662744835828,2.105496078169159,bounded
-benchmarks,Jannis,Transformer,3840,0,5,Big step,final_loss,percent reduction,,,,,,missing
-benchmarks,Jannis,Transformer,3840,0,5,Big step,final_accuracy_percent,percentage points,,,,,,missing
+original,CIFAR-10,ViT both-block ablation,,,10,Step early,final_loss,percent reduction,1.6576380586624146,1.5349701261520385,7.400163857806186,5.353013124503292,9.411591476730475,bounded
+original,CIFAR-10,ViT both-block ablation,,,10,Step early,minimum_loss,percent reduction,0.8532863140106202,0.840383991599083,1.5120742240542522,0.33243446412434263,2.6791660011511675,bounded
+original,CIFAR-10,ViT both-block ablation,,,10,Step early,final_accuracy_percent,percentage points,74.73599999999999,75.413,0.6769999999999996,0.23841562022474966,1.1155843797752496,bounded
+benchmarks,Speech Commands,MLP,20020,0,10,Step early,checkpoint_loss,percent reduction,1.072800564599204,0.9380901248424085,12.55689493481233,11.358382959305802,13.734892164718303,bounded
+benchmarks,Speech Commands,MLP,20020,0,10,Step early,checkpoint_accuracy_percent,percentage points,72.1958041958042,73.91308691308691,1.7172827172827183,1.2788982432545661,2.1556671913108705,bounded
+benchmarks,Speech Commands,MLP,20020,0,5,Step early,final_loss,percent reduction,1.072035289551471,0.9370721446312629,12.589431172240184,9.952884285612784,15.129631457627845,bounded
+benchmarks,Speech Commands,MLP,20020,0,5,Step early,final_accuracy_percent,percentage points,72.22577422577423,73.93406593406593,1.7082917082917077,0.7766931380760795,2.6398902785073357,bounded
+benchmarks,Speech Commands,Transformer,20020,0,10,Big step,checkpoint_loss,percent reduction,0.7669186794865024,0.6975906751920412,9.039811670890634,2.5182522641591154,15.240509270429847,bounded
+benchmarks,Speech Commands,Transformer,20020,0,10,Big step,checkpoint_accuracy_percent,percentage points,79.02797202797204,81.09290709290708,2.064935064935065,0.7224848616730353,3.407385268197095,bounded
+benchmarks,Speech Commands,Transformer,20020,0,5,Big step,final_loss,percent reduction,1.0057376262310382,0.8497681133254067,15.5079723416654,6.444389429603636,23.044024587240386,bounded
+benchmarks,Speech Commands,Transformer,20020,0,5,Big step,final_accuracy_percent,percentage points,83.63636363636364,84.73526473526474,1.0989010989010979,-0.09805944665676836,2.295861644458964,bounded
+benchmarks,Jannis,MLP,3840,0,10,Step early,checkpoint_loss,percent reduction,1.1163761834303538,1.087377829551697,2.5975432214571237,1.4362137289547383,3.740384003306907,bounded
+benchmarks,Jannis,MLP,3840,0,10,Step early,checkpoint_accuracy_percent,percentage points,53.0625,54.625,1.5624999999999964,0.9370754635957835,2.1879245364042093,bounded
+benchmarks,Jannis,MLP,3840,0,5,Step early,final_loss,percent reduction,1.3958947451909385,1.1693955214818317,16.22609616444433,14.83291754258983,17.600820312661124,bounded
+benchmarks,Jannis,MLP,3840,0,5,Step early,final_accuracy_percent,percentage points,53.05208333333333,56.083333333333336,3.0312500000000013,1.9574553313626704,4.1050446686373325,bounded
+benchmarks,Jannis,Transformer,3840,0,10,Big step,checkpoint_loss,percent reduction,0.9871880106131237,0.9856670550505319,0.15406949296792619,-0.6179931937192462,0.9154006659270797,bounded
+benchmarks,Jannis,Transformer,3840,0,10,Big step,checkpoint_accuracy_percent,percentage points,59.484375,59.80208333333333,0.31770833333333426,-0.5121542027808352,1.1475708694475037,bounded
+benchmarks,Jannis,Transformer,3840,0,5,Big step,final_loss,percent reduction,2.069148898124695,1.7996972529093427,13.022341961932309,8.961860768984685,16.81472042788803,bounded
+benchmarks,Jannis,Transformer,3840,0,5,Big step,final_accuracy_percent,percentage points,56.78125,56.59375,-0.1875,-1.35747306336924,0.98247306336924,bounded
 benchmarks,Jannis,Transformer,3840,1e-07,10,Step early,checkpoint_loss,percent reduction,0.9878182792663575,0.9904965269565581,-0.2711275693531151,-1.1578638732715696,0.6149595947781972,bounded
 benchmarks,Jannis,Transformer,3840,1e-07,10,Step early,checkpoint_accuracy_percent,percentage points,59.458333333333336,59.848958333333336,0.3906250000000007,-0.3141685849287534,1.0954185849287548,bounded
-benchmarks,Jannis,Transformer,3840,1e-07,10,Step early,final_loss,percent reduction,,,,,,missing
-benchmarks,Jannis,Transformer,3840,1e-07,10,Step early,final_accuracy_percent,percentage points,,,,,,missing
-benchmarks,Tiny ImageNet,MLP,20000,0,5,Step early,checkpoint_loss,percent reduction,4.868190535278321,4.773712726745606,1.9407171483544554,1.3308780275786192,2.5468594670118527,bounded
-benchmarks,Tiny ImageNet,MLP,20000,0,5,Step early,checkpoint_accuracy_percent,percentage points,3.4479999999999995,4.844,1.3960000000000004,1.2780092493266897,1.513990750673311,bounded
-benchmarks,Tiny ImageNet,MLP,20000,0,5,Step early,final_loss,percent reduction,,,,,,missing
-benchmarks,Tiny ImageNet,MLP,20000,0,5,Step early,final_accuracy_percent,percentage points,,,,,,missing
-benchmarks,Tiny ImageNet,Transformer,20000,0,5,Step early,checkpoint_loss,percent reduction,3.976102016143799,3.889732889862061,2.1722059929816124,1.2837099127729124,3.0534272825822217,bounded
-benchmarks,Tiny ImageNet,Transformer,20000,0,5,Step early,checkpoint_accuracy_percent,percentage points,14.632,16.262000000000004,1.6300000000000012,0.9182329674777995,2.341767032522203,bounded
-benchmarks,Tiny ImageNet,Transformer,20000,0,5,Step early,final_loss,percent reduction,,,,,,missing
-benchmarks,Tiny ImageNet,Transformer,20000,0,5,Step early,final_accuracy_percent,percentage points,,,,,,missing
-benchmarks,Tiny ImageNet,MLP,80000,0,5,Step early,checkpoint_loss,percent reduction,4.575462578887939,4.51788708190918,1.2583535759733624,0.9301514324305149,1.5858525651956334,bounded
-benchmarks,Tiny ImageNet,MLP,80000,0,5,Step early,checkpoint_accuracy_percent,percentage points,7.086,7.95,0.8639999999999999,0.29198492285454813,1.4360150771454516,bounded
-benchmarks,Tiny ImageNet,MLP,80000,0,5,Step early,final_loss,percent reduction,5.627353655471802,5.130071236953735,8.836878734901102,8.383496896767129,9.290065505158019,bounded
-benchmarks,Tiny ImageNet,MLP,80000,0,5,Step early,final_accuracy_percent,percentage points,7.473999999999999,8.266,0.7919999999999996,0.42435421408582824,1.159645785914171,bounded
-benchmarks,Tiny ImageNet,Transformer,80000,0,5,Linear decreasing,checkpoint_loss,percent reduction,3.034673309631348,3.003997753524781,1.0108355324182652,-0.3421443625320597,2.3499121678436485,bounded
-benchmarks,Tiny ImageNet,Transformer,80000,0,5,Linear decreasing,checkpoint_accuracy_percent,percentage points,31.49,31.776,0.2859999999999978,-0.5032432854300538,1.0752432854300493,bounded
-benchmarks,Tiny ImageNet,Transformer,80000,0,5,Linear decreasing,final_loss,percent reduction,6.10429446182251,6.0016061750793455,1.682230229642396,-1.2579132044470143,4.538080869986927,bounded
-benchmarks,Tiny ImageNet,Transformer,80000,0,5,Linear decreasing,final_accuracy_percent,percentage points,34.0,34.10600000000001,0.10600000000000023,-0.8773320385547168,1.0893320385547172,bounded
-benchmarks,FI-2010,MLP,40000,0,5,Big step,checkpoint_loss,percent reduction,1.0934260965347289,1.0543846688842775,3.570559343167402,2.4064001639503285,4.725358337058094,bounded
-benchmarks,FI-2010,MLP,40000,0,5,Big step,checkpoint_accuracy_percent,percentage points,47.704,48.37199999999999,0.6679999999999993,-0.2916785618722273,1.6276785618722258,bounded
-benchmarks,FI-2010,MLP,40000,0,5,Big step,final_loss,percent reduction,,,,,,missing
-benchmarks,FI-2010,MLP,40000,0,5,Big step,final_accuracy_percent,percentage points,,,,,,missing
+benchmarks,Jannis,Transformer,3840,1e-07,,Step early,final_loss,percent reduction,,,,,,missing
+benchmarks,Jannis,Transformer,3840,1e-07,,Step early,final_accuracy_percent,percentage points,,,,,,missing
+benchmarks,Tiny ImageNet,MLP,20000,0,10,Step early,checkpoint_loss,percent reduction,4.872791266632079,4.773297602767945,2.04182076391097,1.7165753630229763,2.365659595199532,bounded
+benchmarks,Tiny ImageNet,MLP,20000,0,10,Step early,checkpoint_accuracy_percent,percentage points,3.465,4.747,1.2819999999999996,0.9945526978952872,1.569447302104712,bounded
+benchmarks,Tiny ImageNet,MLP,20000,0,5,Step early,final_loss,percent reduction,7.664513001556396,6.018286604156495,21.478551827958405,19.59279141249002,23.351065406309445,bounded
+benchmarks,Tiny ImageNet,MLP,20000,0,5,Step early,final_accuracy_percent,percentage points,3.9599999999999995,4.762,0.8019999999999999,0.4662452384523584,1.1377547615476415,bounded
+benchmarks,Tiny ImageNet,Transformer,20000,0,10,Step early,checkpoint_loss,percent reduction,3.974904035568237,3.88690984375,2.213743804399989,1.6930590457772676,2.7290411138238935,bounded
+benchmarks,Tiny ImageNet,Transformer,20000,0,10,Step early,checkpoint_accuracy_percent,percentage points,14.748,16.238,1.4900000000000007,1.0586583060354506,1.9213416939645507,bounded
+benchmarks,Tiny ImageNet,Transformer,20000,0,5,Step early,final_loss,percent reduction,7.522040876617432,5.937966479797363,21.059103809768278,20.272581539588874,21.826992485539797,bounded
+benchmarks,Tiny ImageNet,Transformer,20000,0,5,Step early,final_accuracy_percent,percentage points,14.774000000000001,15.506,0.7319999999999997,-0.1922018009974229,1.6562018009974222,bounded
+benchmarks,Tiny ImageNet,MLP,80000,0,10,Step early,checkpoint_loss,percent reduction,4.5761970346832275,4.522677909736634,1.1695109397818544,0.9224014797436841,1.4161336553655146,bounded
+benchmarks,Tiny ImageNet,MLP,80000,0,10,Step early,checkpoint_accuracy_percent,percentage points,7.2219999999999995,7.997,0.7749999999999997,0.49550684352425545,1.0544931564757438,bounded
+benchmarks,Tiny ImageNet,MLP,80000,0,10,Step early,final_loss,percent reduction,5.618795839614868,5.132709378852844,8.651078890158457,8.256145728938014,9.043825809022831,bounded
+benchmarks,Tiny ImageNet,MLP,80000,0,10,Step early,final_accuracy_percent,percentage points,7.587000000000001,8.264,0.6769999999999995,0.4752842915757137,0.8787157084242853,bounded
+benchmarks,Tiny ImageNet,Transformer,80000,0,10,Linear decreasing,checkpoint_loss,percent reduction,3.0303568009948734,3.0073199162673947,0.7602037067026431,-0.24293365056369254,1.7551667863590081,bounded
+benchmarks,Tiny ImageNet,Transformer,80000,0,10,Linear decreasing,checkpoint_accuracy_percent,percentage points,31.662,31.790000000000003,0.1280000000000001,-0.4141820195123125,0.6701820195123127,bounded
+benchmarks,Tiny ImageNet,Transformer,80000,0,10,Linear decreasing,final_loss,percent reduction,6.093212514419555,5.991770788192749,1.6648315808244802,0.5097347448838052,2.8065361235711017,bounded
+benchmarks,Tiny ImageNet,Transformer,80000,0,10,Linear decreasing,final_accuracy_percent,percentage points,34.032000000000004,34.031,-0.0010000000000012221,-0.40683783212813,0.4048378321281276,bounded
+benchmarks,FI-2010,MLP,40000,0,10,Big step,checkpoint_loss,percent reduction,1.104880188484192,1.0579234101104737,4.249943013109785,2.5681388103193314,5.879753086746941,bounded
+benchmarks,FI-2010,MLP,40000,0,10,Big step,checkpoint_accuracy_percent,percentage points,47.3025,48.117000000000004,0.8144999999999996,0.3832227379160327,1.2457772620839664,bounded
+benchmarks,FI-2010,MLP,40000,0,5,Big step,final_loss,percent reduction,3.35607428527832,1.0661999762725831,68.23073967851212,67.30196054844988,69.11956348226936,bounded
+benchmarks,FI-2010,MLP,40000,0,5,Big step,final_accuracy_percent,percentage points,50.811,48.334999999999994,-2.4759999999999964,-2.858842484269385,-2.0931575157306077,bounded

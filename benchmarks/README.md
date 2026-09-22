@@ -57,6 +57,13 @@ Omitting `--seed` runs every historical seed for each selected arm. Other
 nonnegative seeds are allowed and recorded as new seeds in the manifest.
 `--device cpu` is supported; `auto` selects CUDA if available, otherwise CPU.
 
+The [September 22 extension](../results/seed_extension.md) adds seeds 105–109
+for the nine main-table benchmark comparisons that previously had five pairs.
+Pass those seed IDs with `--profile uniform frontloaded` to repeat the frozen
+extension settings. Extended-search Jannis already had ten pairs and received
+no new runs. The [original CIFAR runner](original/README.md) covers the separate
+ReLU and both-block ViT extensions, which use the notebook training protocol.
+
 Every run writes, under `COHORT/PROFILE/seed-N/`:
 
 - `manifest.json`: exact configuration, dropout vector, independent RNG

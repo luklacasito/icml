@@ -1,6 +1,6 @@
 \section{Experimental Details and Additional Figures}
 \label{app:experimental_info}
-This appendix collects the experimental details and additional figures supporting the scheduling predictions. The original notebooks and saved results are available in the \href{https://github.com/luklacasito/icml}{\texttt{icml}} repository.
+This appendix collects the experimental details and additional figures supporting the scheduling predictions. Its multi-profile curves and tables retain the original cohorts. Table~\ref{tab:loss_improvements} additionally includes seven fresh pairs for the selected \relu{} comparison and five for the both-block ViT comparison, bringing each to ten pairs while holding the two compared recipes fixed. The original notebooks and saved results, together with the extension evidence, are available in the \href{https://github.com/luklacasito/icml}{\texttt{icml}} repository.
 
 \subsection{Mean-Field Fits and Scaling Collapse}
 Table~\ref{tab:mf_vs_fit_exponents} reports fits to the numerical mean-field curves. The repository includes the raw arrays, fitting windows, and a CPU script that regenerates Fig.~\ref{fig:dropout_scaling}. Tanh expectations use 60-point Gauss--Hermite quadrature. The \relu{} calculation uses the formal channel $F(c)=\chi F_{\ReLU}(c)+1-\chi/\rho$, where $F_{\ReLU}$ is the normalized arc-cosine map. Thus $t=\chi-1$ and $h=\chi(1/\rho-1)$. This family probes the local normal form; its independently tuned parameters need not correspond to nonnegative bias variance in a finite-variance \relu{} network.
@@ -157,7 +157,7 @@ Triple ($3\bar{p}$) & $2.22$ & $2.70$ & $33.94 \pm 0.23$ & $33.82 \pm 0.23$ \\
 \setlength{\dbltextfloatsep}{6pt plus 1pt minus 2pt}
 \setlength{\dblfloatsep}{6pt plus 1pt minus 2pt}
 
-To test whether scheduling is tied to one budget, width, or activation, we ran CIFAR-10 MLP sweeps (Figs.~\ref{fig:mlp_sweeps} and \ref{fig:gelu_h_sweep}). The \relu{} sweeps probe mean-field boundaries: at \(\bar p=0.15\), Step/Big step use large local dropout probabilities \(0.30/0.45\); at \(N=64\), finite-width non-Gaussianity weakens the correlation-length prediction. The GELU MLP sweep gives the same best-accuracy ordering at \(\bar p=0.1\)--constant \(41.96\pm0.16\), Step \(42.24\pm0.15\), Big step \(42.46\pm0.12\)--and Big step falls to \(38.97\pm0.23\) at \(\bar p=0.15\), matching this perturbative-boundary picture. The final-epoch gains summarized in Table~\ref{tab:loss_improvements} use the last recorded epoch, giving \(+2.04\) pp for the \relu{} \(\bar p=0.1\) sweep and \(+0.62\) pp for the GELU \(\bar p=0.1\) sweep.
+To test whether scheduling is tied to one budget, width, or activation, we ran CIFAR-10 MLP sweeps (Figs.~\ref{fig:mlp_sweeps} and \ref{fig:gelu_h_sweep}). The \relu{} sweeps probe mean-field boundaries: at \(\bar p=0.15\), Step/Big step use large local dropout probabilities \(0.30/0.45\); at \(N=64\), finite-width non-Gaussianity weakens the correlation-length prediction. The GELU MLP sweep gives the same best-accuracy ordering at \(\bar p=0.1\)--constant \(41.96\pm0.16\), Step \(42.24\pm0.15\), Big step \(42.46\pm0.12\)--and Big step falls to \(38.97\pm0.23\) at \(\bar p=0.15\), matching this perturbative-boundary picture. The final-epoch gains summarized in Table~\ref{tab:loss_improvements} use the last recorded epoch, giving \(+1.56\) pp for the \relu{} \(\bar p=0.1\) comparison after extension to ten pairs and \(+0.62\) pp for the unchanged ten-pair GELU comparison. The full sweeps shown here retain their original runs.
 
 \begin{figure*}[t]
  \centering
@@ -259,12 +259,12 @@ These experiments test a scheduling idea motivated by MLP initialization theory.
 \FloatBarrier
 
 \subsection{Transformer Ablations}
-To isolate the effect of dropout scheduling on distinct transformer components, we performed component-level ablations. We tested transformers with dropout applied exclusively to the attention block, the MLP block, or both, comparing step-like and constant schedules against a no-dropout baseline. We use the full CIFAR-10 dataset, five seeds, and a 12-block ViT with embedding dimension 128, 16 attention heads, MLP ratio 4, and patch size 4. Training runs for 75 epochs on an A100 with batch size 1000, learning rate $5\times10^{-4}$ decaying to $5\times10^{-6}$, and zero weight decay. Regularized profiles use $\bar p=0.1$ and $p_{\max}=0.2$; evaluation is recorded every epoch.
+To isolate the effect of dropout scheduling on distinct transformer components, we performed component-level ablations. We tested transformers with dropout applied exclusively to the attention block, the MLP block, or both, comparing step-like and constant schedules against a no-dropout baseline. The original ablation uses the full CIFAR-10 dataset, five seeds, and a 12-block ViT with embedding dimension 128, 16 attention heads, MLP ratio 4, and patch size 4. Training runs for 75 epochs on an A100 with batch size 1000, learning rate $5\times10^{-4}$ decaying to $5\times10^{-6}$, and zero weight decay. Regularized profiles use $\bar p=0.1$ and $p_{\max}=0.2$; evaluation is recorded every epoch. Figure~\ref{fig:ablations} and Table~\ref{tab:ablation_results} preserve these five-seed comparisons across components. The main table adds five fresh pairs only to the uniform and early-step both-block configurations.
 
 \begin{figure}[H]
  \centering
  \includegraphics[width=1\linewidth]{figures/experiments/transformer/component_ablations.pdf}
- \caption{Component ablations applying dropout schedules to the attention block, MLP block, or both. The figure compares no dropout, constant dropout, and step-like dropout.}
+ \caption{Original five-seed component ablations applying dropout schedules to the attention block, MLP block, or both. The figure compares no dropout, constant dropout, and step-like dropout; it excludes the later both-block seed extension.}
  \label{fig:ablations}
 \end{figure}
 

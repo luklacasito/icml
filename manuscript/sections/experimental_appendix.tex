@@ -1,13 +1,13 @@
 \clearpage
 \section{Extended Experiments Across Datasets}
 \label{app:extended_experiments}
-These experiments ask whether spatial allocation survives changes in task, architecture, and training-set size. Each cohort keeps its own split, optimizer settings, and random seeds; we do not pool across weight decay or training duration. Table~\ref{tab:benchmark_results} reports the retained benchmark cohorts and the separate vanilla-MLP study, including comparisons with a missing uniform baseline.
-\paragraph{Evaluation and selection.} Learning rate and mean dropout follow each cohort's validation protocol. The budget sweeps tune both separately by profile; the ten-seed Jannis cohort and the two linear follow-ups fix mean dropout at $0.10$ and retain their validation-selected learning rates. We select the nonuniform profile with the lowest mean per-seed minimum validation CE among complete arms. Its test loss and accuracy are measured at each seed's minimum-validation-loss checkpoint; fixed-final-epoch endpoints are listed separately when available. The same selected profile is used throughout a row, including when it loses to uniform. This reanalysis uses existing confirmation runs; it is not a new independent test. Incomplete profiles remain visible but cannot win the main comparison.
-\paragraph{Figures.} Figures show mean training and validation curves, with SEM bands across confirmation seeds. The right panels show validation metrics; the tables report test endpoints. Training loss uses a logarithmic axis. Training metrics average batches with dropout enabled during optimization, whereas validation evaluates the epoch's final weights with dropout disabled.
+These experiments ask whether spatial allocation survives changes in task, architecture, and training-set size. Each cohort keeps its own split, optimizer settings, and random seeds; we do not pool across weight decay or training duration. This appendix preserves the original multi-profile cohorts, including their five-seed figures and tables. Table~\ref{tab:benchmark_results} also retains the separate vanilla-MLP study and comparisons with a missing uniform baseline. The extended ten-pair checkpoint results appear in Table~\ref{tab:frontloaded_results}; only its frozen uniform and front-loaded configurations received additional seeds.
+\paragraph{Evaluation and selection.} Learning rate and mean dropout follow each cohort's validation protocol. The budget sweeps tune both separately by profile; the ten-seed Jannis extended-search cohort and the two linear follow-ups fix mean dropout at $0.10$ and retain their validation-selected learning rates. In the original cohorts below, we select the nonuniform profile with the lowest mean per-seed minimum validation CE among complete arms. Its test loss and accuracy are measured at each seed's minimum-validation-loss checkpoint; fixed-final-epoch endpoints are listed separately when available. The same selected profile is used throughout a row, including when it loses to uniform. This historical reanalysis uses existing confirmation runs; the later extension adds fresh seeds without repeating selection. Incomplete profiles remain visible but cannot win the main comparison.
+\paragraph{Figures.} Figures show mean training and validation curves from the original cohorts, with SEM bands and the seed counts listed below each figure. They do not include the later extension. The right panels show validation metrics; the tables report test endpoints. Training loss uses a logarithmic axis. Training metrics average batches with dropout enabled during optimization, whereas validation evaluates the epoch's final weights with dropout disabled.
 \paragraph{Profiles and architecture.} Step early spends the budget in the earliest layers at probability $0.20$, with a partially filled last active layer when needed. Big step applies $3\bar p$ to the first third of the network, while the linear profiles run between $0$ and $2\bar p$; big-step and linear profiles can therefore exceed the step profile's $0.20$ cap. In the budget sweeps, mean dropout can differ between profiles, so those comparisons describe full training configurations. Transformer profiles are empirical extensions, with the MLP reference-field diagnostic used only as a proxy.
 \paragraph{Coverage.} Every candidate in the retained benchmark cohorts has its full seed set. The two linear follow-ups contain a selected linear profile and tuned no-dropout control, but no saved matching uniform baseline. We report their endpoints without borrowing a baseline from a different protocol.
-\paragraph{Front-loaded comparisons.} Table~\ref{tab:frontloaded_results} reports the retained cohorts with a matching uniform baseline. Each row selects among complete front-loaded profiles by mean minimum validation loss, including cases where the selected profile loses to uniform on test. The full comparison below also includes back-loaded profiles and the two linear follow-ups.
-\paragraph{Speech Commands evaluation.} The audio experiment uses a class-balanced random clip split drawn from the official training subset; speaker identities were not retained in the split construction, so these results do not establish performance on held-out speakers. Final-epoch test CE was not recorded for either Speech Commands architecture. For the selected profiles in Table~\ref{tab:frontloaded_results}, the MLP reduces minimum and final validation loss by $13.23\%$ and $13.47\%$, while the Transformer gives $3.33\%$ and $6.49\%$. These are validation results, separate from the test columns.
+\paragraph{Front-loaded comparisons.} Table~\ref{tab:frontloaded_results} reports the retained cohorts with a matching uniform baseline, including the additional seeds. Each row keeps the front-loaded profile selected by mean minimum validation loss in its original cohort, including cases where that profile loses to uniform on test. The historical comparison below also includes back-loaded profiles and the two linear follow-ups.
+\paragraph{Speech Commands evaluation.} The audio experiment uses a class-balanced random clip split drawn from the official training subset; speaker identities were not retained in the split construction, so these results do not establish performance on held-out speakers. Final-epoch test CE was not recorded in the original five-seed cohorts below; the five fresh pairs now supply the separate final test endpoints in Table~\ref{tab:frontloaded_results}. In the original cohort, the selected MLP profile reduces minimum and final validation loss by $13.23\%$ and $13.47\%$, while the Transformer gives $3.33\%$ and $6.49\%$. These are historical validation results, separate from the extended test comparisons.
 \input{sections/benchmark_table}
 \input{sections/benchmark_methods}
 \clearpage
@@ -16,7 +16,7 @@ Depth 12, width 256; 20,020/5,005/10,010 training/validation/test examples; 50 e
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{figures/experiments/benchmarks/speech-commands-mlp.pdf}
-\caption{Speech Commands / MLP / Zero weight decay. Full recorded learning curves; bands show SEM across the available seeds for each profile. Sample counts and tuned probabilities are given below.}
+\caption{Speech Commands / MLP / Zero weight decay. Original-cohort learning curves; bands show SEM across the recorded seeds for each profile. Sample counts and tuned probabilities are given below.}
 \label{fig:speech-commands-mlp}
 \end{figure}
 \begin{center}\small
@@ -31,7 +31,7 @@ Big step & 5 & 0.05 & 1e-03 & \(0.950\pm0.004\) & \(74.07\pm0.11\) & -- \\
 Linear decreasing & 5 & 0.05 & 1e-03 & \(1.002\pm0.005\) & \(73.87\pm0.45\) & -- \\
 Linear increasing & 5 & 0.05 & 1e-03 & \(1.202\pm0.009\) & \(69.40\pm0.54\) & -- \\
 \bottomrule\end{tabular}\end{center}
-\emph{Test endpoints.} Test CE and accuracy use the minimum-validation-loss checkpoint. Dashes indicate that final-epoch test CE was not recorded; the final losses in the learning curves are validation losses.
+\emph{Test endpoints.} Test CE and accuracy use the minimum-validation-loss checkpoint. Dashes indicate that final-epoch test CE was not recorded in this original cohort; the final losses in the learning curves are validation losses.
 For the validation-selected nonuniform profile, the paired test-CE difference (profile minus uniform) is \(-0.136\pm0.007\) (SEM).
 \clearpage
 \subsection{Speech Commands / Transformer / Zero weight decay}
@@ -39,7 +39,7 @@ Depth 12, width 256; 20,020/5,005/10,010 training/validation/test examples; 50 e
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{figures/experiments/benchmarks/speech-commands-transformer.pdf}
-\caption{Speech Commands / Transformer / Zero weight decay. Full recorded learning curves; bands show SEM across the available seeds for each profile. Sample counts and tuned probabilities are given below.}
+\caption{Speech Commands / Transformer / Zero weight decay. Original-cohort learning curves; bands show SEM across the recorded seeds for each profile. Sample counts and tuned probabilities are given below.}
 \label{fig:speech-commands-transformer}
 \end{figure}
 \begin{center}\small
@@ -54,7 +54,7 @@ Big step & 5 & 0.15 & 3e-04 & \(0.707\pm0.036\) & \(81.07\pm0.89\) & -- \\
 Linear decreasing & 5 & 0.20 & 3e-04 & \(0.711\pm0.033\) & \(81.27\pm1.05\) & -- \\
 Linear increasing & 5 & 0.10 & 3e-04 & \(0.832\pm0.022\) & \(77.67\pm0.67\) & -- \\
 \bottomrule\end{tabular}\end{center}
-\emph{Test endpoints.} Test CE and accuracy use the minimum-validation-loss checkpoint. Dashes indicate that final-epoch test CE was not recorded; the final losses in the learning curves are validation losses.
+\emph{Test endpoints.} Test CE and accuracy use the minimum-validation-loss checkpoint. Dashes indicate that final-epoch test CE was not recorded in this original cohort; the final losses in the learning curves are validation losses.
 For the validation-selected nonuniform profile, the paired test-CE difference (profile minus uniform) is \(-0.036\pm0.037\) (SEM).
 \clearpage
 \subsection{Tiny ImageNet / MLP / 80,000 train}
@@ -62,7 +62,7 @@ Depth 12, width 256; 80,000/10,000/10,000 training/validation/test examples; 75 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{figures/experiments/benchmarks/tiny-imagenet-mlp-80k.pdf}
-\caption{Tiny ImageNet / MLP / 80,000 train. Full recorded learning curves; bands show SEM across the available seeds for each profile. Sample counts and tuned probabilities are given below.}
+\caption{Tiny ImageNet / MLP / 80,000 train. Original-cohort learning curves; bands show SEM across the recorded seeds for each profile. Sample counts and tuned probabilities are given below.}
 \label{fig:tiny-imagenet-mlp-80k}
 \end{figure}
 \begin{center}\small
@@ -84,7 +84,7 @@ Depth 12, width 256; 80,000/10,000/10,000 training/validation/test examples; 75 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{figures/experiments/benchmarks/tiny-imagenet-transformer-80k.pdf}
-\caption{Tiny ImageNet / Transformer / 80,000 train. Full recorded learning curves; bands show SEM across the available seeds for each profile. Sample counts and tuned probabilities are given below.}
+\caption{Tiny ImageNet / Transformer / 80,000 train. Original-cohort learning curves; bands show SEM across the recorded seeds for each profile. Sample counts and tuned probabilities are given below.}
 \label{fig:tiny-imagenet-transformer-80k}
 \end{figure}
 \begin{center}\small
@@ -106,7 +106,7 @@ Depth 12, width 256; 40,000/10,000/20,000 training/validation/test examples; 50 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{figures/experiments/benchmarks/fi2010-transformer-linear.pdf}
-\caption{FI-2010 / Transformer / Linear follow-up. Full recorded learning curves; bands show SEM across the available seeds for each profile. Sample counts and tuned probabilities are given below.}
+\caption{FI-2010 / Transformer / Linear follow-up. Original-cohort learning curves; bands show SEM across the recorded seeds for each profile. Sample counts and tuned probabilities are given below.}
 \label{fig:fi2010-transformer-linear}
 \end{figure}
 \begin{center}\small
@@ -123,7 +123,7 @@ Depth 12, width 256; 3,840/960/1,920 training/validation/test examples; 50 epoch
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{figures/experiments/benchmarks/jannis-transformer-linear.pdf}
-\caption{Jannis / Transformer / Linear follow-up. Full recorded learning curves; bands show SEM across the available seeds for each profile. Sample counts and tuned probabilities are given below.}
+\caption{Jannis / Transformer / Linear follow-up. Original-cohort learning curves; bands show SEM across the recorded seeds for each profile. Sample counts and tuned probabilities are given below.}
 \label{fig:jannis-transformer-linear}
 \end{figure}
 \begin{center}\small
@@ -140,7 +140,7 @@ Depth 12, width 256; 3,840/960/1,920 training/validation/test examples; 100 epoc
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{figures/experiments/benchmarks/jannis-transformer-100-epochs.pdf}
-\caption{Jannis / Transformer / 100 epochs. Full recorded learning curves; bands show SEM across the available seeds for each profile. Sample counts and tuned probabilities are given below.}
+\caption{Jannis / Transformer / 100 epochs. Original-cohort learning curves; bands show SEM across the recorded seeds for each profile. Sample counts and tuned probabilities are given below.}
 \label{fig:jannis-transformer-100-epochs}
 \end{figure}
 \begin{center}\small
@@ -162,7 +162,7 @@ Depth 12, width 256; 20,000/5,000/10,000 training/validation/test examples; 75 e
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{figures/experiments/benchmarks/tiny-imagenet-mlp-20k.pdf}
-\caption{Tiny ImageNet / MLP / Zero weight decay. Full recorded learning curves; bands show SEM across the available seeds for each profile. Sample counts and tuned probabilities are given below.}
+\caption{Tiny ImageNet / MLP / Zero weight decay. Original-cohort learning curves; bands show SEM across the recorded seeds for each profile. Sample counts and tuned probabilities are given below.}
 \label{fig:tiny-imagenet-mlp-20k}
 \end{figure}
 \begin{center}\small
@@ -184,7 +184,7 @@ Depth 12, width 256; 20,000/5,000/10,000 training/validation/test examples; 75 e
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{figures/experiments/benchmarks/tiny-imagenet-transformer-20k.pdf}
-\caption{Tiny ImageNet / Transformer / Zero weight decay. Full recorded learning curves; bands show SEM across the available seeds for each profile. Sample counts and tuned probabilities are given below.}
+\caption{Tiny ImageNet / Transformer / Zero weight decay. Original-cohort learning curves; bands show SEM across the recorded seeds for each profile. Sample counts and tuned probabilities are given below.}
 \label{fig:tiny-imagenet-transformer-20k}
 \end{figure}
 \begin{center}\small
@@ -206,7 +206,7 @@ Depth 12, width 256; 40,000/10,000/20,000 training/validation/test examples; 50 
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{figures/experiments/benchmarks/fi2010-mlp.pdf}
-\caption{FI-2010 / MLP / Zero weight decay. Full recorded learning curves; bands show SEM across the available seeds for each profile. Sample counts and tuned probabilities are given below.}
+\caption{FI-2010 / MLP / Zero weight decay. Original-cohort learning curves; bands show SEM across the recorded seeds for each profile. Sample counts and tuned probabilities are given below.}
 \label{fig:fi2010-mlp}
 \end{figure}
 \begin{center}\small
@@ -228,7 +228,7 @@ Depth 12, width 256; 3,840/960/1,920 training/validation/test examples; 100 epoc
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{figures/experiments/benchmarks/jannis-mlp.pdf}
-\caption{Jannis / MLP / Zero weight decay. Full recorded learning curves; bands show SEM across the available seeds for each profile. Sample counts and tuned probabilities are given below.}
+\caption{Jannis / MLP / Zero weight decay. Original-cohort learning curves; bands show SEM across the recorded seeds for each profile. Sample counts and tuned probabilities are given below.}
 \label{fig:jannis-mlp}
 \end{figure}
 \begin{center}\small
@@ -250,7 +250,7 @@ Depth 12, width 256; 3,840/960/1,920 training/validation/test examples; 100 epoc
 \begin{figure}[ht]
 \centering
 \includegraphics[width=0.92\textwidth]{figures/experiments/benchmarks/jannis-transformer.pdf}
-\caption{Jannis / Transformer / Zero weight decay. Full recorded learning curves; bands show SEM across the available seeds for each profile. Sample counts and tuned probabilities are given below.}
+\caption{Jannis / Transformer / Zero weight decay. Original-cohort learning curves; bands show SEM across the recorded seeds for each profile. Sample counts and tuned probabilities are given below.}
 \label{fig:jannis-transformer}
 \end{figure}
 \begin{center}\small

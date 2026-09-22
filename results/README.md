@@ -13,18 +13,25 @@ of training.
 | [Paired seed measurements](confidence_seed_metrics.json) | Uniform and selected-schedule results, seed pairing, and source hashes |
 | [Intervals, JSON](confidence_intervals.json) | Unrounded estimates and confidence bounds |
 | [Intervals, CSV](confidence_intervals.csv) | The same comparisons in a flat table |
+| [Seed extension](seed_extension.md) | New run counts, frozen settings, and reproduction instructions |
+| [Extension measurements](seed_extension.npz) | All 114 new fits: learning curves, endpoints, specifications, and source/data hashes |
 
 The [analysis script](../scripts/confidence_intervals.py) computes the intervals
-with the recorded schedules held fixed. These comparisons reuse the existing
-runs, so the intervals describe seed variation on that split and do not account
-for the earlier choice of schedule or hyperparameters. The additional benchmark
-file contains checkpoint and final test measurements, without full learning
-curves or a new independent confirmation study.
+with the recorded schedules held fixed. The September 22 update adds 114 fits
+across eleven comparisons. Profiles and hyperparameters were frozen before
+these new seeds; the main tables pool historical and new measurements. The
+intervals describe seed variation on that split and do not account for the
+earlier choice of schedule or hyperparameters. Each endpoint in
+`confidence_seed_metrics.json` lists its own seed IDs, so a five-pair final
+measurement cannot be mistaken for a ten-pair checkpoint measurement.
 
-The saved Speech Commands records contain test measurements at the checkpoint
-selected by validation loss, but no final-epoch test measurements for either
-the MLP or the Transformer. All 50 epochs finished. Their final learning-curve
-values are validation losses and cannot fill the missing test-loss columns.
+The historical Speech Commands records contain checkpoint test measurements
+but no complete paired final test measurements. Their final learning-curve
+values are validation losses and cannot fill that gap. The five new pairs
+retain both test endpoints: the pooled checkpoint comparison has ten pairs,
+while the final comparison has five. The same distinction applies to standard
+Jannis, Tiny ImageNet 20k, and FI-2010. Tiny ImageNet 80k has ten pairs at both
+endpoints; extended-search Jannis still has no final measurements.
 
 ## CIFAR experiments
 
@@ -61,6 +68,11 @@ well the model finishes and how low its test loss ever gets. The second question
 uses the test set to choose an epoch; there are no separate validation histories
 in these files. That is why the paper distinguishes these results from the
 validation-selected comparisons above.
+
+These multi-profile archives remain the historical measurements. The new
+ReLU and both-block ViT pairs live in [seed_extension.npz](seed_extension.npz);
+the main confidence tables combine the two cohorts, while historical plots
+retain their original counts.
 
 Run `python scripts/plot_results.py` from the repository root for the learning
 curves. Notebook reruns write into `runs/`.

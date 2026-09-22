@@ -85,7 +85,7 @@ Up to now, the Landau-style expansion of \(\bar F_\rho(c)\) around \(c=1\) relie
 \begin{equation}
 m \equiv 1-c.
 \end{equation}
-Under the smooth-class Gaussian integrability assumptions, the first nonlinear correction is of order \(m^2\), controlled by
+Under the smooth-class Gaussian integrability assumptions, the first nonlinear correction is \(\mathcal O(m^2)\), controlled by
 \begin{equation}
 g_\rho \propto \int Dz \bigl[\phi''(\sqrt{\bar q^{*}} z)\bigr]^2.
 \end{equation}
@@ -193,7 +193,7 @@ In the standard exponent convention $C_{\mathrm{sing}}(t)\sim |t|^{-\alpha}$, th
 \begin{equation}
 \alpha_{\mathrm{kink}}=-3.
 \end{equation}
-Although we used \relu{} to compute the near-alignment expansion in closed form, the resulting fractional power is not a peculiarity of \relu{}. Rather, it is a generic feature of the mean-field Gaussian channel whenever the activation has an ordinary kink: \(\phi\) is continuous and piecewise \(C^{2}\), with a finite jump in slope and a locally bounded, Gaussian-integrable regular second derivative. In that case the correlated-Gaussian expectation defining the normalized correlation map remains smooth for \(c<1\), but its approach to \(c\to 1\) is controlled by a square-root branch associated with the thin Gaussian tube around the diagonal \(u_{1}=u_{2}\). Writing \(c=1-m\) with \(0<m\ll 1\), the transverse fluctuations scale as \(\sqrt{m}\), so the probability that two nearly aligned preactivations fall on opposite sides of the kink scales as \(\mathcal O(\sqrt{m})\); in that straddling region a finite-slope kink produces activation mismatches of size \(\mathcal O(\sqrt{m})\), so the leading non-linear correction to the kernel scales as \(\mathcal O(\sqrt{m})\times \mathcal O(m)=\mathcal O(m^{3/2})\). Thus, at the marginal zero-field point and under these regularity assumptions, one obtains
+Although we used \relu{} to compute the near-alignment expansion in closed form, the resulting fractional power is not a peculiarity of \relu{}. Rather, it is a generic feature of the mean-field Gaussian channel whenever the activation has an ordinary kink: \(\phi\) is continuous and piecewise \(C^{2}\), with a finite jump in slope and a locally bounded, Gaussian-integrable regular second derivative. In that case the correlated-Gaussian expectation defining the normalized correlation map remains smooth for \(c<1\), but its approach to \(c\to 1\) is controlled by a square-root branch associated with the thin Gaussian tube around the diagonal \(u_{1}=u_{2}\). Writing \(c=1-m\) with \(0<m\ll 1\), the transverse fluctuations have root-mean-square size \(\mathcal O(\sqrt{m})\), so the probability that two nearly aligned preactivations fall on opposite sides of the kink is \(\mathcal O(\sqrt{m})\); in that straddling region a finite-slope kink produces activation mismatches of root-mean-square size \(\mathcal O(\sqrt{m})\), giving a kernel correction \(\mathcal O(\sqrt{m})\times \mathcal O(m)=\mathcal O(m^{3/2})\). Thus, at the marginal zero-field point and under these regularity assumptions, one obtains
 \begin{equation}
 F(1-m)=1-m+\kappa_{\phi} m^{3/2}+{\cal O}(m^{2}),
 \end{equation}
@@ -263,7 +263,7 @@ ${\cal O}(m^{1/2})$ terms and yields
 Dividing by $\pi$ gives \eqref{eq:app_relu_expand} with $\kappa=2\sqrt{2}/(3\pi)$.
 
 The key structural point is the cancellation of the ${\cal O}(m^{1/2})$ pieces, leaving a
-leading non-analytic correction of order $m^{3/2}$, which encodes the kink.
+leading non-analytic correction $\kappa m^{3/2}$, which encodes the kink.
 
 \subsection{Origin of the $m^{3/2}$ Term for Kinked Activations}
 \label{app:tube_argument_kink}
@@ -296,14 +296,14 @@ A direct covariance computation gives
 \begin{equation}
 \mathrm{Var}(s)=1+c=2-m, \qquad \mathrm{Var}(d)=1-c=m, \qquad \mathbb{E}[sd]=0.
 \end{equation}
-Hence as $m\to 0$ one has the scaling
+Hence as $m\to 0$ the standard deviations satisfy
 \begin{equation}
-s\sim O(1), \qquad d\sim O(\sqrt{m}).
+\sqrt{\mathrm{Var}(s)}=\sqrt{2-m}=\mathcal O(1), \qquad \sqrt{\mathrm{Var}(d)}=\sqrt{m}.
 \end{equation}
-Thus the average coordinate \(s\) remains order one, while the separation \(d\) has standard deviation \(\sqrt{m}\). Geometrically, the joint Gaussian measure concentrates in a thin tube of transverse thickness \(\sqrt{m}\) around the diagonal \(u_{1}=u_{2}\). Only this tube can see the kink: the probability of straddling the kink is of order \(\sqrt{m}\), and inside that region the activation mismatch produced by the slope jump is also of order \(\sqrt{m}\). In the kernel this gives an order-\(m\) local correction carried by an order-\(\sqrt{m}\) region, hence the leading non-analytic contribution scales as \(m^{3/2}\).
+Geometrically, the joint Gaussian measure concentrates in a thin tube of transverse thickness \(\mathcal O(\sqrt{m})\) around the diagonal \(u_{1}=u_{2}\). Only this tube can see the kink: the probability of straddling the kink is \(\mathcal O(\sqrt{m})\), and inside that region the activation mismatch produced by the slope jump has root-mean-square size \(\mathcal O(\sqrt{m})\). In the kernel this gives an \(\mathcal O(m)\) local correction carried by a region of probability \(\mathcal O(\sqrt{m})\), hence an \(\mathcal O(m^{3/2})\) contribution.
 
 This argument extends beyond \relu{}. Put the kink at $u=0$ and let its finite one-sided slopes be $a_\pm$. For an activation that is piecewise $C^2$ with bounded regular second derivative near the kink, write locally
 \begin{equation}
 \phi(u)=\phi(0)+a_- u+\big(a_+-a_-\big) \ReLU(u)+r(u), \qquad r(u)=\mathcal O(u^2)\ \ \text{as }u\to 0,
 \end{equation}
-where $r$ has no slope jump. In Price's second derivative, the slope jump contributes a delta function, whose paired Gaussian expectation diverges as $m^{-1/2}$; integrating twice gives the $m^{3/2}$ term. The bounded regular parts contribute at order $m^2$, under the stated Gaussian integrability assumptions. Thus the leading fractional power is fixed by the kink, while its amplitude depends on the slope jump, the Gaussian density at the kink and the variance normalization. Mere continuity of $r^{\prime}$ would not suffice for the stated remainder.
+where $r$ has no slope jump. In Price's second derivative, the slope jump contributes a delta function, whose paired Gaussian expectation diverges as $m^{-1/2}$; integrating twice gives the $m^{3/2}$ term. The bounded regular parts contribute $\mathcal O(m^2)$, under the stated Gaussian integrability assumptions. Thus the leading fractional power is fixed by the kink, while its amplitude depends on the slope jump, the Gaussian density at the kink and the variance normalization. Mere continuity of $r^{\prime}$ would not suffice for the stated remainder.

@@ -76,7 +76,7 @@ For the $\mathcal O(m^3)$ remainder used below, we additionally assume that the 
 For kinked, \relu{}-like activations, \(\bar F_\rho''(1)\) is not finite and the analytic expansion below is not the
 correct organizing principle; we treat that universality class separately.
 
-For \relu{}, imagine two nearly identical signals arriving on opposite sides of zero: one passes through, while the other is clipped. At a fixed nonzero Gaussian variance and correlation $c$ close to one, the signals differ by an amount of order $\sqrt{1-c}$, so a fraction of this order can straddle the kink. Within this small region, their squared activation difference is of order $1-c$, giving a contribution of order $(1-c)^{3/2}$. At the fixed point, where $m=1-c^*$, this produces the $m^{3/2}$ correction, while the smooth class above has an $m^2$ term (App.~\ref{app:tube_argument_kink}).
+For \relu{}, imagine two nearly identical signals arriving on opposite sides of zero: one passes through, while the other is clipped. At a fixed nonzero Gaussian variance and correlation $c$ close to one, the signals have a root-mean-square separation $\mathcal O(\sqrt{1-c})$, so a fraction $\mathcal O(\sqrt{1-c})$ can straddle the kink. Within this small region, their mean squared activation difference is $\mathcal O(1-c)$, giving a contribution $\mathcal O((1-c)^{3/2})$. At the fixed point, where $m=1-c^*$, this produces the $m^{3/2}$ correction, while the smooth class above has an $m^2$ term (App.~\ref{app:tube_argument_kink}).
 
 For the smooth class, the Landau equation of state follows by expanding \(\bar F_\rho(c)\) around \(c=1\). Writing \(c^*=1-m\) with \(0<m\ll 1\) acting as the order parameter,
 \begin{align}

@@ -2,7 +2,7 @@
 
 **[Read the paper](../paper.pdf).**
 
-This is the source for the expanded September 21, 2026 version, including the
+This is the source for the expanded September 22, 2026 version, including the
 additional experiments and confidence intervals. The original camera-ready
 version is on [arXiv](https://arxiv.org/pdf/2605.21648v2).
 
@@ -30,7 +30,7 @@ experiments.
 | `original_results_table.tex`, `frontloaded_table.tex` | Tables computed from paired seed measurements |
 | `appendix_mean_field.tex`, `appendix_critical_scaling.tex`, `appendix_hermite.tex` | Derivations |
 | `appendix_original_experiments.tex` | CIFAR experiments and numerical fits |
-| `experimental_appendix.tex`, `benchmark_table.tex`, `benchmark_discussion.tex` | Additional datasets and validation-selected comparisons |
+| `experimental_appendix.tex`, `benchmark_methods.tex`, `benchmark_table.tex`, `benchmark_discussion.tex` | Additional datasets, reproducible protocols, and validation-selected comparisons |
 
 The [confidence-interval script](../scripts/confidence_intervals.py) computes
 both main tables from the [paired seed measurements](../results/confidence_seed_metrics.json).

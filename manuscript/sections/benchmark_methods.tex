@@ -1,0 +1,65 @@
+\subsection{Benchmark protocols and reproducibility}
+\label{app:benchmark_methods}
+\label{app:benchmark_protocols}
+Tables~\ref{tab:benchmark_protocols} and~\ref{tab:benchmark_search} summarize the retained cohorts. The accompanying \texttt{benchmarks/} code implements data preparation, models, training, and validation selection for the multi-dataset benchmarks and standalone FI-2010 study. The frozen \texttt{protocols.json} records every retained multi-dataset benchmark arm's learning rate, layerwise dropout probabilities, seeds, split identifier, and configuration hash; unavailable standalone historical settings are marked explicitly. \texttt{provenance.json} records source versions, file hashes, and evidence gaps.
+
+\begin{table}[ht]
+\centering
+\caption{Data and training settings. M and T denote MLP and Transformer. $E$ is the epoch count and WD is weight decay. All rows use batch size 128. Counts are training/validation/test examples. The standalone FI-2010 counts follow the available segment manifest; its match to the original trial manifest is unverified.}
+\label{tab:benchmark_protocols}
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}p{0.18\textwidth}p{0.37\textwidth}p{0.20\textwidth}p{0.18\textwidth}@{}}
+\toprule
+Task/cohort & Input and split & Counts & Models; $E$; WD \\
+\midrule
+Speech Commands & 35 classes; $64\!\times\!64$ log-mel image; balanced random clips from official training subset & 20,020/5,005/10,010 & M,T; 50; $0$ \\
+Jannis & 4 classes; 54 numerical features; balanced random rows & 3,840/960/1,920 & M,T; 100; $0$ \\
+Jannis extended & Same features and split; fixed mean dropout & 3,840/960/1,920 & T; 100; $10^{-7}$ \\
+Tiny ImageNet 20k & 200 classes; $3\!\times\!64\!\times\!64$ RGB; balanced subsets of official training images & 20,000/5,000/10,000 & M,T; 75; $0$ \\
+Tiny ImageNet 80k & Same image pool; separately drawn balanced split & 80,000/10,000/10,000 & M,T; 75; $0$ \\
+FI-2010 benchmark & 3 classes; $100\!\times\!40$ book window; one stock, forward split with 100-window gaps & 40,000/10,000/20,000 & M; 50; $0$ \\
+Linear follow-ups & Jannis and FI-2010 inputs/splits above; separate fixed-budget cohorts & As above & T; 50; $10^{-7}$ \\
+FI-2010 standalone & $128\!\times\!40$ windows within each stock/day; train day 6, validation day 7, test days 8--10 & 38,467/36,661/137,532 & M; 100; $0$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Preprocessing and tokenization.}
+Continuous inputs use coordinate-wise training-set means and population standard deviations; a standard deviation below $10^{-8}$ is replaced by one. There is no data augmentation. Speech waveforms use the first channel, resample to 16\,kHz when needed, and truncate or zero-pad to one second. The mel transform uses FFT size 1024, hop 250, 64 mel bands, and an 80\,dB range; the code retains the first 64 frames. The random clip split does not hold out speakers. Jannis uses OpenML version 1, sorted label categories, and no imputation. Tiny ImageNet uses RGB pixels divided by 255 and sorted class/file order. The 20k cohort computes normalization statistics in float32; the 80k cohort merges float64 moments in 64\,MiB chunks before casting the statistics to float32. Their holdout sets differ. Random class-balanced splits use NumPy's \texttt{default\_rng} with seed 20260812, sampling without replacement within each class.
+
+The benchmark FI-2010 cache reads the first 40 feature rows of the no-auction Z-score release's ninth cumulative training fold, within stock ordinal 5 only; labels use zero-based row 148, the fifth supplied horizon, at the window endpoint. Its sequential window-index ranges are $[0,40000)$, $[40100,50100)$, and $[50200,70200)$. The standalone study instead uses decimal-precision daily segments, all five stock ordinals, and label row 144 (the first horizon). Its 128-row windows never cross stock/day boundaries, and the last ten representations of each segment are purged. Its feature normalization uses day-6 rows only, excluding these tails, with float64 moments cast to float32.
+
+\paragraph{Architectures.}
+Benchmark MLPs have 12 hidden affine--ReLU--dropout blocks of width 256 and a separate affine classifier. Every affine layer, including the readout, has independent Gaussian weights of variance $1.98/\mathrm{fan\_in}$ and biases of variance $0.02$. Transformers have 12 pre-LayerNorm residual blocks, width 256, eight attention heads, and a ReLU feedforward sublayer of width 1024. The layer's dropout probability is applied separately to the attention output and feedforward output before residual addition; attention weights have no dropout. Learned absolute positions and a learned class token precede a final LayerNorm and class-token classifier. Speech and Tiny ImageNet use $8\!\times\!8$ patches (64 patches); Jannis projects each scalar feature to one token, and FI-2010 projects each 40-feature snapshot to one token. Linear weights and position/class embeddings use truncated-normal initialization with standard deviation $0.02$; linear biases are zero. Patch convolutions retain the library's default initialization. Standalone MLPs use the same Gaussian affine initialization with depths $\{6,12\}$ and widths $\{256,512\}$.
+
+\paragraph{Optimization and checkpoints.}
+Benchmarks use AdamW, unweighted cross-entropy, and no warmup. At epoch $e\in\{0,\ldots,E-1\}$ the learning rate is
+\[
+\eta_e=\eta_0\left[f+\frac{1-f}{2}\left(1+\cos\frac{\pi e}{E-1}\right)\right],
+\qquad f=10^{-3}.
+\]
+Transformers clip the gradient norm at one; benchmark MLPs do not clip. Standalone MLPs use Adam, norm clipping at one, and the same cosine formula with $f=10^{-2}$. Both optimizers retain $(\beta_1,\beta_2)=(0.9,0.999)$ and $\epsilon=10^{-8}$. Training shuffles examples and retains the last partial batch. Each run restores its first minimum-validation-loss checkpoint for test evaluation. The retained Tiny ImageNet 80k runs also record a separate final-epoch test endpoint. Benchmark CUDA training uses autocast (bfloat16 when supported, otherwise float16); standalone training uses float32 with deterministic algorithms and TF32 disabled.
+
+\begin{table}[ht]
+\centering
+\caption{Validation-only tuning and subsequent seed sets. The grids and selection rules are recovered from protocol code; multi-dataset benchmark confirmation settings are verified against saved configuration hashes. A complete historical tuning-result ledger and the standalone study's selected learning rates were not recovered.}
+\label{tab:benchmark_search}
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}p{0.19\textwidth}p{0.49\textwidth}p{0.26\textwidth}@{}}
+\toprule
+Protocol & Search and frozen choices & Seeds \\
+\midrule
+Zero-decay sweeps & Per-profile LR search at $\bar p=0.10$: MLP $\{3\!\times\!10^{-5},10^{-4},3\!\times\!10^{-4},10^{-3},3\!\times\!10^{-3}\}$; Transformer replaces the first value by $5\!\times\!10^{-5}$. Then search $\bar p\in\{0.05,0.10,0.15,0.20\}$ at that profile's selected LR. No dropout has its own LR search. & LR: $0$; budget: $0,1,2$; confirmation: $100$--$104$ \\
+Linear follow-ups & Search the Transformer LR grid separately for both linear directions at $\bar p=0.10$ and for no dropout; confirm the better linear direction and tuned no-dropout control. & LR: $0$; confirmation: $100$--$104$ \\
+Jannis extended & Six profiles; LR fixed at $10^{-4}$ from earlier validation screens; $\bar p=0.10$ except no dropout. No new budget search. & Confirmation: $100$--$109$ \\
+FI-2010 standalone & Uniform-only 50-epoch LR screen over $\{3\!\times\!10^{-5},10^{-4},3\!\times\!10^{-4},10^{-3}\}$; freeze one LR per depth/width cell across seven profiles, with $\bar p=0.10$ except no dropout. & LR: $0,1,2$; 100-epoch confirmation: $100$--$104$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Selection and recovery limits.}
+The budget sweeps and standalone screen minimize mean per-seed minimum validation cross-entropy; ties favor the lower learning rate (then lower budget in the budget sweep). These hyperparameter choices precede confirmation. The reported benchmark profile is subsequently chosen from complete confirmation arms using their saved validation histories, as described above; this further selection is retrospective. Named random streams separate initialization, minibatch order, and dropout, and pair profiles by recorded base seed. The two linear follow-ups have no retained matching uniform baseline. Their historical source revision was not recovered, although their exact settings and split identifiers are recorded. For standalone FI-2010, the original selected learning rates and trial/source/data fingerprints were not recovered: the released code reruns its documented search and confirmation recipe, and the manifest leaves the unavailable historical values explicit. Source file hashes identify recovered benchmark snapshots; they do not imply bitwise reproducibility across library versions or devices.

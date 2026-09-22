@@ -18,7 +18,7 @@ MLPs and transformers. The gains depend on the task and on when we measure
 them: final loss, lowest recorded loss, and loss at a validation-selected
 checkpoint can tell quite different stories.
 
-The PDF is the revised September 21, 2026 paper, with the additional experiments,
+The PDF is the revised September 22, 2026 paper, with the additional experiments,
 confidence intervals, and corrections to the numerical figures and theoretical
 claims. The original [camera-ready version is on arXiv](https://arxiv.org/pdf/2605.21648v2).
 
@@ -80,6 +80,19 @@ python scripts/plot_mean_field.py
 
 The numerical inputs, fits, and figures go into `runs/mean_field/`. The figures
 used in the paper are in [manuscript/figures](manuscript/figures/).
+
+## Additional datasets
+
+The [benchmark guide](benchmarks/README.md) covers Speech Commands, Jannis,
+Tiny ImageNet, and FI-2010. It includes data preparation, the retained models,
+and [frozen configurations and split identifiers](benchmarks/protocols.json)
+for the reported profiles. Training saves the validation-selected and final
+checkpoints separately.
+
+The [standalone financial MLP guide](benchmarks/VANILLA.md) reproduces its
+separate data pipeline and learning-rate search. Its historical selected
+learning rates were not preserved; the guide distinguishes a new search from
+reproducing the archived results.
 
 ## Reading the comparisons
 

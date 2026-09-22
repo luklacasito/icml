@@ -99,7 +99,7 @@ m(0,h) \;=\; \sqrt{\frac{2h}{g_\rho}}.
 \label{eq:m_at_edge}
 \end{equation}
 \begin{table}[h]
-\caption{Definitions of critical exponents in the thermodynamic limit ($t \to 0$, $h \to 0$).}
+\caption{Definitions of critical exponents near the correlation edge in the infinite-width theory ($t,h\to0$). Here $C_{\rm sing}=-\partial_t^2 f_{\rm sing,on}(t,0)$, where $f_{\rm sing,on}$ is the singular Landau potential evaluated at its stable stationary point.}
 \label{tab:math_exponents}
 \centering
 \renewcommand{\arraystretch}{1.8}
@@ -107,10 +107,10 @@ m(0,h) \;=\; \sqrt{\frac{2h}{g_\rho}}.
 \toprule
 Exponent & Mathematical Definition \\
 \midrule
-$\beta$ & $m \sim |t|^\beta \quad (h=0)$ \\
+$\beta$ & $m \sim t^\beta \quad (h=0,\ t\to0^+)$ \\
 $\delta$ & $m \sim |h|^{1/\delta} \quad (t=0)$ \\
 $\gamma$ & $\chi_M \equiv \left. \frac{\partial m}{\partial h} \right|_{h \to 0} \sim |t|^{-\gamma}$ \\
-$\alpha$ & $C \equiv -\frac{\partial^2 f}{\partial t^2} \sim |t|^{-\alpha}$ \\
+$\alpha$ & $C_{\rm sing} \sim t^{-\alpha} \quad (t\to0^+)$ \\
 $\nu_t$ & $\xi \sim |t|^{-\nu_t} \quad (h=0)$ \\
 $\nu_\rho$ & $\xi \sim |h|^{-\nu_\rho} \quad (t=0)$ \\
 $\theta_{\rm rel}$ & $m \sim \ell^{-\theta_{\rm rel}} \quad (t=0, h=0)$ \\
@@ -126,9 +126,9 @@ and in the kinked case,
 \begin{equation}
 \frac{\partial f_{\rm sing}}{\partial m} = -h-tm+\kappa m^{3/2}.
 \end{equation}
-Evaluating \(f_{\rm sing}\) on the stable branch at \(h=0\) gives \(f_{\rm sing}\sim |t|^3\) for the smooth class and \(f_{\rm sing}\sim |t|^5\) for the kinked class, hence \(\alpha=-1\) and \(\alpha=-3\), respectively.
+Evaluating \(f_{\rm sing}\) on the stable branch at \(h=0\) as \(t\to0^+\) gives \(f_{\rm sing,on}\sim t^3\) for the smooth class and \(f_{\rm sing,on}\sim t^5\) for the kinked class, hence \(\alpha=-1\) and \(\alpha=-3\), respectively.
 
-This square-root power law is our first encounter with a larger family of critical exponents familiar in the physics literature, defined in Table~\ref{tab:math_exponents}. The key exponents for our analysis are those governing the depth correlation length $\xi_{c,\rho}$, as it sets the characteristic depth scale over which distinct inputs remain distinguishable and therefore provides an effective upper bound on the depth over which the network can reliably propagate information (and learn). Their derivations are straightforward but cumbersome, so we collect them in App.~\ref{ap:exponent_derivations} and simply quote the resulting exponent values in Table~\ref{tab:critical_exponents}. For reference, we also list the standard mean-field (Landau) exponents of the Ising universality class \cite{Ising1925,LandauLifshitzStatPhys} and the corresponding mean-field exponents of spin-glass theory \cite{EdwardsAnderson1975,Parisi1979PRL,Parisi1980JPA,Parisi1983PRL} for comparison.
+This square-root power law is our first encounter with a larger family of critical exponents familiar in the physics literature, defined in Table~\ref{tab:math_exponents}. The key exponents for our analysis govern the depth correlation length $\xi_{c,\rho}$, which characterizes how perturbations to input correlations decay with depth at initialization and provides a diagnostic for signal propagation. Their derivations are straightforward but cumbersome, so we collect them in App.~\ref{ap:exponent_derivations} and simply quote the resulting exponent values in Table~\ref{tab:critical_exponents}. For reference, we also list the standard mean-field (Landau) exponents of the Ising universality class \cite{Ising1925,LandauLifshitzStatPhys} and the corresponding mean-field exponents of spin-glass theory \cite{EdwardsAnderson1975,Parisi1979PRL,Parisi1980JPA,Parisi1983PRL} for comparison.
 
 \begin{table}[h]
 \caption{Critical exponents for neural network initialization, with statistical-mechanics comparisons. Neural $\nu$ exponents describe depth; the comparison rows use spatial correlation length. Their relaxation entries are omitted because a dynamics must be specified separately. The kinked \(\nu_\rho\) is a normal-form field exponent; ordinary bias-free \relu{} dropout follows the constrained path \(t=-h\) but has the same leading \(\xi\sim h^{-1/3}\) law (App.~\ref{ap:exponent_derivations}).}

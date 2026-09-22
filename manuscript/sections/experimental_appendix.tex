@@ -9,6 +9,7 @@ These experiments ask whether spatial allocation survives changes in task, archi
 \paragraph{Front-loaded comparisons.} Table~\ref{tab:frontloaded_results} reports the retained cohorts with a matching uniform baseline. Each row selects among complete front-loaded profiles by mean minimum validation loss, including cases where the selected profile loses to uniform on test. The full comparison below also includes back-loaded profiles and the two linear follow-ups.
 \paragraph{Speech Commands evaluation.} The audio experiment uses a class-balanced random clip split drawn from the official training subset; speaker identities were not retained in the split construction, so these results do not establish performance on held-out speakers. Final-epoch test CE was not recorded for either Speech Commands architecture. For the selected profiles in Table~\ref{tab:frontloaded_results}, the MLP reduces minimum and final validation loss by $13.23\%$ and $13.47\%$, while the Transformer gives $3.33\%$ and $6.49\%$. These are validation results, separate from the test columns.
 \input{sections/benchmark_table}
+\input{sections/benchmark_methods}
 \clearpage
 \subsection{Speech Commands / MLP / Zero weight decay}
 Depth 12, width 256; 20,020/5,005/10,010 training/validation/test examples; 50 epochs, batch size 128, weight decay \(0\). The recorded split is held fixed across profiles.
@@ -320,7 +321,7 @@ Step late & \(0.8238\pm0.0017\) & \(70.835\pm0.024\) & \(31.85\pm1.05\) \\
 At depth 12 and width 512, no dropout has slightly lower mean test CE than the best nonuniform profile (0.816111 versus 0.816155). Main-table winners exclude no dropout; this does not establish that nonuniform dropout beats every control.
 \clearpage
 \subsection{CIFAR-10 profile-geometry pilot}
-The validation-only geometry pilot contains 30 runs: ten profiles at mean probability $\bar p=0.10$, with three seeds per profile, six-layer width-256 ReLU MLPs, 4,000 training examples, 1,000 validation examples, and 75 epochs. It compares profile shape and exact early/late reversals. Test data remain sealed, so this pilot contributes no test-loss winner to the main tables.
+The validation-only geometry pilot compares ten fixed profiles and their exact early/late reversals at mean probability $\bar p=0.10$, using seeds $0,1,2$ (30 runs). Six-layer width-256 ReLU MLPs train on 4,000 class-balanced examples with 1,000 validation examples (split seed 20260812), using AdamW, LR $10^{-4}$, weight decay $10^{-7}$, batch size 75, and 75 epochs of the benchmark cosine schedule without clipping. Images use fixed channel means $(0.4914,0.4822,0.4465)$ and standard deviations $(0.2470,0.2435,0.2616)$, without augmentation. Power profiles use layer-cell centers and cap $0.20$. The manifest preserves exact arrays, configurations, and source/split hashes; the pilot runner is outside the released benchmark-code scope. No hyperparameter search or test evaluation is performed, so this pilot contributes no test-loss winner to the main tables.
 \begin{figure}[ht]\centering
 \includegraphics[width=0.94\textwidth]{figures/experiments/benchmarks/profile-geometry-pilot.pdf}
 \caption{Profile geometry at fixed mean dropout. Training and validation curves use the original paper style and show mean $\pm$ SEM over three seeds.}

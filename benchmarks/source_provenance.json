@@ -1,0 +1,73 @@
+{
+  "extraction": "retained_definitions_v1",
+  "description": "Historical-compatible headline confirmation source; data preparation from the cleaned research source. Local paths and orchestration are intentionally omitted.",
+  "source_files": {
+    "models.py": {
+      "source_sha256": "7f4f64c08ada7bfed50570b3ece2db70f56cbbf723ed8cc26e68b78d7349dca6",
+      "retained_definitions": [
+        "MLPConfig",
+        "CriticalMLP",
+        "_PatchEmbed",
+        "_Attention",
+        "_TransformerMLP",
+        "_TransformerBlock",
+        "TinyViT",
+        "SequenceTransformer",
+        "_initialize_sp"
+      ]
+    },
+    "training.py": {
+      "source_sha256": "88ea98ed1e0e965b78768d913f3b63350f386954c98fe0e6e1bac227e957434c",
+      "retained_definitions": [
+        "DatasetBundle",
+        "TrainingConfig",
+        "seed_everything",
+        "multiplicative_cosine_factor",
+        "make_multiplicative_cosine_scheduler",
+        "_resolve_device",
+        "_loader",
+        "evaluate",
+        "train_model"
+      ]
+    },
+    "datasets.py": {
+      "source_sha256": "a4cbe7b80c5fba0dd40b22a594c5be562a0fb7ae9bf6a5c8a22208f7849dcb7c",
+      "retained_definitions": [
+        "cache_path",
+        "_indices_hash",
+        "_split_hash",
+        "_balanced_split",
+        "_anchored_split",
+        "_tensor_dataset",
+        "_rows_view_or_copy",
+        "_read_exact",
+        "_load_compressed_npz_rows",
+        "_standardize",
+        "_standardize_inplace_v15",
+        "_standardize_inplace",
+        "load_benchmark_bundle"
+      ]
+    },
+    "prepare_data.py": {
+      "source_sha256": "16c481286ce0ed20cf8246b494a8c8d4b771b0e69c42f919749c1e00ca1dc3ef",
+      "retained_definitions": [
+        "_digest",
+        "_save",
+        "_fi2010_required_window_count",
+        "_fi2010_stock_block",
+        "_load_fi2010_rows",
+        "prepare_fi2010",
+        "prepare_tiny_imagenet",
+        "prepare_speech_commands",
+        "prepare_openml_jannis"
+      ]
+    }
+  },
+  "modifications": [
+    "Local package imports; retained dataset catalog only; unused parameterizations and orchestration removed.",
+    "CriticalMLP retains only its standard-parameterization constructor branch; tensor construction and initialization order unchanged.",
+    "Historical training functions retained; source comments and dataset-preparation docstrings corrected for public use.",
+    "New runner adds configuration-hash validation, cache-byte integrity checks, strict split verification, output manifests, and synthetic endpoint verification.",
+    "Data preparation uses frozen defaults and refuses cache overwrites; no automatic adaptation of mismatched historical data."
+  ]
+}

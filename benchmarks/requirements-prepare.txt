@@ -1,0 +1,7 @@
+# Optional: needed only to build caches from raw datasets.
+-r requirements.txt
+torchaudio==2.1.0
+Pillow==12.3.0
+scikit-learn==1.9.0
+pandas==2.3.3
+scipy==1.10.1

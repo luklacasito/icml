@@ -1,7 +1,6 @@
 """Batch training, evaluation, and CIFAR loading for the experiment notebooks."""
 
 import contextlib
-from numbers import Integral
 from pathlib import Path
 
 import numpy as np
@@ -12,12 +11,6 @@ from torchvision import datasets
 
 def iterate_batches(x: torch.Tensor, y: torch.Tensor, bs: int, shuffle: bool = True):
     """Yield paired batches on the tensors' device, including the final partial batch."""
-    if not isinstance(bs, Integral) or isinstance(bs, bool) or bs < 1:
-        raise ValueError("Batch size must be a positive integer")
-    if x.ndim == 0 or y.ndim == 0 or len(x) == 0 or len(x) != len(y):
-        raise ValueError("Inputs and targets must have the same nonzero sample count")
-    if x.device != y.device:
-        raise ValueError("Inputs and targets must be on the same device")
     n = x.size(0)
     idx = torch.randperm(n, device=x.device) if shuffle else torch.arange(n, device=x.device)
     for start in range(0, n, bs):
@@ -123,14 +116,6 @@ def load_cifar(
     Return (x_train, y_train), (x_test, y_test). Optional sample counts select
     subsets without replacement using a local NumPy RNG seeded by seed.
     """
-    if num_classes not in _CIFAR_STATS:
-        raise ValueError(f"num_classes must be 10 or 100, got {num_classes}")
-    for name, size in (("train_size", train_size), ("test_size", test_size)):
-        if size is not None and (
-            not isinstance(size, Integral) or isinstance(size, bool) or size < 1
-        ):
-            raise ValueError(f"{name} must be a positive integer or None")
-
     mean, std = _CIFAR_STATS[num_classes]
     mean = mean.view(1, 3, 1, 1)
     std = std.view(1, 3, 1, 1)

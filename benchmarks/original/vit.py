@@ -1,6 +1,7 @@
-"""Unmodified definitions extracted from notebooks/vit_ablation.ipynb.
+"""ViT shared by the ablation notebook and original seed-extension runner.
 
-See provenance.json for the source and AST hashes.
+provenance.json records the historical extraction, before patch_size became
+an explicit constructor argument. The default retains the original model.
 """
 
 import torch
@@ -81,9 +82,19 @@ class ViT(nn.Module):
         ablation_mode: 'both', 'attn_only', or 'mlp_only'
     """
 
-    def __init__(self, depth=12, dim=384, heads=6, ratio=4.0, h_layers=None, ablation_mode="both"):
+    def __init__(
+        self,
+        depth=12,
+        dim=384,
+        heads=6,
+        ratio=4.0,
+        h_layers=None,
+        ablation_mode="both",
+        *,
+        patch_size=PATCH_SIZE,
+    ):
         super().__init__()
-        self.patch = PatchEmbed(32, PATCH_SIZE, dim)
+        self.patch = PatchEmbed(32, patch_size, dim)
         n = self.patch.num_patches
         self.cls = nn.Parameter(torch.zeros(1, 1, dim))
         self.pos = nn.Parameter(torch.zeros(1, n + 1, dim))

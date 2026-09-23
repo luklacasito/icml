@@ -39,7 +39,6 @@ class BenchmarkDataSpec:
     # Token-sequence view seen by the transformer arm.
     sequence_length: int
     input_features: int | None
-    vocab_size: int | None
     # Image tasks additionally carry a (channels, size) view for the ViT arm.
     image_channels: int | None
     image_size: int | None
@@ -58,7 +57,6 @@ BENCHMARK_SPECS: dict[BenchmarkDatasetName, BenchmarkDataSpec] = {
         mlp_input_dim=100 * 40,
         sequence_length=100,
         input_features=40,
-        vocab_size=None,
         image_channels=None,
         image_size=None,
         patch_size=None,
@@ -73,7 +71,6 @@ BENCHMARK_SPECS: dict[BenchmarkDatasetName, BenchmarkDataSpec] = {
         mlp_input_dim=3 * 64 * 64,
         sequence_length=64,
         input_features=None,
-        vocab_size=None,
         image_channels=3,
         image_size=64,
         patch_size=8,
@@ -89,7 +86,6 @@ BENCHMARK_SPECS: dict[BenchmarkDatasetName, BenchmarkDataSpec] = {
         mlp_input_dim=64 * 64,
         sequence_length=64,
         input_features=None,
-        vocab_size=None,
         image_channels=1,
         image_size=64,
         patch_size=8,
@@ -106,7 +102,6 @@ BENCHMARK_SPECS: dict[BenchmarkDatasetName, BenchmarkDataSpec] = {
         mlp_input_dim=54,
         sequence_length=54,
         input_features=1,
-        vocab_size=None,
         image_channels=None,
         image_size=None,
         patch_size=None,
@@ -236,14 +231,9 @@ def _tensor_dataset(
     features: np.ndarray,
     labels: np.ndarray,
     indices: np.ndarray,
-    *,
-    discrete: bool,
 ) -> TensorDataset:
     selected = _rows_view_or_copy(features, indices)
-    if discrete:
-        x = torch.from_numpy(np.ascontiguousarray(selected)).long()
-    else:
-        x = torch.from_numpy(np.ascontiguousarray(selected)).float()
+    x = torch.from_numpy(np.ascontiguousarray(selected)).float()
     y = torch.as_tensor(_rows_view_or_copy(labels, indices), dtype=torch.long)
     return TensorDataset(x, y)
 
@@ -477,8 +467,6 @@ def load_benchmark_bundle(
         labels = payload["labels"].astype(np.int64)
         payload_digest = str(payload["payload_sha256"])
 
-    discrete = view == "sequence" and spec.vocab_size is not None
-
     split_protocol = spec.split_protocol
     if spec.split_protocol == ANCHORED_SPLIT_PROTOCOL:
         horizon_embargo = FI2010_DEFAULT_EMBARGO if embargo is None else embargo
@@ -518,26 +506,24 @@ def load_benchmark_bundle(
         train_local = np.arange(0, train_stop)
         validation_local = np.arange(train_stop, validation_stop)
         test_local = np.arange(validation_stop, len(selected_global))
-        if not discrete:
-            standardize = (
-                _standardize_inplace_v15
-                if tiny_standardization == "float32_v15"
-                else _standardize_inplace
-            )
-            features, _ = standardize(features, train_local)
+        standardize = (
+            _standardize_inplace_v15
+            if tiny_standardization == "float32_v15"
+            else _standardize_inplace
+        )
+        features, _ = standardize(features, train_local)
         tensor_indices = (train_local, validation_local, test_local)
     else:
         with np.load(path, allow_pickle=False) as payload:
             features = payload[key]
-        if not discrete:
-            features, _ = _standardize(features, train_indices)
+        features, _ = _standardize(features, train_indices)
         tensor_indices = (train_indices, validation_indices, test_indices)
 
     tensor_train, tensor_validation, tensor_test = tensor_indices
     return DatasetBundle(
-        train=_tensor_dataset(features, labels, tensor_train, discrete=discrete),
-        validation=_tensor_dataset(features, labels, tensor_validation, discrete=discrete),
-        test=_tensor_dataset(features, labels, tensor_test, discrete=discrete),
+        train=_tensor_dataset(features, labels, tensor_train),
+        validation=_tensor_dataset(features, labels, tensor_validation),
+        test=_tensor_dataset(features, labels, tensor_test),
         split_hash=split_hash,
         dataset=name,
         split_protocol=split_protocol,

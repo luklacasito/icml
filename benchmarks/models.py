@@ -11,7 +11,6 @@ import torch
 from torch import nn
 
 ActivationName = Literal["relu", "gelu"]
-Parameterization = Literal["sp"]
 
 
 @dataclass(frozen=True)
@@ -23,19 +22,6 @@ class MLPConfig:
     activation: ActivationName = "relu"
     sigma_w_sq: float = 1.98
     sigma_b_sq: float = 0.02
-    # Profile studies retain the paper's Gaussian readout.  Controlled SP/muP
-    # transfer studies opt into the same zero-readout condition for both arms.
-    zero_readout: bool = False
-
-    def __post_init__(self) -> None:
-        if self.input_dim <= 0 or self.width <= 0 or self.output_dim <= 0:
-            raise ValueError("input_dim, width, and output_dim must be positive")
-        if self.depth <= 0:
-            raise ValueError("depth must be positive")
-        if self.activation not in {"relu", "gelu"}:
-            raise ValueError(f"Unsupported activation: {self.activation!r}")
-        if self.sigma_w_sq <= 0 or self.sigma_b_sq < 0:
-            raise ValueError("sigma_w_sq must be positive and sigma_b_sq nonnegative")
 
 
 class CriticalMLP(nn.Module):
@@ -49,26 +35,19 @@ class CriticalMLP(nn.Module):
         self,
         config: MLPConfig,
         dropout_layers: list[float] | tuple[float, ...],
-        *,
-        parameterization: Parameterization = "sp",
     ) -> None:
         super().__init__()
         if len(dropout_layers) != config.depth:
             raise ValueError(
                 f"Expected {config.depth} dropout probabilities, got {len(dropout_layers)}"
             )
-        if any(not 0 <= value < 1 for value in dropout_layers):
-            raise ValueError("Dropout probabilities must lie in [0, 1)")
-        if parameterization != "sp":
-            raise ValueError(f"Unknown parameterization: {parameterization!r}")
 
         self.config = config
-        self.parameterization = parameterization
         hidden: list[nn.Linear] = [nn.Linear(config.input_dim, config.width)]
         hidden.extend(nn.Linear(config.width, config.width) for _ in range(config.depth - 1))
         self.hidden = nn.ModuleList(hidden)
         self.dropouts = nn.ModuleList(nn.Dropout(float(p)) for p in dropout_layers)
-        self.activation = nn.ReLU() if config.activation == "relu" else nn.GELU()
+        self.activation = {"relu": nn.ReLU, "gelu": nn.GELU}[config.activation]()
 
         self.readout = nn.Linear(config.width, config.output_dim)
 
@@ -104,8 +83,6 @@ class _PatchEmbed(nn.Module):
 class _Attention(nn.Module):
     def __init__(self, dimension: int, heads: int) -> None:
         super().__init__()
-        if dimension % heads:
-            raise ValueError("ViT dimension must be divisible by heads")
         self.heads = heads
         self.qkv = nn.Linear(dimension, 3 * dimension, bias=False)
         self.projection = nn.Linear(dimension, dimension)
@@ -200,9 +177,7 @@ class SequenceTransformer(nn.Module):
     * tabular -- ``(batch, features, 1)`` continuous, one token per feature,
       which is the numerical-embedding half of an FT-Transformer.
 
-    ``vocab_size`` selects the embedding path; otherwise a linear projection
-    maps ``input_features`` to ``dimension``. The block and dropout code is the
-    same as TinyViT's, keeping the profile comparison fixed across modalities.
+    A linear projection maps each continuous token to the model dimension.
     """
 
     def __init__(
@@ -214,26 +189,10 @@ class SequenceTransformer(nn.Module):
         heads: int = 16,
         mlp_ratio: float = 4.0,
         output_dim: int = 2,
-        input_features: int | None = None,
-        vocab_size: int | None = None,
-        padding_index: int | None = None,
+        input_features: int,
     ) -> None:
         super().__init__()
-        if sequence_length <= 0:
-            raise ValueError("sequence_length must be positive")
-        if (vocab_size is None) == (input_features is None):
-            raise ValueError("Pass exactly one of vocab_size or input_features")
-
-        if vocab_size is not None:
-            if vocab_size <= 0:
-                raise ValueError("vocab_size must be positive")
-            self.embed = nn.Embedding(vocab_size, dimension, padding_idx=padding_index)
-            self.token_kind = "discrete"
-        else:
-            if input_features <= 0:
-                raise ValueError("input_features must be positive")
-            self.embed = nn.Linear(input_features, dimension)
-            self.token_kind = "continuous"
+        self.embed = nn.Linear(input_features, dimension)
 
         self.sequence_length = sequence_length
         self.class_token = nn.Parameter(torch.zeros(1, 1, dimension))
@@ -247,20 +206,12 @@ class SequenceTransformer(nn.Module):
         nn.init.trunc_normal_(self.position, std=0.02)
         nn.init.trunc_normal_(self.class_token, std=0.02)
         self.apply(TinyViT._initialize)
-        if isinstance(self.embed, nn.Embedding):
-            nn.init.trunc_normal_(self.embed.weight, std=0.02)
-            if padding_index is not None:
-                with torch.no_grad():
-                    self.embed.weight[padding_index].zero_()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if self.token_kind == "discrete":
-            x = self.embed(x.long())
-        else:
-            # Tabular inputs arrive flat; one token per feature.
-            if x.dim() == 2:
-                x = x.unsqueeze(-1)
-            x = self.embed(x)
+        # Tabular inputs arrive flat; one token per feature.
+        if x.dim() == 2:
+            x = x.unsqueeze(-1)
+        x = self.embed(x)
         if x.shape[1] != self.sequence_length:
             raise ValueError(f"Expected sequence length {self.sequence_length}, got {x.shape[1]}")
         class_token = self.class_token.expand(x.shape[0], -1, -1)
@@ -279,20 +230,16 @@ def _initialize_sp(model: CriticalMLP) -> None:
             nn.init.normal_(layer.bias, mean=0.0, std=config.sigma_b_sq**0.5)
         else:
             nn.init.zeros_(layer.bias)
-    if config.zero_readout:
-        nn.init.zeros_(model.readout.weight)
-        nn.init.zeros_(model.readout.bias)
+    fan_in = model.readout.weight.shape[1]
+    nn.init.normal_(
+        model.readout.weight,
+        mean=0.0,
+        std=(config.sigma_w_sq / fan_in) ** 0.5,
+    )
+    if config.sigma_b_sq:
+        nn.init.normal_(model.readout.bias, mean=0.0, std=config.sigma_b_sq**0.5)
     else:
-        fan_in = model.readout.weight.shape[1]
-        nn.init.normal_(
-            model.readout.weight,
-            mean=0.0,
-            std=(config.sigma_w_sq / fan_in) ** 0.5,
-        )
-        if config.sigma_b_sq:
-            nn.init.normal_(model.readout.bias, mean=0.0, std=config.sigma_b_sq**0.5)
-        else:
-            nn.init.zeros_(model.readout.bias)
+        nn.init.zeros_(model.readout.bias)
 
 
 def build_model(spec: dict, dropout_layers: list[float]) -> nn.Module:

@@ -17,6 +17,10 @@ financial architecture comparisons, which use a different data protocol.
 - `run_original.py` extends the historical CIFAR notebook comparisons.
 - `vanilla.py` and `run_vanilla.py` implement the separate financial MLP protocol.
 
+The sweep notebooks import their shared schedules and training functions from
+`original/relu.py`; the ViT notebooks reuse `original/vit.py`. Their CIFAR-10
+loader lives in `utils/cifar.py`.
+
 The runners remain separate because their data, checkpoint, and test policies differ.
 Historical hashes in the provenance files describe the archived sources. New runs
 record the current source hashes; use the original checkout to resume an old run.

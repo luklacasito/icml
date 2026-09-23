@@ -50,20 +50,6 @@ class TrainingConfig:
     restore_best_validation: bool = False
     device: str = "auto"
 
-    def __post_init__(self) -> None:
-        if self.epochs <= 0 or self.batch_size <= 0:
-            raise ValueError("epochs and batch_size must be positive")
-        if self.learning_rate <= 0:
-            raise ValueError("learning_rate must be positive")
-        if not 0 <= self.lr_floor_ratio <= 1:
-            raise ValueError("lr_floor_ratio must be in [0, 1]")
-        if self.weight_decay < 0:
-            raise ValueError("weight_decay must be nonnegative")
-        if self.gradient_clip_norm is not None and (
-            not math.isfinite(self.gradient_clip_norm) or self.gradient_clip_norm <= 0
-        ):
-            raise ValueError("gradient_clip_norm must be finite and positive")
-
 
 def seed_everything(seed: int) -> None:
     random.seed(seed)
@@ -176,8 +162,6 @@ def train_model(
         "train_accuracy": [],
         "validation_loss": [],
         "validation_accuracy": [],
-        "first_optimizer_group_lr": [],
-        "global_learning_rate": [],
         "lr_multiplier": [],
         "optimizer_group_lrs": [],
         "optimizer_steps": [],
@@ -236,8 +220,6 @@ def train_model(
             epochs=max(config.epochs - 1, 1),
             floor_ratio=config.lr_floor_ratio,
         )
-        history["first_optimizer_group_lr"].append(float(optimizer.param_groups[0]["lr"]))
-        history["global_learning_rate"].append(config.learning_rate * multiplier)
         history["lr_multiplier"].append(multiplier)
         history["optimizer_group_lrs"].append(
             [float(group["lr"]) for group in optimizer.param_groups]

@@ -9,7 +9,6 @@ equals h_bar only when depth is divisible by three.
 """
 
 import math
-from numbers import Integral
 
 
 def get_dropout_schedule(
@@ -22,11 +21,6 @@ def get_dropout_schedule(
     while their rate is adjusted to preserve the mean. An absent h_max, or one
     below h_bar, uses 2 * h_bar.
     """
-    if not isinstance(depth, Integral) or isinstance(depth, bool) or depth < 1:
-        raise ValueError("depth must be a positive integer")
-    if not math.isfinite(h_bar) or not 0 <= h_bar <= 1:
-        raise ValueError("h_bar must be a finite dropout probability")
-
     if sched == "none":
         rates = [0.0] * depth
     elif sched == "constant":
@@ -43,8 +37,6 @@ def get_dropout_schedule(
         if sched == "reverse_linear":
             rates.reverse()
     elif sched in ("step", "reverse_step"):
-        if h_max is not None and (not math.isfinite(h_max) or h_max < 0):
-            raise ValueError("h_max must be finite and nonnegative")
         if h_bar == 0:
             rates = [0.0] * depth
         else:

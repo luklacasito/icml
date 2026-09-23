@@ -18,9 +18,7 @@ from utils import training
 
 
 @pytest.mark.parametrize("depth", [1, 5, 12])
-@pytest.mark.parametrize(
-    "name", ["constant", "linear", "reverse_linear", "step", "reverse_step"]
-)
+@pytest.mark.parametrize("name", ["constant", "linear", "reverse_linear", "step", "reverse_step"])
 def test_matched_schedules_preserve_mean(name, depth):
     rates = get_dropout_schedule(name, depth, h_bar=0.1, h_max=0.27)
     assert len(rates) == depth
@@ -108,9 +106,7 @@ def test_training_updates_model_and_reduces_loss():
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=0.2)
     before, _ = evaluate(model, (x, y), criterion, bs=2)
-    loss, accuracy = train_epoch(
-        model, (x, y), optimizer, criterion, bs=2, grad_clip=1.0
-    )
+    loss, accuracy = train_epoch(model, (x, y), optimizer, criterion, bs=2, grad_clip=1.0)
     assert model.training
     assert np.isfinite(loss)
     assert 0 <= accuracy <= 100

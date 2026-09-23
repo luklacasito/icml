@@ -1,4 +1,5 @@
 """Prepare the four retained benchmark datasets using the historical recipe."""
+
 from __future__ import annotations
 import argparse
 import hashlib
@@ -62,9 +63,7 @@ def _save(root: Path, name: str, features_mlp, features_sequence, labels) -> Non
         raise ValueError("features_sequence and labels disagree on example count")
     flat = int(np.prod(features_mlp.shape[1:]))
     if flat != spec.mlp_input_dim:
-        raise ValueError(
-            f"{name}: MLP view has {flat} features, spec expects {spec.mlp_input_dim}"
-        )
+        raise ValueError(f"{name}: MLP view has {flat} features, spec expects {spec.mlp_input_dim}")
     if features_sequence.shape[1] != spec.sequence_length and spec.image_size is None:
         raise ValueError(
             f"{name}: sequence view has length {features_sequence.shape[1]}, "
@@ -72,9 +71,7 @@ def _save(root: Path, name: str, features_mlp, features_sequence, labels) -> Non
         )
     observed = int(labels.max()) + 1
     if observed != spec.classes:
-        raise ValueError(
-            f"{name}: found {observed} classes, spec expects {spec.classes}"
-        )
+        raise ValueError(f"{name}: found {observed} classes, spec expects {spec.classes}")
     needed = spec.train_size + spec.validation_size + spec.test_size
     if len(labels) < needed:
         raise ValueError(f"{name}: {len(labels)} examples, protocol needs {needed}")
@@ -100,12 +97,7 @@ def _save(root: Path, name: str, features_mlp, features_sequence, labels) -> Non
 
 def _fi2010_required_window_count() -> int:
     spec = BENCHMARK_SPECS["fi2010"]
-    return (
-        spec.train_size
-        + spec.validation_size
-        + spec.test_size
-        + 2 * FI2010_DEFAULT_EMBARGO
-    )
+    return spec.train_size + spec.validation_size + spec.test_size + 2 * FI2010_DEFAULT_EMBARGO
 
 
 def _fi2010_stock_block(stock: int) -> tuple[int, int]:
@@ -156,13 +148,10 @@ def _load_fi2010_rows(
                         "file and cannot be trusted for a different copy."
                     )
                 if stop > width:
-                    raise SystemExit(
-                        f"Requested columns [{start}, {stop}) exceed {path.name}"
-                    )
+                    raise SystemExit(f"Requested columns [{start}, {stop}) exceed {path.name}")
             elif len(tokens) != width:
                 raise SystemExit(
-                    f"{path.name} row {index} has {len(tokens)} columns, "
-                    f"expected {width}"
+                    f"{path.name} row {index} has {len(tokens)} columns, expected {width}"
                 )
             block[wanted[index]] = np.asarray(tokens[start:stop], dtype=np.float32)
     if seen != expected_rows:
@@ -212,9 +201,7 @@ def prepare_fi2010(
     if available < required_snapshots:
         longest = max(
             range(1, len(FI2010_STOCK_BOUNDARIES)),
-            key=lambda index: (
-                FI2010_STOCK_BOUNDARIES[index] - FI2010_STOCK_BOUNDARIES[index - 1]
-            ),
+            key=lambda index: FI2010_STOCK_BOUNDARIES[index] - FI2010_STOCK_BOUNDARIES[index - 1],
         )
         raise SystemExit(
             f"FI-2010 stock {stock} has a {available}-snapshot block, the locked "
@@ -222,9 +209,7 @@ def prepare_fi2010(
         )
     stop = start + required_snapshots
     label_row = FI2010_LABEL_ROW_BASE + horizon_index
-    series = _load_fi2010_rows(
-        path, [*range(FI2010_BOOK_FEATURES), label_row], start, stop
-    )
+    series = _load_fi2010_rows(path, [*range(FI2010_BOOK_FEATURES), label_row], start, stop)
     print(
         f"FI-2010 fold={FI2010_FOLD_FILE} stock={stock} "
         f"columns=[{start}, {stop}) of {FI2010_FOLD_SNAPSHOTS} "
@@ -262,8 +247,7 @@ def prepare_tiny_imagenet(root: Path, raw: Path):
     if not directory.exists():
         if not archive.exists():
             raise SystemExit(
-                f"Missing {archive}. Download with:\n"
-                f"  curl -L -o {archive} {TINY_IMAGENET_URL}"
+                f"Missing {archive}. Download with:\n  curl -L -o {archive} {TINY_IMAGENET_URL}"
             )
         print(f"unpacking {archive}")
         with zipfile.ZipFile(archive) as bundle:
@@ -292,9 +276,7 @@ def prepare_tiny_imagenet(root: Path, raw: Path):
     # Channel-first float in [0, 1]; the loader z-scores with train statistics.
     stacked = np.stack(images).transpose(0, 3, 1, 2).astype(np.float32) / 255.0
     labels_array = np.asarray(labels, dtype=np.int64)
-    _save(
-        root, "tiny_imagenet", stacked.reshape(len(stacked), -1), stacked, labels_array
-    )
+    _save(root, "tiny_imagenet", stacked.reshape(len(stacked), -1), stacked, labels_array)
 
 
 def prepare_speech_commands(root: Path, raw: Path, *, mels: int = 64, frames: int = 64):
@@ -309,9 +291,7 @@ def prepare_speech_commands(root: Path, raw: Path, *, mels: int = 64, frames: in
         ) from exc
 
     raw.mkdir(parents=True, exist_ok=True)
-    dataset = torchaudio.datasets.SPEECHCOMMANDS(
-        root=str(raw), download=True, subset="training"
-    )
+    dataset = torchaudio.datasets.SPEECHCOMMANDS(root=str(raw), download=True, subset="training")
     sample_rate = 16_000
     # hop_length puts a 1 s clip at just over `frames` columns, then take the first frames.
     transform = torchaudio.transforms.MelSpectrogram(
@@ -327,9 +307,7 @@ def prepare_speech_commands(root: Path, raw: Path, *, mels: int = 64, frames: in
 
     # Metadata lookup does not decode audio, so it also works on systems where
     # TorchAudio was installed without an optional WAV backend (notably macOS).
-    labels_seen = sorted(
-        {dataset.get_metadata(index)[2] for index in range(len(dataset))}
-    )
+    labels_seen = sorted({dataset.get_metadata(index)[2] for index in range(len(dataset))})
     label_ids = {label: index for index, label in enumerate(labels_seen)}
     print(f"speech: {len(dataset)} clips across {len(labels_seen)} keywords")
 
@@ -348,9 +326,7 @@ def prepare_speech_commands(root: Path, raw: Path, *, mels: int = 64, frames: in
             else:
                 loaded_rate, samples = wavfile.read(path)
                 rate = int(loaded_rate)
-                scale = float(
-                    max(abs(np.iinfo(samples.dtype).min), np.iinfo(samples.dtype).max)
-                )
+                scale = float(max(abs(np.iinfo(samples.dtype).min), np.iinfo(samples.dtype).max))
                 waveform = torch.from_numpy(samples.astype(np.float32) / scale)
                 if waveform.ndim == 1:
                     waveform = waveform.unsqueeze(0)
@@ -362,9 +338,7 @@ def prepare_speech_commands(root: Path, raw: Path, *, mels: int = 64, frames: in
             clips[offset, :usable] = waveform[0, :usable]
             labels[index] = label_ids[label]
         batch_spectrograms = to_db(transform(clips))[..., :frames]
-        spectrograms[start:stop, 0, :, : batch_spectrograms.shape[-1]] = (
-            batch_spectrograms.numpy()
-        )
+        spectrograms[start:stop, 0, :, : batch_spectrograms.shape[-1]] = batch_spectrograms.numpy()
         if stop % 20_000 < batch_size or stop == len(dataset):
             print(f"  {stop}/{len(dataset)} clips")
 
@@ -386,9 +360,7 @@ def prepare_openml_jannis(root: Path, raw: Path):
         raise SystemExit("Tabular preparation requires scikit-learn") from exc
 
     raw.mkdir(parents=True, exist_ok=True)
-    bundle = fetch_openml(
-        "jannis", version=1, as_frame=True, data_home=str(raw), parser="auto"
-    )
+    bundle = fetch_openml("jannis", version=1, as_frame=True, data_home=str(raw), parser="auto")
     features = bundle.data.to_numpy(dtype=np.float32)
     categories = sorted(bundle.target.unique())
     mapping = {value: index for index, value in enumerate(categories)}

@@ -19,11 +19,7 @@ def iterate_batches(x: torch.Tensor, y: torch.Tensor, bs: int, shuffle: bool = T
     if x.device != y.device:
         raise ValueError("Inputs and targets must be on the same device")
     n = x.size(0)
-    idx = (
-        torch.randperm(n, device=x.device)
-        if shuffle
-        else torch.arange(n, device=x.device)
-    )
+    idx = torch.randperm(n, device=x.device) if shuffle else torch.arange(n, device=x.device)
     for start in range(0, n, bs):
         b = idx[start : start + bs]
         yield x[b], y[b]
@@ -148,9 +144,7 @@ def load_cifar(
         ("test_size", test_size, test_ds),
     ):
         if size is not None and size > len(dataset.data):
-            raise ValueError(
-                f"{name} exceeds the available {len(dataset.data)} samples"
-            )
+            raise ValueError(f"{name} exceeds the available {len(dataset.data)} samples")
 
     rng = np.random.RandomState(seed)
     tr_idx = (

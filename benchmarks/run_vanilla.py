@@ -87,9 +87,7 @@ def metrics(labels, probabilities):
         out=np.zeros(3),
         where=f1_denominator != 0,
     )
-    correct_probability = np.clip(
-        probabilities[np.arange(len(labels)), labels], 1e-300, 1
-    )
+    correct_probability = np.clip(probabilities[np.arange(len(labels)), labels], 1e-300, 1)
     return {
         "n": len(labels),
         "logloss": float(-np.log(correct_probability).mean()),
@@ -176,15 +174,11 @@ def train_epoch(model, dataset, optimizer, shuffle, batch_size, device, clip_nor
 def activation_probe(model, dataset, device):
     model.eval()
     sample_indexes = np.linspace(0, len(dataset) - 1, 8, dtype=int)
-    inputs = torch.stack([dataset[int(index)][0] for index in sample_indexes]).to(
-        device
-    )
+    inputs = torch.stack([dataset[int(index)][0] for index in sample_indexes]).to(device)
     variances = []
     handles = [
         dropout.register_forward_pre_hook(
-            lambda _module, values: variances.append(
-                float(values[0].var(unbiased=False))
-            )
+            lambda _module, values: variances.append(float(values[0].var(unbiased=False)))
         )
         for dropout in model.dropouts
     ]
@@ -206,9 +200,42 @@ def _save_test_predictions(path, dataset, predictions):
     temporary.replace(path)
 
 
-def run(
-    spec, data_root, output, device="cuda", stop_after_epoch=None, check_source=True
-):
+def initialize_training(spec, device):
+    """Seed the independent streams, then build the model, optimizer and shuffle RNG."""
+    streams = spec["randomization"]
+    random.seed(streams["initialization_seed"])
+    np.random.seed(streams["initialization_seed"])
+    torch.manual_seed(streams["initialization_seed"])
+    if device.type == "cuda":
+        torch.cuda.manual_seed_all(streams["initialization_seed"])
+    torch.use_deterministic_algorithms(True)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cuda.matmul.allow_tf32 = False
+    torch.backends.cudnn.allow_tf32 = False
+
+    model = VanillaMLP(
+        input_dim=spec["input_shape"][0] * spec["input_shape"][1],
+        width=spec["width"],
+        depth=spec["depth"],
+        probabilities=spec["dropout_probabilities"],
+        dropout_seed=streams["dropout_seed"],
+        output_dim=spec["output_dim"],
+        sigma_w_sq=spec["initialization"]["sigma_w_sq"],
+        sigma_b_sq=spec["initialization"]["sigma_b_sq"],
+    ).to(device)
+    config = spec["training"]
+    optimizer = torch.optim.Adam(
+        model.parameters(),
+        lr=config["learning_rate"],
+        eps=config["eps"],
+        weight_decay=config["weight_decay"],
+    )
+    shuffle = torch.Generator().manual_seed(streams["minibatch_seed"])
+    return model, optimizer, shuffle
+
+
+def run(spec, data_root, output, device="cuda", stop_after_epoch=None, check_source=True):
     """Run one trial. ``stop_after_epoch`` exists only to test exact resume."""
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
@@ -252,58 +279,25 @@ def run(
             datasets = {
                 name: Subset(
                     dataset,
-                    np.linspace(
-                        0, len(dataset) - 1, min(limit, len(dataset)), dtype=int
-                    ).tolist(),
+                    np.linspace(0, len(dataset) - 1, min(limit, len(dataset)), dtype=int).tolist(),
                 )
                 for name, dataset in datasets.items()
             }
 
-        streams = spec["randomization"]
-        random.seed(streams["initialization_seed"])
-        np.random.seed(streams["initialization_seed"])
-        torch.manual_seed(streams["initialization_seed"])
-        if device.type == "cuda":
-            torch.cuda.manual_seed_all(streams["initialization_seed"])
-        torch.use_deterministic_algorithms(True)
-        torch.backends.cudnn.benchmark = False
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cuda.matmul.allow_tf32 = False
-        torch.backends.cudnn.allow_tf32 = False
-
-        model = VanillaMLP(
-            input_dim=spec["input_shape"][0] * spec["input_shape"][1],
-            width=spec["width"],
-            depth=spec["depth"],
-            probabilities=spec["dropout_probabilities"],
-            dropout_seed=streams["dropout_seed"],
-            output_dim=spec["output_dim"],
-            sigma_w_sq=spec["initialization"]["sigma_w_sq"],
-            sigma_b_sq=spec["initialization"]["sigma_b_sq"],
-        ).to(device)
+        model, optimizer, shuffle = initialize_training(spec, device)
         config = spec["training"]
-        optimizer = torch.optim.Adam(
-            model.parameters(),
-            lr=config["learning_rate"],
-            eps=config["eps"],
-            weight_decay=config["weight_decay"],
-        )
-        shuffle = torch.Generator().manual_seed(streams["minibatch_seed"])
         runtime = {
             "torch": torch.__version__,
             "numpy": np.__version__,
             "python": platform.python_version(),
             "device_type": device.type,
             "cuda": torch.version.cuda,
-            "gpu": torch.cuda.get_device_name(device)
-            if device.type == "cuda"
-            else None,
-            "parameter_count": sum(
-                parameter.numel() for parameter in model.parameters()
-            ),
+            "gpu": torch.cuda.get_device_name(device) if device.type == "cuda" else None,
+            "parameter_count": sum(parameter.numel() for parameter in model.parameters()),
         }
         atomic_json(output / "runtime.json", {**runtime, "data": data_info})
 
+        # Restore optimizer and RNG state together so a resumed fit follows the same path.
         latest_path = output / "latest.pt"
         start_epoch, history, best = 0, [], None
         if latest_path.exists():
@@ -335,9 +329,7 @@ def run(
                 device,
                 config["clip_norm"],
             )
-            validation, _ = evaluate(
-                model, datasets["validation"], config["batch_size"], device
-            )
+            validation, _ = evaluate(model, datasets["validation"], config["batch_size"], device)
             record = {
                 "epoch": epoch + 1,
                 "learning_rate": learning_rate,
@@ -384,12 +376,11 @@ def run(
             if stop_after_epoch is not None and epoch + 1 >= stop_after_epoch:
                 return {"status": "checkpointed", "epoch": epoch + 1}
 
+        # Select by validation loss before evaluating the held-out test data.
         model.load_state_dict(best["model"])
         final = {}
         for split in ("train", "validation"):
-            final[split], _ = evaluate(
-                model, datasets[split], config["batch_size"], device
-            )
+            final[split], _ = evaluate(model, datasets[split], config["batch_size"], device)
         if include_test:
             final["test"], predictions = evaluate(
                 model,
@@ -398,9 +389,7 @@ def run(
                 device,
                 return_predictions=True,
             )
-            _save_test_predictions(
-                output / "test_predictions.npz", datasets["test"], predictions
-            )
+            _save_test_predictions(output / "test_predictions.npz", datasets["test"], predictions)
         atomic_checkpoint(
             output / "best.pt",
             {"fingerprint": identity, "epoch": best["epoch"], "model": best["model"]},
@@ -414,14 +403,10 @@ def run(
             "metrics": final,
             "data": data_info,
             "test_evaluated": include_test,
-            "activation_variance_at_best": activation_probe(
-                model, datasets["train"], device
-            ),
+            "activation_variance_at_best": activation_probe(model, datasets["train"], device),
             "epoch_seconds": [record["epoch_seconds"] for record in history],
             "peak_cuda_memory_bytes": (
-                torch.cuda.max_memory_allocated(device)
-                if device.type == "cuda"
-                else None
+                torch.cuda.max_memory_allocated(device) if device.type == "cuda" else None
             ),
         }
         atomic_json(result_path, result)
@@ -481,9 +466,7 @@ def make_plans(data_hash, code_hash):
 def load_result(root, index, spec):
     matches = list(root.glob(f"{index:03d}_{fingerprint(spec)[:12]}/result.json"))
     if len(matches) != 1:
-        raise ValueError(
-            f"Expected one result for LR trial {index}; found {len(matches)}"
-        )
+        raise ValueError(f"Expected one result for LR trial {index}; found {len(matches)}")
     result = json.loads(matches[0].read_text())
     if result["status"] != "complete" or result["fingerprint"] != fingerprint(spec):
         raise ValueError(f"Invalid completion record for LR trial {index}")
@@ -508,9 +491,7 @@ def select_rates(plan, results):
         for (candidate_cell, learning_rate), observations in values.items():
             if candidate_cell == cell:
                 if len(observations) != 3:
-                    raise ValueError(
-                        f"Cell {cell}, lr {learning_rate} lacks three seeds"
-                    )
+                    raise ValueError(f"Cell {cell}, lr {learning_rate} lacks three seeds")
                 candidates.append((statistics.mean(observations), learning_rate))
         selected[cell] = min(candidates)[1]
     return selected, values
@@ -541,8 +522,7 @@ def make_confirmation(plan, selected):
         "source_sha256": plan["source_sha256"],
         "test_policy": plan["test_policy"],
         "selected_learning_rates": {
-            f"depth{depth}_width{width}": rate
-            for (depth, width), rate in selected.items()
+            f"depth{depth}_width{width}": rate for (depth, width), rate in selected.items()
         },
         "selection_source": "complete validated lr_search plan",
         "trials": trials,
@@ -562,9 +542,7 @@ def make_smoke_data(root):
             x=rng.normal(size=(30, 40)).astype(np.float32),
             y=rng.integers(0, 3, size=(30, 1), dtype=np.int64),
         )
-        entries.append(
-            {"day": day, "stock": 1, "file": path.name, "sha256": digest(path)}
-        )
+        entries.append({"day": day, "stock": 1, "file": path.name, "sha256": digest(path)})
     atomic_json(
         root / "manifest.json",
         {
@@ -603,9 +581,7 @@ def main():
     execute.add_argument("--output", type=Path, required=True)
     execute.add_argument("--device", default="cuda", choices=("cpu", "cuda"))
     execute.add_argument("--threads", type=int, default=2)
-    smoke = commands.add_parser(
-        "smoke", help="run two epochs on a tiny synthetic CPU fixture"
-    )
+    smoke = commands.add_parser("smoke", help="run two epochs on a tiny synthetic CPU fixture")
     smoke.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
 

@@ -9,6 +9,18 @@ dropout vectors, historical seeds, configuration hashes, and data-split hashes.
 The separate [standalone vanilla-MLP instructions](VANILLA.md) cover the four
 financial architecture comparisons, which use a different data protocol.
 
+## Code map
+
+- `prepare.py` builds caches; `data.py` loads and verifies the frozen splits.
+- `models.py` defines the retained networks; `training.py` fits and evaluates them.
+- `run.py` connects the frozen protocol, data, model, and saved checkpoints.
+- `run_original.py` extends the historical CIFAR notebook comparisons.
+- `vanilla.py` and `run_vanilla.py` implement the separate financial MLP protocol.
+
+The runners remain separate because their data, checkpoint, and test policies differ.
+Historical hashes in the provenance files describe the archived sources. New runs
+record the current source hashes; use the original checkout to resume an old run.
+
 ## Install and check
 
 From the repository root, use Python 3.11:

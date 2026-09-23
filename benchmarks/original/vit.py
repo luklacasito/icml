@@ -28,11 +28,7 @@ class Attention(nn.Module):
 
     def forward(self, x):
         B, N, C = x.shape
-        qkv = (
-            self.qkv(x)
-            .reshape(B, N, 3, self.heads, C // self.heads)
-            .permute(2, 0, 3, 1, 4)
-        )
+        qkv = self.qkv(x).reshape(B, N, 3, self.heads, C // self.heads).permute(2, 0, 3, 1, 4)
         q, k, v = qkv.unbind(0)
         x = torch.nn.functional.scaled_dot_product_attention(q, k, v)
         return self.proj(x.transpose(1, 2).reshape(B, N, C))
@@ -85,9 +81,7 @@ class ViT(nn.Module):
         ablation_mode: 'both', 'attn_only', or 'mlp_only'
     """
 
-    def __init__(
-        self, depth=12, dim=384, heads=6, ratio=4.0, h_layers=None, ablation_mode="both"
-    ):
+    def __init__(self, depth=12, dim=384, heads=6, ratio=4.0, h_layers=None, ablation_mode="both"):
         super().__init__()
         self.patch = PatchEmbed(32, PATCH_SIZE, dim)
         n = self.patch.num_patches

@@ -3,6 +3,7 @@
 The original row selection, float32 statistics, and Tiny80 chunked float64
 statistics are retained separately. No data is distributed with this package.
 """
+
 from __future__ import annotations
 import hashlib
 import zipfile
@@ -18,9 +19,7 @@ BENCHMARK_SPLIT_PROTOCOL = "benchmark_stratified_split_default_rng_v1"
 # a single stock block.  v1 caches were built by concatenating consecutive
 # FI-2010 folds, which replayed earlier days into the validation and test
 # windows; the version is part of every split hash so the two cannot be mixed.
-ANCHORED_SPLIT_PROTOCOL = (
-    "benchmark_anchored_forward_temporal_split_single_fold_single_stock_v2"
-)
+ANCHORED_SPLIT_PROTOCOL = "benchmark_anchored_forward_temporal_split_single_fold_single_stock_v2"
 FI2010_DEFAULT_EMBARGO = 100
 
 BENCHMARK_NAMES: tuple[BenchmarkDatasetName, ...] = (
@@ -169,9 +168,7 @@ def _balanced_split(
     classes = np.unique(labels)
     total = train_size + validation_size + test_size
     if total % len(classes):
-        raise ValueError(
-            f"Total size {total} must divide evenly across {len(classes)} classes"
-        )
+        raise ValueError(f"Total size {total} must divide evenly across {len(classes)} classes")
     for size, label in (
         (train_size, "train"),
         (validation_size, "validation"),
@@ -189,9 +186,7 @@ def _balanced_split(
     for label in classes:
         candidates = np.flatnonzero(labels == label)
         if len(candidates) < per_class:
-            raise ValueError(
-                f"Class {label} has {len(candidates)} examples, needs {per_class}"
-            )
+            raise ValueError(f"Class {label} has {len(candidates)} examples, needs {per_class}")
         drawn = rng.choice(candidates, per_class, replace=False)
         train.append(drawn[:per_train])
         validation.append(drawn[per_train : per_train + per_validation])
@@ -321,9 +316,7 @@ def _load_compressed_npz_rows(
             raw = _read_exact(handle, (row_stop - row_start) * row_bytes)
             selected_stop = int(np.searchsorted(sorted_rows, row_stop, side="left"))
             if selected_stop > selected_cursor:
-                block = np.frombuffer(raw, dtype=dtype).reshape(
-                    row_stop - row_start, *shape[1:]
-                )
+                block = np.frombuffer(raw, dtype=dtype).reshape(row_stop - row_start, *shape[1:])
                 local_rows = sorted_rows[selected_cursor:selected_stop] - row_start
                 destinations = order[selected_cursor:selected_stop]
                 result[destinations] = block[local_rows]
@@ -333,9 +326,7 @@ def _load_compressed_npz_rows(
     return result
 
 
-def _standardize(
-    features: np.ndarray, train_indices: np.ndarray
-) -> tuple[np.ndarray, dict]:
+def _standardize(features: np.ndarray, train_indices: np.ndarray) -> tuple[np.ndarray, dict]:
     """Z-score using train statistics only, so no test information leaks."""
 
     flat = features.reshape(len(features), -1)
@@ -347,9 +338,9 @@ def _standardize(
         "mean_sha256": hashlib.sha256(
             np.ascontiguousarray(mean, dtype="<f8").tobytes()
         ).hexdigest()[:20],
-        "std_sha256": hashlib.sha256(
-            np.ascontiguousarray(std, dtype="<f8").tobytes()
-        ).hexdigest()[:20],
+        "std_sha256": hashlib.sha256(np.ascontiguousarray(std, dtype="<f8").tobytes()).hexdigest()[
+            :20
+        ],
     }
     return standardized.astype(np.float32), stats
 
@@ -368,8 +359,12 @@ def _standardize_inplace_v15(
     flat -= mean
     flat /= std
     stats = {
-        "mean_sha256": hashlib.sha256(np.ascontiguousarray(mean, dtype="<f8").tobytes()).hexdigest()[:20],
-        "std_sha256": hashlib.sha256(np.ascontiguousarray(std, dtype="<f8").tobytes()).hexdigest()[:20],
+        "mean_sha256": hashlib.sha256(
+            np.ascontiguousarray(mean, dtype="<f8").tobytes()
+        ).hexdigest()[:20],
+        "std_sha256": hashlib.sha256(np.ascontiguousarray(std, dtype="<f8").tobytes()).hexdigest()[
+            :20
+        ],
     }
     return features, stats
 
@@ -436,9 +431,9 @@ def _standardize_inplace(
         "mean_sha256": hashlib.sha256(
             np.ascontiguousarray(mean, dtype="<f8").tobytes()
         ).hexdigest()[:20],
-        "std_sha256": hashlib.sha256(
-            np.ascontiguousarray(std, dtype="<f8").tobytes()
-        ).hexdigest()[:20],
+        "std_sha256": hashlib.sha256(np.ascontiguousarray(std, dtype="<f8").tobytes()).hexdigest()[
+            :20
+        ],
     }
     return features, stats
 
@@ -465,9 +460,7 @@ def load_benchmark_bundle(
         raise ValueError(f"Unknown Tiny ImageNet standardization: {tiny_standardization}")
     spec = BENCHMARK_SPECS[name]
     train_size = spec.train_size if train_size is None else train_size
-    validation_size = (
-        spec.validation_size if validation_size is None else validation_size
-    )
+    validation_size = spec.validation_size if validation_size is None else validation_size
     test_size = spec.test_size if test_size is None else test_size
 
     path = cache_path(name, root)
@@ -517,9 +510,7 @@ def load_benchmark_bundle(
     )
 
     if name == "tiny_imagenet":
-        selected_global = np.concatenate(
-            (train_indices, validation_indices, test_indices)
-        )
+        selected_global = np.concatenate((train_indices, validation_indices, test_indices))
         features = _load_compressed_npz_rows(path, key, selected_global)
         labels = labels[selected_global]
         train_stop = len(train_indices)
@@ -528,8 +519,11 @@ def load_benchmark_bundle(
         validation_local = np.arange(train_stop, validation_stop)
         test_local = np.arange(validation_stop, len(selected_global))
         if not discrete:
-            standardize = (_standardize_inplace_v15 if tiny_standardization == "float32_v15"
-                           else _standardize_inplace)
+            standardize = (
+                _standardize_inplace_v15
+                if tiny_standardization == "float32_v15"
+                else _standardize_inplace
+            )
             features, _ = standardize(features, train_local)
         tensor_indices = (train_local, validation_local, test_local)
     else:
@@ -542,16 +536,12 @@ def load_benchmark_bundle(
     tensor_train, tensor_validation, tensor_test = tensor_indices
     return DatasetBundle(
         train=_tensor_dataset(features, labels, tensor_train, discrete=discrete),
-        validation=_tensor_dataset(
-            features, labels, tensor_validation, discrete=discrete
-        ),
+        validation=_tensor_dataset(features, labels, tensor_validation, discrete=discrete),
         test=_tensor_dataset(features, labels, tensor_test, discrete=discrete),
         split_hash=split_hash,
         dataset=name,
         split_protocol=split_protocol,
         test_subset_hash=_indices_hash(test_indices),
         test_subset_protocol=split_protocol,
-        test_subset_seed=None
-        if split_protocol == ANCHORED_SPLIT_PROTOCOL
-        else split_seed,
+        test_subset_seed=None if split_protocol == ANCHORED_SPLIT_PROTOCOL else split_seed,
     )

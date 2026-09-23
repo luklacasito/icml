@@ -92,9 +92,7 @@ def accuracy_gain(uniform, frontloaded):
 
 
 def default_data_path():
-    candidate = (
-        Path(__file__).resolve().parents[1] / "results/confidence_seed_metrics.json"
-    )
+    candidate = Path(__file__).resolve().parents[1] / "results/confidence_seed_metrics.json"
     if candidate.is_file():
         return candidate
     raise FileNotFoundError("Pass --data pointing to confidence_seed_metrics.json")
@@ -123,23 +121,13 @@ def summarize(evidence):
                     summary["metrics"][name] = None
                     continue
                 endpoint_seeds = pair.get("seeds", seeds)
-                if (
-                    len(set(endpoint_seeds)) != len(endpoint_seeds)
-                    or not set(endpoint_seeds).issubset(seeds)
-                ):
+                if len(set(endpoint_seeds)) != len(endpoint_seeds) or not set(
+                    endpoint_seeds
+                ).issubset(seeds):
                     raise ValueError("Endpoint seeds must be a unique subset of row seeds")
-                if any(
-                    len(pair[arm]) != len(endpoint_seeds)
-                    for arm in ("uniform", "frontloaded")
-                ):
-                    raise ValueError(
-                        "Endpoint vectors must match their paired seed identifiers"
-                    )
-                function = (
-                    accuracy_gain
-                    if name.endswith("accuracy_percent")
-                    else fieller_reduction
-                )
+                if any(len(pair[arm]) != len(endpoint_seeds) for arm in ("uniform", "frontloaded")):
+                    raise ValueError("Endpoint vectors must match their paired seed identifiers")
+                function = accuracy_gain if name.endswith("accuracy_percent") else fieller_reduction
                 metric = function(pair["uniform"], pair["frontloaded"])
                 metric.update(n=len(endpoint_seeds), seeds=list(endpoint_seeds))
                 for arm in ("uniform", "frontloaded"):
@@ -157,12 +145,8 @@ def _cell(metric):
     if metric is None:
         return "--"
     interval = metric["ci95"]
-    bounds = (
-        "unbounded" if interval is None else f"$[{interval[0]:.2f}, {interval[1]:.2f}]$"
-    )
-    return (
-        rf"\shortstack{{${metric['estimate']:+.2f}$\\[-1pt]{{\scriptsize {bounds}}}}}"
-    )
+    bounds = "unbounded" if interval is None else f"$[{interval[0]:.2f}, {interval[1]:.2f}]$"
+    return rf"\shortstack{{${metric['estimate']:+.2f}$\\[-1pt]{{\scriptsize {bounds}}}}}"
 
 
 def _dataset_label(row):
@@ -173,8 +157,7 @@ def _dataset_label(row):
 def _sample_sizes(row, endpoints):
     """Use the observations available for the displayed endpoints."""
     counts = [
-        str(row["metrics"][name]["n"]) if row["metrics"][name] else "--"
-        for name in endpoints
+        str(row["metrics"][name]["n"]) if row["metrics"][name] else "--" for name in endpoints
     ]
     return counts[0] if len(set(counts)) == 1 else "/".join(counts)
 
@@ -256,9 +239,7 @@ def render_frontloaded_table(comparisons):
         if index and comparisons[index - 1]["dataset"] != row["dataset"]:
             lines.append(r"\addlinespace[3pt]")
         dataset = _dataset_label(row)
-        checkpoint_n = _sample_sizes(
-            row, ("checkpoint_loss", "checkpoint_accuracy_percent")
-        )
+        checkpoint_n = _sample_sizes(row, ("checkpoint_loss", "checkpoint_accuracy_percent"))
         final_n = _sample_sizes(row, ("final_loss", "final_accuracy_percent"))
         cells = [
             rf"\shortstack[l]{{{_tex(dataset)} ({row['train_size']:,})\\{_tex(row['model'])}}}",
@@ -310,9 +291,7 @@ def write_outputs(output_dir, evidence):
                         if endpoint.endswith("accuracy_percent")
                         else "percent reduction",
                         "uniform_mean": metric["uniform_mean"] if metric else None,
-                        "frontloaded_mean": metric["frontloaded_mean"]
-                        if metric
-                        else None,
+                        "frontloaded_mean": metric["frontloaded_mean"] if metric else None,
                         "estimate": metric["estimate"] if metric else None,
                         "ci95_lower": interval[0] if interval else None,
                         "ci95_upper": interval[1] if interval else None,
@@ -320,9 +299,7 @@ def write_outputs(output_dir, evidence):
                     }
                 )
     with (output_dir / "confidence_intervals.csv").open("w", newline="") as stream:
-        writer = csv.DictWriter(
-            stream, fieldnames=list(records[0]), lineterminator="\n"
-        )
+        writer = csv.DictWriter(stream, fieldnames=list(records[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(records)
     markdown = ["# Paired-seed confidence intervals", "", evidence["inference"], ""]
@@ -398,9 +375,7 @@ def write_outputs(output_dir, evidence):
         "[Full-precision CSV](confidence_intervals.csv) · [Structured results](confidence_intervals.json)",
         "",
     ]
-    (output_dir / "confidence_intervals.md").write_text(
-        "\n".join(markdown).rstrip() + "\n"
-    )
+    (output_dir / "confidence_intervals.md").write_text("\n".join(markdown).rstrip() + "\n")
 
 
 def main():

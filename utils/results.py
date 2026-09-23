@@ -57,9 +57,7 @@ def save_npz_result(path: str | Path, data: Any) -> None:
     """Store nested result dictionaries as JSON metadata plus NPZ arrays."""
 
     arrays: dict[str, np.ndarray] = {}
-    metadata = json.dumps(
-        _pack_for_npz(data, arrays), separators=(",", ":"), allow_nan=False
-    )
+    metadata = json.dumps(_pack_for_npz(data, arrays), separators=(",", ":"), allow_nan=False)
     payload = {
         "__metadata__": np.frombuffer(metadata.encode("utf-8"), dtype=np.uint8),
         **arrays,

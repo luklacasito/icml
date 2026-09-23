@@ -93,11 +93,7 @@ def autocast_context():
 
 def iterate_batches(x, y, batch_size, shuffle=True):
     n = x.shape[0]
-    idx = (
-        torch.randperm(n, device=x.device)
-        if shuffle
-        else torch.arange(n, device=x.device)
-    )
+    idx = torch.randperm(n, device=x.device) if shuffle else torch.arange(n, device=x.device)
     for i in range(0, n, batch_size):
         yield x[idx[i : i + batch_size]], y[idx[i : i + batch_size]]
 

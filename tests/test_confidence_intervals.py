@@ -145,12 +145,8 @@ def test_endpoint_subset_uses_its_own_pairs_and_degrees_of_freedom(
         [105, 106],  # Five outcomes cannot describe two identified pairs.
     ],
 )
-def test_invalid_endpoint_seed_subsets_are_rejected(
-    partial_endpoint_evidence, endpoint_seeds
-):
-    partial_endpoint_evidence["benchmarks"][0]["metrics"]["final_loss"]["seeds"] = (
-        endpoint_seeds
-    )
+def test_invalid_endpoint_seed_subsets_are_rejected(partial_endpoint_evidence, endpoint_seeds):
+    partial_endpoint_evidence["benchmarks"][0]["metrics"]["final_loss"]["seeds"] = endpoint_seeds
     with pytest.raises(ValueError, match="[Ss]eed"):
         summarize(partial_endpoint_evidence)
 
@@ -167,7 +163,16 @@ def test_exports_use_endpoint_counts_and_identify_extended_jannis_by_recipe(
 
     with (tmp_path / "confidence_intervals.csv").open(newline="") as stream:
         records = list(csv.DictReader(stream))
-    assert [record["n"] for record in records] == ["10", "10", "5", "5", "10", "10", "", ""]
+    assert [record["n"] for record in records] == [
+        "10",
+        "10",
+        "5",
+        "5",
+        "10",
+        "10",
+        "",
+        "",
+    ]
 
     markdown = (tmp_path / "confidence_intervals.md").read_text()
     checkpoints, final = markdown.split("## Recorded final-epoch test results")
@@ -211,6 +216,4 @@ def test_standalone_command_reproduces_checked_in_results_and_tables(tmp_path):
         name = f"confidence_intervals.{extension}"
         assert (tmp_path / name).read_bytes() == (ROOT / "results" / name).read_bytes()
     for name in ("original_results_table.tex", "frontloaded_table.tex"):
-        assert (tmp_path / name).read_bytes() == (
-            ROOT / "manuscript/sections" / name
-        ).read_bytes()
+        assert (tmp_path / name).read_bytes() == (ROOT / "manuscript/sections" / name).read_bytes()

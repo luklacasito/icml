@@ -3,6 +3,7 @@
 Extracted without changes to the optimization loop; both test endpoints are
 reported only after training. See README.md for the execution provenance.
 """
+
 from __future__ import annotations
 import contextlib
 import math
@@ -15,6 +16,7 @@ from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
 DatasetName = Literal["fi2010", "tiny_imagenet", "speech_commands", "openml_jannis"]
+
 
 @dataclass(frozen=True)
 class DatasetBundle:
@@ -78,9 +80,7 @@ def multiplicative_cosine_factor(
     floor_ratio: float,
 ) -> float:
     progress = min(max(epoch, 0), epochs) / epochs
-    return floor_ratio + (1.0 - floor_ratio) * 0.5 * (
-        1.0 + math.cos(math.pi * progress)
-    )
+    return floor_ratio + (1.0 - floor_ratio) * 0.5 * (1.0 + math.cos(math.pi * progress))
 
 
 def make_multiplicative_cosine_scheduler(
@@ -120,9 +120,7 @@ def _loader(dataset: TensorDataset, batch_size: int, *, shuffle: bool, seed: int
 
 
 @torch.no_grad()
-def evaluate(
-    model: nn.Module, loader: DataLoader, device: torch.device
-) -> tuple[float, float]:
+def evaluate(model: nn.Module, loader: DataLoader, device: torch.device) -> tuple[float, float]:
     model.eval()
     loss_sum = 0.0
     correct = 0
@@ -152,14 +150,10 @@ def train_model(
     # Model initialization happens before this function.  The optional
     # stochastic seed gives dropout an independent, deterministic stream while
     # the explicit loader generator continues to pair minibatch order by seed.
-    seed_everything(
-        config.seed if config.stochastic_seed is None else config.stochastic_seed
-    )
+    seed_everything(config.seed if config.stochastic_seed is None else config.stochastic_seed)
     device = _resolve_device(config.device)
     model.to(device)
-    train_loader = _loader(
-        bundle.train, config.batch_size, shuffle=True, seed=config.seed
-    )
+    train_loader = _loader(bundle.train, config.batch_size, shuffle=True, seed=config.seed)
     validation_loader = _loader(
         bundle.validation, config.batch_size, shuffle=False, seed=config.seed
     )
@@ -214,9 +208,7 @@ def train_model(
                 # Unscale before clipping so the configured norm has the same
                 # meaning under CUDA AMP as in the original ViT recipe.
                 scaler.unscale_(optimizer)
-                torch.nn.utils.clip_grad_norm_(
-                    model.parameters(), config.gradient_clip_norm
-                )
+                torch.nn.utils.clip_grad_norm_(model.parameters(), config.gradient_clip_norm)
             scaler.step(optimizer)
             scaler.update()
             optimizer_steps += 1
@@ -224,9 +216,7 @@ def train_model(
             correct += int((logits.detach().argmax(dim=1) == targets).sum())
             count += targets.numel()
 
-        validation_loss, validation_accuracy = evaluate(
-            model, validation_loader, device
-        )
+        validation_loss, validation_accuracy = evaluate(model, validation_loader, device)
         if config.restore_best_validation and validation_loss < best_validation_loss:
             # Strict `<` keeps the first minimum, matching `np.argmin` on the
             # recorded validation curve, so `selected_epoch` and the epoch the
@@ -246,9 +236,7 @@ def train_model(
             epochs=max(config.epochs - 1, 1),
             floor_ratio=config.lr_floor_ratio,
         )
-        history["first_optimizer_group_lr"].append(
-            float(optimizer.param_groups[0]["lr"])
-        )
+        history["first_optimizer_group_lr"].append(float(optimizer.param_groups[0]["lr"]))
         history["global_learning_rate"].append(config.learning_rate * multiplier)
         history["lr_multiplier"].append(multiplier)
         history["optimizer_group_lrs"].append(
@@ -260,10 +248,7 @@ def train_model(
     # Snapshot before restoring the selected checkpoint. Copying tensors does
     # not consume RNG or change the optimization trajectory.
     final_state = (
-        {
-            name: tensor.detach().to("cpu", copy=True)
-            for name, tensor in model.state_dict().items()
-        }
+        {name: tensor.detach().to("cpu", copy=True) for name, tensor in model.state_dict().items()}
         if return_final_state
         else None
     )
@@ -272,9 +257,7 @@ def train_model(
         # The model still holds the fixed-final-epoch weights.  Reading the test
         # set here is reporting only: training and checkpoint selection have
         # already finished, and neither endpoint feeds a decision.
-        final_epoch_test_loss, final_epoch_test_accuracy = evaluate(
-            model, test_loader, device
-        )
+        final_epoch_test_loss, final_epoch_test_accuracy = evaluate(model, test_loader, device)
 
     if config.restore_best_validation:
         test_epoch = best_epoch

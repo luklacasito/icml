@@ -47,15 +47,11 @@ def plot_curves(results, title, output, shared_baseline=False):
         for metric, _, _ in METRICS:
             values = np.asarray(history[metric], dtype=float)
             if values.ndim != 2 or values.shape[0] < 2 or values.shape[1] < 1:
-                raise ValueError(
-                    f"{title}/{schedule}/{metric}: expected seeds × epochs"
-                )
+                raise ValueError(f"{title}/{schedule}/{metric}: expected seeds × epochs")
             if not np.isfinite(values).all():
                 raise ValueError(f"{title}/{schedule}/{metric}: non-finite curve")
             if shape is not None and values.shape != shape:
-                raise ValueError(
-                    f"{title}: schedules and metrics have different shapes"
-                )
+                raise ValueError(f"{title}: schedules and metrics have different shapes")
             shape = values.shape
             arrays[schedule][metric] = values
     if shape is None:

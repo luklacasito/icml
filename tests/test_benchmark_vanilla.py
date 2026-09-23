@@ -60,13 +60,9 @@ class ScheduleAndModelTests(unittest.TestCase):
         }
         for depth, width in ARCHITECTURES:
             model = VanillaMLP(128 * 40, width, depth, [0.1] * depth, 42)
-            self.assertEqual(
-                sum(p.numel() for p in model.parameters()), counts[depth, width]
-            )
+            self.assertEqual(sum(p.numel() for p in model.parameters()), counts[depth, width])
             self.assertEqual(model(torch.randn(2, 128, 40)).shape, (2, 3))
-            self.assertFalse(
-                any("Norm" in type(module).__name__ for module in model.modules())
-            )
+            self.assertFalse(any("Norm" in type(module).__name__ for module in model.modules()))
 
     def test_dropout_statistics_eval_and_resume(self):
         module = StageDropout(0.2, 42)
@@ -88,9 +84,7 @@ class ScheduleAndModelTests(unittest.TestCase):
         torch.manual_seed(1)
         model = VanillaMLP(5120, 512, 6, [0.0] * 6, 9)
         first = model.hidden[0]
-        self.assertAlmostEqual(
-            float(first.weight.detach().var()) * 5120, 1.98, delta=0.03
-        )
+        self.assertAlmostEqual(float(first.weight.detach().var()) * 5120, 1.98, delta=0.03)
         self.assertAlmostEqual(float(first.bias.detach().var()), 0.02, delta=0.004)
 
 
@@ -99,9 +93,7 @@ class ProtocolAndDataTests(unittest.TestCase):
         plans = make_plans("data", "code")
         self.assertEqual(len(plans["canary"]["trials"]), 4)
         self.assertEqual(len(plans["lr_search"]["trials"]), 48)
-        self.assertTrue(
-            all(not item["data"]["test_days"] for item in plans["lr_search"]["trials"])
-        )
+        self.assertTrue(all(not item["data"]["test_days"] for item in plans["lr_search"]["trials"]))
         early = trial("confirmation", 6, 256, "linear_early", 1e-4, 100, 2, "d", "s")
         late = trial("confirmation", 6, 256, "linear_late", 1e-4, 100, 2, "d", "s")
         uniform = trial("confirmation", 6, 256, "uniform", 1e-4, 100, 2, "d", "s")
@@ -141,9 +133,7 @@ class ProtocolAndDataTests(unittest.TestCase):
         labels = np.array([0, 0, 1])
         probabilities = np.array([[0.8, 0.1, 0.1], [0.6, 0.3, 0.1], [0.7, 0.2, 0.1]])
         result = metrics(labels, probabilities)
-        self.assertAlmostEqual(
-            result["logloss"], -(np.log(0.8) + np.log(0.6) + np.log(0.2)) / 3
-        )
+        self.assertAlmostEqual(result["logloss"], -(np.log(0.8) + np.log(0.6) + np.log(0.2)) / 3)
         self.assertAlmostEqual(result["macro_f1"], 0.8 / 3)
         self.assertEqual(result["confusion"], [[2, 0, 0], [1, 0, 0], [0, 0, 0]])
 
@@ -157,9 +147,7 @@ class ResumeTest(unittest.TestCase):
             x = rng.normal(size=(30, 40)).astype(np.float32)
             y = rng.integers(0, 3, size=(30, 1), dtype=np.int64)
             np.savez(path, x=x, y=y)
-            entries.append(
-                {"day": day, "stock": 1, "file": path.name, "sha256": digest(path)}
-            )
+            entries.append({"day": day, "stock": 1, "file": path.name, "sha256": digest(path)})
         manifest = {
             "schema": "fi2010_segments_v1",
             "tail_purge_representations": 10,
@@ -223,12 +211,8 @@ class ReproductionTests(unittest.TestCase):
             self.assertEqual(set(selected.values()), {3e-5})
             confirmation = make_confirmation(plan, selected)
             self.assertEqual(len(confirmation["trials"]), 140)
-            self.assertEqual(
-                set(s["seed"] for s in confirmation["trials"]), set(range(100, 105))
-            )
-            self.assertTrue(
-                all(s["training"]["epochs"] == 100 for s in confirmation["trials"])
-            )
+            self.assertEqual(set(s["seed"] for s in confirmation["trials"]), set(range(100, 105)))
+            self.assertTrue(all(s["training"]["epochs"] == 100 for s in confirmation["trials"]))
             # A completed run that touched test is ineligible for validation selection.
             first = plan["trials"][0]
             path = root / f"000_{fingerprint(first)[:12]}" / "result.json"
@@ -243,9 +227,7 @@ class ReproductionTests(unittest.TestCase):
             root = Path(directory)
             make_smoke_data(root)
             datasets, info = load_data(root, include_test=True, sequence=8)
-            self.assertEqual(
-                info["counts"], {"train": 13, "validation": 13, "test": 39}
-            )
+            self.assertEqual(info["counts"], {"train": 13, "validation": 13, "test": 39})
             segment = datasets["train"].segments[0]
             expected_mean = segment["x"].numpy()[:-10].mean(0, dtype=np.float64)
             np.testing.assert_array_equal(info["normalizer_mean"], expected_mean)
@@ -309,9 +291,7 @@ class ReproductionTests(unittest.TestCase):
             best = min(history, key=lambda epoch: epoch["validation"]["logloss"])
             self.assertEqual(result["best_epoch"], best["epoch"])
             self.assertAlmostEqual(history[-1]["learning_rate"], 1e-6)
-            with np.load(
-                output / "test_predictions.npz", allow_pickle=False
-            ) as predictions:
+            with np.load(output / "test_predictions.npz", allow_pickle=False) as predictions:
                 self.assertEqual(predictions["probabilities"].shape, (39, 3))
                 self.assertEqual(
                     predictions["day_stock_window_start_label_endpoint"].shape, (39, 4)

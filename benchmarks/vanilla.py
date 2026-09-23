@@ -76,9 +76,7 @@ def pair_family(profile):
     return profile
 
 
-def trial(
-    stage, depth, width, profile, learning_rate, seed, epochs, data_hash, source_hash
-):
+def trial(stage, depth, width, profile, learning_rate, seed, epochs, data_hash, source_hash):
     cell = {"depth": depth, "width": width, "seed": seed}
     return {
         "schema": "fi2010_vanilla_mlp_v1",
@@ -167,9 +165,7 @@ class Windows(Dataset):
         for index in indexes:
             segment_index, start = self.locate(int(index))
             segment = self.segments[segment_index]
-            rows.append(
-                (segment["day"], segment["stock"], start, start + self.sequence - 1)
-            )
+            rows.append((segment["day"], segment["stock"], start, start + self.sequence - 1))
         return np.asarray(rows, dtype=np.int64)
 
 
@@ -199,16 +195,11 @@ def load_data(root, include_test=False, sequence=128):
                     }
                 )
     tail = manifest["tail_purge_representations"]
-    training_rows = np.concatenate(
-        [segment["x"].numpy()[:-tail] for segment in segments["train"]]
-    )
+    training_rows = np.concatenate([segment["x"].numpy()[:-tail] for segment in segments["train"]])
     mean = training_rows.mean(axis=0, dtype=np.float64)
     std = training_rows.std(axis=0, dtype=np.float64)
     std = np.where(std < 1e-8, 1.0, std)
-    datasets = {
-        name: Windows(value, mean, std, sequence, tail)
-        for name, value in segments.items()
-    }
+    datasets = {name: Windows(value, mean, std, sequence, tail) for name, value in segments.items()}
     labels = np.concatenate(
         [segment["y"].numpy()[sequence - 1 : -tail, 0] for segment in segments["train"]]
     )
@@ -246,9 +237,7 @@ class StageDropout(nn.Module):
         if not self.training or self.probability == 0:
             return inputs
         if self.generator is None:
-            self.generator = torch.Generator(device=inputs.device).manual_seed(
-                self.seed
-            )
+            self.generator = torch.Generator(device=inputs.device).manual_seed(self.seed)
             if self.pending_state is not None:
                 self.generator.set_state(self.pending_state)
                 self.pending_state = None
@@ -259,11 +248,7 @@ class StageDropout(nn.Module):
         return inputs * keep.to(inputs.dtype) / (1 - self.probability)
 
     def rng_state(self):
-        return (
-            self.generator.get_state()
-            if self.generator is not None
-            else self.pending_state
-        )
+        return self.generator.get_state() if self.generator is not None else self.pending_state
 
     def restore_rng(self, state):
         self.generator, self.pending_state = None, state
@@ -287,12 +272,10 @@ class VanillaMLP(nn.Module):
         if len(probabilities) != depth:
             raise ValueError("One dropout probability is required per hidden layer")
         self.hidden = nn.ModuleList(
-            [nn.Linear(input_dim, width)]
-            + [nn.Linear(width, width) for _ in range(depth - 1)]
+            [nn.Linear(input_dim, width)] + [nn.Linear(width, width) for _ in range(depth - 1)]
         )
         self.dropouts = nn.ModuleList(
-            StageDropout(value, dropout_seed + index)
-            for index, value in enumerate(probabilities)
+            StageDropout(value, dropout_seed + index) for index, value in enumerate(probabilities)
         )
         self.activation = nn.ReLU()
         self.readout = nn.Linear(width, output_dim)
@@ -319,9 +302,7 @@ def read_release(path):
         with archive.open(names[0]) as f:
             for i, line in enumerate(f):
                 if i < 40 or 144 <= i < 149:
-                    rows.append(
-                        np.fromstring(line.decode("ascii"), sep=" ", dtype=np.float64)
-                    )
+                    rows.append(np.fromstring(line.decode("ascii"), sep=" ", dtype=np.float64))
         assert i == 148 and len(rows) == 45
         data = np.stack(rows).T
     assert np.isfinite(data).all()
@@ -364,9 +345,7 @@ def prepare_segments(raw, output):
                 "rows": len(data),
                 "stock_cuts": cuts,
                 "jump_margin": margin,
-                "ask_price_ranges": [
-                    [float(b[:, 0].min()), float(b[:, 0].max())] for b in blocks
-                ],
+                "ask_price_ranges": [[float(b[:, 0].min()), float(b[:, 0].max())] for b in blocks],
             }
         )
     cumulative_path = raw / "cumulative06.zip"
@@ -374,27 +353,19 @@ def prepare_segments(raw, output):
     assert member == "Train_Dst_NoAuction_DecPre_CF_6.txt"
     # Daily cuts determine expected cumulative offsets. Exact row equality
     # below independently verifies them, including gaps between trading days.
-    cuts = [0] + np.cumsum(
-        [sum(len(days[d][s]) for d in range(1, 7)) for s in range(5)]
-    ).tolist()
+    cuts = [0] + np.cumsum([sum(len(days[d][s]) for d in range(1, 7)) for s in range(5)]).tolist()
     assert cuts[-1] == len(cumulative)
     comparisons = []
     for stock, (a, b) in enumerate(zip(cuts, cuts[1:])):
         expected = np.concatenate([days[day][stock] for day in range(1, 7)])
         observed = cumulative[a:b]
         assert expected.shape == observed.shape, (stock, expected.shape, observed.shape)
-        assert np.array_equal(expected, observed), (
-            f"Cumulative/day mismatch stock {stock + 1}"
-        )
-        comparisons.append(
-            {"stock_ordinal": stock + 1, "rows": len(expected), "exact_equal": True}
-        )
+        assert np.array_equal(expected, observed), f"Cumulative/day mismatch stock {stock + 1}"
+        comparisons.append({"stock_ordinal": stock + 1, "rows": len(expected), "exact_equal": True})
     # Test/validation days use the same ordinal order. Require prices to remain
     # compatible with each stock's training-period range, even if two ranges overlap.
     for stock in range(5):
-        reference = np.median(
-            np.concatenate([days[d][stock][:, 0] for d in range(1, 7)])
-        )
+        reference = np.median(np.concatenate([days[d][stock][:, 0] for d in range(1, 7)]))
         for day in range(7, 11):
             ratio = float(np.median(days[day][stock][:, 0]) / reference)
             assert 0.8 < ratio < 1.2, (day, stock, ratio)

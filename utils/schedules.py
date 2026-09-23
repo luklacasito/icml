@@ -48,9 +48,7 @@ def get_dropout_schedule(
         if h_bar == 0:
             rates = [0.0] * depth
         else:
-            effective_h_max = (
-                h_max if h_max is not None and h_max >= h_bar else 2.0 * h_bar
-            )
+            effective_h_max = h_max if h_max is not None and h_max >= h_bar else 2.0 * h_bar
             n_drop = max(1, math.ceil(h_bar / effective_h_max * depth))
             h_adj = h_bar * depth / n_drop
             rates = [0.0] * (depth - n_drop) + [h_adj] * n_drop

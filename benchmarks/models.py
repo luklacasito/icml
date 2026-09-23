@@ -3,6 +3,7 @@
 Module/parameter order and initialization are preserved; only unused muP
 construction has been removed. See README.md for provenance and limitations.
 """
+
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
@@ -11,6 +12,7 @@ from torch import nn
 
 ActivationName = Literal["relu", "gelu"]
 Parameterization = Literal["sp"]
+
 
 @dataclass(frozen=True)
 class MLPConfig:
@@ -63,9 +65,7 @@ class CriticalMLP(nn.Module):
         self.config = config
         self.parameterization = parameterization
         hidden: list[nn.Linear] = [nn.Linear(config.input_dim, config.width)]
-        hidden.extend(
-            nn.Linear(config.width, config.width) for _ in range(config.depth - 1)
-        )
+        hidden.extend(nn.Linear(config.width, config.width) for _ in range(config.depth - 1))
         self.hidden = nn.ModuleList(hidden)
         self.dropouts = nn.ModuleList(nn.Dropout(float(p)) for p in dropout_layers)
         self.activation = nn.ReLU() if config.activation == "relu" else nn.GELU()
@@ -132,9 +132,7 @@ class _TransformerMLP(nn.Module):
 
 
 class _TransformerBlock(nn.Module):
-    def __init__(
-        self, dimension: int, heads: int, ratio: float, dropout: float
-    ) -> None:
+    def __init__(self, dimension: int, heads: int, ratio: float, dropout: float) -> None:
         super().__init__()
         self.first_norm = nn.LayerNorm(dimension)
         self.second_norm = nn.LayerNorm(dimension)
@@ -165,9 +163,7 @@ class TinyViT(nn.Module):
             dimension, patch_size, in_channels=in_channels, image_size=image_size
         )
         self.class_token = nn.Parameter(torch.zeros(1, 1, dimension))
-        self.position = nn.Parameter(
-            torch.zeros(1, self.patch.num_patches + 1, dimension)
-        )
+        self.position = nn.Parameter(torch.zeros(1, self.patch.num_patches + 1, dimension))
         self.blocks = nn.ModuleList(
             _TransformerBlock(dimension, heads, mlp_ratio, float(dropout))
             for dropout in dropout_layers
@@ -266,9 +262,7 @@ class SequenceTransformer(nn.Module):
                 x = x.unsqueeze(-1)
             x = self.embed(x)
         if x.shape[1] != self.sequence_length:
-            raise ValueError(
-                f"Expected sequence length {self.sequence_length}, got {x.shape[1]}"
-            )
+            raise ValueError(f"Expected sequence length {self.sequence_length}, got {x.shape[1]}")
         class_token = self.class_token.expand(x.shape[0], -1, -1)
         x = torch.cat([class_token, x], dim=1) + self.position
         for block in self.blocks:
@@ -303,6 +297,7 @@ def _initialize_sp(model: CriticalMLP) -> None:
 
 def build_model(spec: dict, dropout_layers: list[float]) -> nn.Module:
     from .data import BENCHMARK_SPECS
+
     data = BENCHMARK_SPECS[spec["dataset"]]
     if len(dropout_layers) != spec["depth"]:
         raise ValueError("Dropout profile length differs from depth")
@@ -310,21 +305,35 @@ def build_model(spec: dict, dropout_layers: list[float]) -> nn.Module:
         raise ValueError("Dropout probabilities must lie in [0, 1)")
     if spec["model_kind"] == "mlp":
         config = MLPConfig(
-            input_dim=data.mlp_input_dim, output_dim=data.classes,
-            **{key: spec[key] for key in (
-                "width", "depth", "activation", "sigma_w_sq", "sigma_b_sq"
-            )},
+            input_dim=data.mlp_input_dim,
+            output_dim=data.classes,
+            **{
+                key: spec[key]
+                for key in ("width", "depth", "activation", "sigma_w_sq", "sigma_b_sq")
+            },
         )
         model = CriticalMLP(config, dropout_layers)
         _initialize_sp(model)
         return model
     if spec["model_kind"] != "transformer":
         raise ValueError("Unknown model kind")
-    common = dict(dimension=spec["width"], heads=spec["heads"],
-                  mlp_ratio=spec["mlp_ratio"], output_dim=data.classes)
+    common = dict(
+        dimension=spec["width"],
+        heads=spec["heads"],
+        mlp_ratio=spec["mlp_ratio"],
+        output_dim=data.classes,
+    )
     if data.image_channels is not None:
-        return TinyViT(dropout_layers, patch_size=data.patch_size,
-                       in_channels=data.image_channels, image_size=data.image_size,
-                       **common)
-    return SequenceTransformer(dropout_layers, sequence_length=data.sequence_length,
-                               input_features=data.input_features, **common)
+        return TinyViT(
+            dropout_layers,
+            patch_size=data.patch_size,
+            in_channels=data.image_channels,
+            image_size=data.image_size,
+            **common,
+        )
+    return SequenceTransformer(
+        dropout_layers,
+        sequence_length=data.sequence_length,
+        input_features=data.input_features,
+        **common,
+    )

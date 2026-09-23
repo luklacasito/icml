@@ -27,11 +27,17 @@ intervals. The original [camera-ready version is on arXiv](https://arxiv.org/pdf
 
 ## Finding things
 
-The [paper](paper.pdf) is at the top level. Its [source](manuscript/) is split by
-section, with the experimental details and learning curves in the appendices.
-[Saved results](results/) let you inspect the comparisons without training
-anything; [scripts](scripts/) reproduce the plots and confidence intervals,
-and [utils](utils/) holds the shared schedules, training loops, and loaders.
+| Path | Purpose |
+|---|---|
+| [paper.pdf](paper.pdf), [manuscript/](manuscript/) | Paper and LaTeX source |
+| [notebooks/](notebooks/) | Original calculations, experiments, and plots |
+| [benchmarks/](benchmarks/README.md) | Command-line runners for additional datasets and seed extensions |
+| [utils/](utils/) | Shared notebook schedules, training, and result loading |
+| [scripts/](scripts/) | Rebuild figures and confidence intervals from saved measurements |
+| [results/](results/README.md) | Archived measurements and their limitations |
+| [tests/](tests/) | Numerical, checkpoint, and provenance checks |
+
+New runs go into `runs/`; archived measurements stay in `results/`.
 
 ## Calculations and experiments
 
@@ -67,22 +73,16 @@ Each notebook explains which cells to run for the saved results and which train
 new models. CIFAR downloads go into `data/`, reruns into `runs/`, and W&B logging
 is off by default.
 
-For the saved learning curves:
+To reproduce figures and tables without training:
 
 ```bash
-python scripts/plot_results.py
+python scripts/plot_results.py          # Saved learning curves; add --sweeps for all
+python scripts/plot_mean_field.py       # Critical exponents and scaling collapse
+python scripts/confidence_intervals.py  # Paired intervals and both paper tables
 ```
 
-This writes to `runs/figures/`. Add `--sweeps` for every saved dropout strength
-and width. To recompute the critical exponents, scaling collapse, and Hermite
-coefficients:
-
-```bash
-python scripts/plot_mean_field.py
-```
-
-The numerical inputs, fits, and figures go into `runs/mean_field/`. The figures
-used in the paper are in [manuscript/figures](manuscript/figures/).
+These write to `runs/figures/`, `runs/mean_field/`, and `runs/confidence/`.
+The paper's exported figures are in [manuscript/figures/](manuscript/figures/).
 
 ## Additional datasets
 
@@ -117,20 +117,17 @@ test evaluation. The paper keeps these comparisons separate. The
 [results guide](results/README.md) also records gaps in the archives, including
 the missing historical configuration for the CIFAR-100 ViT runs.
 
-To reproduce the intervals and both main paper tables:
-
-```bash
-python scripts/confidence_intervals.py
-```
-
-Outputs go into `runs/confidence/`.
-
 ## Checks
 
 ```bash
 python -m pip install -r requirements-dev.txt
 python -m pytest -q
+ruff check .
+ruff format --check .
 ```
+
+When editing code, run `ruff format .` before these checks. Source hashes identify
+the exact version of a run, so resume existing runs with their original checkout.
 
 [CITATION.cff](CITATION.cff) contains the citation details. Code is under the
 [MIT license](LICENSE).

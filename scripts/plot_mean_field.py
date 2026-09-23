@@ -206,16 +206,12 @@ def plot_scaling_collapses(namespace, source, output):
                         label=label,
                     )
             u = np.linspace(-1.25, 2, 400)
-            theory = (
-                np.sqrt(1 + u * u) - u if smooth else namespace["kink_universal"](u)
-            )
+            theory = np.sqrt(1 + u * u) - u if smooth else namespace["kink_universal"](u)
             axes[1].plot(u, theory, color="#303030", linewidth=2.4, label="Theory")
             axes[0].set_xlabel(r"$t=\chi-1$")
             axes[0].set_ylabel(r"$m=1-c_\ast$")
             axes[1].set_xlabel(
-                r"$\tilde t=-t/\sqrt{2g_\rho h}$"
-                if smooth
-                else r"$-u=-t/(\kappa^{2/3}h^{1/3})$"
+                r"$\tilde t=-t/\sqrt{2g_\rho h}$" if smooth else r"$-u=-t/(\kappa^{2/3}h^{1/3})$"
             )
             axes[1].set_ylabel(
                 r"$\tilde m=m\sqrt{g_\rho/(2h)}$" if smooth else r"$m/(h/\kappa)^{2/3}$"
@@ -287,16 +283,12 @@ def main():
         (figure.axes[2].lines[3], r"p_{\mathrm{ReLU}}", "p_r", "se_p_r"),
         (figure.axes[3].lines[3], r"1/\delta_{\mathrm{ReLU}}", "a_mk", "se_a_mk"),
     ):
-        line.set_label(
-            rf"${symbol} = {namespace[value]:.5f} \pm {namespace[error]:.5f}$"
-        )
+        line.set_label(rf"${symbol} = {namespace[value]:.5f} \pm {namespace[error]:.5f}$")
     namespace["style_log_axes"](figure.axes[2], legend_loc="upper right")
     namespace["style_log_axes"](figure.axes[3], legend_loc="upper left")
     # At manuscript width this gives approximately 7–8 pt labels and legends.
     figure.set_size_inches(11.5, 7.4)
-    figure.subplots_adjust(
-        left=0.08, right=0.99, bottom=0.10, top=0.98, hspace=0.55, wspace=0.75
-    )
+    figure.subplots_adjust(left=0.08, right=0.99, bottom=0.10, top=0.98, hspace=0.55, wspace=0.75)
     figure.axes[0].get_subplotspec().get_gridspec().update(wspace=0.75, hspace=0.50)
     for ax in figure.axes:
         ax.xaxis.label.set_size(14)
@@ -307,15 +299,11 @@ def main():
     figure.savefig(output / "critical_exponents.pdf", bbox_inches="tight")
     figure.savefig(output / "critical_exponents.png", dpi=150, bbox_inches="tight")
     namespace["plt"].close(figure)
-    np.savez_compressed(
-        output / "mean_field.npz", **{name: namespace[name] for name in ARRAYS}
-    )
+    np.savez_compressed(output / "mean_field.npz", **{name: namespace[name] for name in ARRAYS})
     report = {
         "source": "notebooks/mean_field.ipynb",
         "code_cells": list(CELLS),
-        "source_sha256": hashlib.sha256(
-            "\n".join(sources.values()).encode()
-        ).hexdigest(),
+        "source_sha256": hashlib.sha256("\n".join(sources.values()).encode()).hexdigest(),
         "method": "Deterministic mean-field recursions with 60-point Gauss-Hermite quadrature for tanh.",
         "uncertainty": "Ordinary least-squares log-log fit standard errors; not seed confidence intervals or numerical discretization errors.",
         "relu_scope": "The tunable ReLU map is a formal local family; chi > 1 and chi = 1 with dropout need not have nonnegative bias variance.",
@@ -336,9 +324,7 @@ def main():
             for name, (value, error) in FITS.items()
         },
     }
-    (output / "mean_field.json").write_text(
-        json.dumps(report, indent=2, allow_nan=False) + "\n"
-    )
+    (output / "mean_field.json").write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
     plot_hermite(output)
     plot_scaling_collapses(namespace, "".join(notebook["cells"][12]["source"]), output)
     print(f"Figure, raw curves, and fit report: {output}")

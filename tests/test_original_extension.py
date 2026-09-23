@@ -27,9 +27,14 @@ class OriginalExtensionTests(unittest.TestCase):
 
     def test_source_identity_includes_reused_utils_and_public_runner(self):
         source = run_original.source_provenance()
-        for name in ("benchmarks/run_original.py", "benchmarks/original/relu.py",
-                     "benchmarks/original/vit.py", "benchmarks/original/recipes.json",
-                     "utils/training.py", "utils/schedules.py"):
+        for name in (
+            "benchmarks/run_original.py",
+            "benchmarks/original/relu.py",
+            "benchmarks/original/vit.py",
+            "benchmarks/original/recipes.json",
+            "utils/training.py",
+            "utils/schedules.py",
+        ):
             self.assertIn(name, source["files"])
         self.assertTrue(all(not Path(name).is_absolute() for name in source["files"]))
 
@@ -37,11 +42,15 @@ class OriginalExtensionTests(unittest.TestCase):
         original_threads = torch.get_num_threads()
         torch.set_num_threads(1)
         try:
-            with tempfile.TemporaryDirectory() as directory, contextlib.redirect_stdout(io.StringIO()):
+            with (
+                tempfile.TemporaryDirectory() as directory,
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
                 root = Path(directory)
                 for study in ("relu", "vit"):
-                    result = run_original.run_trial(study, "frontloaded", 900001,
-                                                    None, root, "cpu", smoke=True)
+                    result = run_original.run_trial(
+                        study, "frontloaded", 900001, None, root, "cpu", smoke=True
+                    )
                     output = root / "original-smoke" / study / "frontloaded" / "seed-900001"
                     checkpoint_path = output / "final.pt"
                     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
@@ -54,20 +63,28 @@ class OriginalExtensionTests(unittest.TestCase):
                     if study == "relu":
                         loss, accuracy = run_original.relu.evaluate(model, test, criterion, 3)
                     else:
-                        loss, accuracy = run_original.vit_training.evaluate(model, test, criterion, 3)
+                        loss, accuracy = run_original.vit_training.evaluate(
+                            model, test, criterion, 3
+                        )
                     np.testing.assert_allclose(
                         [loss, accuracy],
-                        [result["metrics"]["final_epoch_test_loss"],
-                         result["metrics"]["final_epoch_test_accuracy_percent"]], rtol=1e-6,
+                        [
+                            result["metrics"]["final_epoch_test_loss"],
+                            result["metrics"]["final_epoch_test_accuracy_percent"],
+                        ],
+                        rtol=1e-6,
                     )
                     before = checkpoint_path.stat().st_mtime_ns
-                    repeated = run_original.run_trial(study, "frontloaded", 900001,
-                                                      None, root, "cpu", smoke=True)
+                    repeated = run_original.run_trial(
+                        study, "frontloaded", 900001, None, root, "cpu", smoke=True
+                    )
                     self.assertEqual(result, repeated)
                     self.assertEqual(before, checkpoint_path.stat().st_mtime_ns)
                     saved = json.loads((output / "result.json").read_text())
-                    self.assertEqual(saved["metrics"]["retrospective_min_test_loss"],
-                                     min(saved["curves"]["test_loss"]))
+                    self.assertEqual(
+                        saved["metrics"]["retrospective_min_test_loss"],
+                        min(saved["curves"]["test_loss"]),
+                    )
         finally:
             torch.set_num_threads(original_threads)
 

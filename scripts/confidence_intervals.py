@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Reproduce the paper's paired-seed intervals and two comparison tables.
 
-Only NumPy and SciPy are required. The portable input contains endpoint vectors
+NumPy and SciPy compute intervals; pandas exports tables. The input contains endpoint vectors
 in matching seed order; it does not select profiles or checkpoints again. An
 endpoint can name a subset of the row's seeds when historical values are absent.
 """
@@ -9,12 +9,12 @@ endpoint can name a subset of the row's seeds when historical values are absent.
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import math
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from scipy.stats import t
 
 
@@ -162,22 +162,21 @@ def _sample_sizes(row, endpoints):
     return counts[0] if len(set(counts)) == 1 else "/".join(counts)
 
 
-def _start(caption, label, columns):
-    return [
-        r"\begin{table*}[t]",
-        r"\centering",
-        r"\caption{" + caption + "}",
-        rf"\label{{{label}}}",
-        r"\footnotesize",
-        r"\setlength{\tabcolsep}{4pt}",
-        r"\renewcommand{\arraystretch}{1.15}",
-        r"\begin{tabular}{" + columns + "}",
-        r"\toprule",
-    ]
-
-
-def _finish(lines):
-    return "\n".join(lines + [r"\bottomrule", r"\end{tabular}", r"\end{table*}"]) + "\n"
+def _table(rows, caption, label, columns, header):
+    body = pd.DataFrame(rows).to_latex(
+        index=False, header=False, escape=False, column_format=columns
+    )
+    body = body.replace(r"\midrule", header + "\n" + r"\midrule", 1)
+    return rf"""\begin{{table*}}[t]
+\centering
+\caption{{{caption}}}
+\label{{{label}}}
+\footnotesize
+\setlength{{\tabcolsep}}{{4pt}}
+\renewcommand{{\arraystretch}}{{1.15}}
+{body.rstrip()}
+\end{{table*}}
+"""
 
 
 def render_original_table(comparisons):
@@ -192,11 +191,8 @@ def render_original_table(comparisons):
         r"retrospective endpoint uses test data to choose an epoch, not validation. The first two rows "
         r"share the same uniform runs. See the main text for the assumptions and selection limits."
     )
-    lines = _start(caption, "tab:loss_improvements", "@{}lrlrrr@{}")
-    lines += [
-        r"Experiment & $n$ & Profile & \shortstack{Final CE\\reduction (\%)} & \shortstack{Min. test CE\\reduction (\%)} & \shortstack{Final accuracy\\gain (pp)} \\",
-        r"\midrule",
-    ]
+    rows = []
+    header = r"Experiment & $n$ & Profile & \shortstack{Final CE\\reduction (\%)} & \shortstack{Min. test CE\\reduction (\%)} & \shortstack{Final accuracy\\gain (pp)} \\"
     for row in comparisons:
         model = _tex(row["model"])
         cells = [
@@ -208,8 +204,8 @@ def render_original_table(comparisons):
             _cell(row["metrics"][name])
             for name in ("final_loss", "minimum_loss", "final_accuracy_percent")
         )
-        lines.append(" & ".join(cells) + r" \\")
-    return _finish(lines)
+        rows.append(cells)
+    return _table(rows, caption, "tab:loss_improvements", "@{}lrlrrr@{}", header)
 
 
 def render_frontloaded_table(comparisons):
@@ -228,16 +224,15 @@ def render_frontloaded_table(comparisons):
         r"mean dropout follow each cohort's validation protocol. Per-epoch test histories were not recorded. "
         r"Dashes mean missing final test evaluations, not zero change."
     )
-    lines = _start(caption, "tab:frontloaded_results", "@{}lrlrrrr@{}")
-    lines += [
-        r"& & & \multicolumn{2}{c}{Validation-selected test} & \multicolumn{2}{c}{Final-epoch test} \\",
-        r"\cmidrule(lr){4-5}\cmidrule(l){6-7}",
-        r"Experiment (training $N$) & \shortstack{$n$\\C/F} & Profile & \shortstack{CE reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} & \shortstack{CE reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} \\",
-        r"\midrule",
-    ]
+    rows = []
+    header = "\n".join(
+        [
+            r"& & & \multicolumn{2}{c}{Validation-selected test} & \multicolumn{2}{c}{Final-epoch test} \\",
+            r"\cmidrule(lr){4-5}\cmidrule(l){6-7}",
+            r"Experiment (training $N$) & \shortstack{$n$\\C/F} & Profile & \shortstack{CE reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} & \shortstack{CE reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} \\",
+        ]
+    )
     for index, row in enumerate(comparisons):
-        if index and comparisons[index - 1]["dataset"] != row["dataset"]:
-            lines.append(r"\addlinespace[3pt]")
         dataset = _dataset_label(row)
         checkpoint_n = _sample_sizes(row, ("checkpoint_loss", "checkpoint_accuracy_percent"))
         final_n = _sample_sizes(row, ("final_loss", "final_accuracy_percent"))
@@ -255,8 +250,10 @@ def render_frontloaded_table(comparisons):
                 "final_accuracy_percent",
             )
         )
-        lines.append(" & ".join(cells) + r" \\")
-    return _finish(lines)
+        if index and comparisons[index - 1]["dataset"] != row["dataset"]:
+            cells[0] = "\\addlinespace[3pt]\n" + cells[0]
+        rows.append(cells)
+    return _table(rows, caption, "tab:frontloaded_results", "@{}lrlrrrr@{}", header)
 
 
 def write_outputs(output_dir, evidence):
@@ -280,10 +277,10 @@ def write_outputs(output_dir, evidence):
                 records.append(
                     {
                         "table": section,
-                        "dataset": row["dataset"],
-                        "model": row["model"],
-                        "train_size": row.get("train_size"),
-                        "weight_decay": row.get("weight_decay"),
+                        **{
+                            key: row.get(key)
+                            for key in ("dataset", "model", "train_size", "weight_decay")
+                        },
                         "n": metric["n"] if metric else None,
                         "profile": row["profile"],
                         "endpoint": endpoint,
@@ -298,10 +295,9 @@ def write_outputs(output_dir, evidence):
                         "interval_kind": metric["kind"] if metric else "missing",
                     }
                 )
-    with (output_dir / "confidence_intervals.csv").open("w", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(records[0]), lineterminator="\n")
-        writer.writeheader()
-        writer.writerows(records)
+    pd.DataFrame(records, dtype=object).to_csv(
+        output_dir / "confidence_intervals.csv", index=False, lineterminator="\n"
+    )
     markdown = ["# Paired-seed confidence intervals", "", evidence["inference"], ""]
     markdown += [
         f"- **{key.replace('_', ' ')}:** {value}"
@@ -342,10 +338,7 @@ def write_outputs(output_dir, evidence):
     ):
         markdown += [f"## {title}", ""]
         headings = ["Experiment", "n", "Profile"] + [label for _, label in endpoints]
-        markdown += [
-            "| " + " | ".join(headings) + " |",
-            "|---|---:|---|" + "---:|" * len(endpoints),
-        ]
+        rows = []
         for row in summary[section]:
             if all(row["metrics"][endpoint] is None for endpoint, _ in endpoints):
                 continue
@@ -367,8 +360,15 @@ def write_outputs(output_dir, evidence):
                 else:
                     low, high = metric["ci95"]
                     cells.append(f"{metric['estimate']:+.2f} [{low:.2f}, {high:.2f}]")
-            markdown.append("| " + " | ".join(cells) + " |")
-        markdown.append("")
+            rows.append(cells)
+        markdown += [
+            pd.DataFrame(rows, columns=headings).to_markdown(
+                index=False,
+                disable_numparse=True,
+                colalign=("left", "right", "left", *(["right"] * len(endpoints))) if rows else None,
+            ),
+            "",
+        ]
     markdown += [
         "Extended Jannis uses weight decay 1e-7; the other benchmark rows use zero weight decay.",
         "",

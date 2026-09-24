@@ -3,6 +3,7 @@
 import copy
 import csv
 import json
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -175,6 +176,7 @@ def test_exports_use_endpoint_counts_and_identify_extended_jannis_by_recipe(
     ]
 
     markdown = (tmp_path / "confidence_intervals.md").read_text()
+    markdown = re.sub(r" *\| *", " | ", markdown)
     checkpoints, final = markdown.split("## Recorded final-epoch test results")
     assert "| Jannis / Transformer (N=3,840) | 10 |" in checkpoints
     assert "| Jannis extended / Transformer (N=3,840) | 10 |" in checkpoints

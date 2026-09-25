@@ -12,6 +12,7 @@ import hashlib
 import json
 import math
 from pathlib import Path
+import sys
 
 import matplotlib
 import numpy as np
@@ -19,6 +20,10 @@ import numpy as np
 matplotlib.use("Agg")
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from utils.plot_style import FOREST, GOLD, INK, field_palette, paper_style  # noqa: E402
+from utils.scaling import RELU_KAPPA, kinked_scaling, kinked_universal  # noqa: E402
+
 NOTEBOOK = ROOT / "notebooks/mean_field.ipynb"
 # Check the cell contents as well as their positions, so notebook edits cannot
 # silently make this command execute an unrelated analysis.
@@ -105,11 +110,7 @@ def plot_hermite(output):
     relu, tanh = hermite_coefficients()
     degrees = np.arange(len(relu))
     style = {
-        "font.family": "serif",
-        "font.serif": ["Times New Roman", "Times", "DejaVu Serif"],
-        "mathtext.fontset": "dejavuserif",
-        "pdf.fonttype": 42,
-        "axes.edgecolor": "#333333",
+        **paper_style(),
         "axes.labelsize": 12.5,
         "axes.titlesize": 13.5,
         "axes.titleweight": "regular",
@@ -118,20 +119,12 @@ def plot_hermite(output):
         "legend.fontsize": 9.5,
         "lines.linewidth": 2.2,
         "lines.markersize": 5.4,
-        "axes.grid": True,
-        "grid.color": "#E8E0D0",
-        "grid.alpha": 0.6,
-        "grid.linewidth": 0.7,
-        "grid.linestyle": "-",
-        "legend.frameon": True,
-        "legend.framealpha": 0.92,
-        "legend.edgecolor": "#C8C8C8",
     }
     with plt.rc_context(style):
         fig, ax = plt.subplots(figsize=(6.2, 3.7))
         for values, marker, color, label in (
-            (relu, "s-", "#C9A961", "ReLU"),
-            (tanh, "o-", "#3A5F3A", r"$\tanh$"),
+            (relu, "s-", GOLD, "ReLU"),
+            (tanh, "o-", FOREST, r"$\tanh$"),
         ):
             visible = np.abs(values) > 1e-13
             ax.semilogy(
@@ -162,7 +155,7 @@ def plot_hermite(output):
 
 
 def plot_scaling_collapses(namespace, source, output):
-    """Use notebook fixed-point calculations, labeling the fixed mask probability."""
+    """Export full-map fixed points with their actual fields and local coefficients."""
     if "# Universal scaling functions" not in source:
         raise ValueError("Notebook collapse cell changed; review the export script")
     exec(compile(source, "mean_field.ipynb:cell12", "exec"), namespace)
@@ -173,19 +166,22 @@ def plot_scaling_collapses(namespace, source, output):
         data = namespace["smooth" if smooth else "kink"]
         with plt.rc_context(
             {
+                **paper_style(),
                 "axes.labelsize": 14,
                 "xtick.labelsize": 12,
                 "ytick.labelsize": 12,
-                "legend.fontsize": 12,
+                "legend.fontsize": 10.5,
             }
         ):
             fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.4))
-            for proxy, color in zip(namespace["h_list"], namespace["ZULU_COLORS"]):
+            xmin = -1 if smooth else -1.25
+            ymax = 0.0
+            for proxy, color in zip(namespace["h_list"], field_palette(len(namespace["h_list"]))):
                 rows = data[np.isclose(data[:, 0], proxy)]
                 t, h = rows[:, 1], rows[:, 2]
-                # Both scans hold rho=1/(1+proxy) fixed, not the exact field h.
-                probability = proxy / (1 + proxy)
-                mantissa, exponent = f"{probability:.1e}".split("e")
+                # Tanh fixes rho; ReLU now fixes the field itself.
+                legend_value = proxy / (1 + proxy) if smooth else proxy
+                mantissa, exponent = f"{legend_value:.1e}".split("e")
                 label = rf"${mantissa}\times10^{{{int(exponent)}}}$"
                 if smooth:
                     g, m = rows[:, 3], rows[:, 4]
@@ -193,9 +189,9 @@ def plot_scaling_collapses(namespace, source, output):
                     scaled_m = m * np.sqrt(g / (2 * h))
                 else:
                     m = rows[:, 3]
-                    kappa = namespace["KAPPA"]
-                    scaled_t = -t / (kappa ** (2 / 3) * h ** (1 / 3))
-                    scaled_m = m / (h / kappa) ** (2 / 3)
+                    scaled_t, scaled_m = kinked_scaling(t, h, m)
+                visible = (scaled_t >= xmin) & (scaled_t <= 2)
+                ymax = max(ymax, float(np.max(scaled_m[visible])))
                 for ax, x, y in ((axes[0], t, m), (axes[1], scaled_t, scaled_m)):
                     ax.plot(
                         x,
@@ -205,19 +201,23 @@ def plot_scaling_collapses(namespace, source, output):
                         markersize=3.5,
                         label=label,
                     )
-            u = np.linspace(-1.25, 2, 400)
-            theory = np.sqrt(1 + u * u) - u if smooth else namespace["kink_universal"](u)
-            axes[1].plot(u, theory, color="#303030", linewidth=2.4, label="Theory")
+            u = np.linspace(xmin, 2, 400)
+            theory = np.sqrt(1 + u * u) - u if smooth else kinked_universal(u)
+            axes[1].plot(u, theory, color=INK, linewidth=2.4, label="Theory")
             axes[0].set_xlabel(r"$t=\chi-1$")
             axes[0].set_ylabel(r"$m=1-c_\ast$")
             axes[1].set_xlabel(
-                r"$\tilde t=-t/\sqrt{2g_\rho h}$" if smooth else r"$-u=-t/(\kappa^{2/3}h^{1/3})$"
+                r"$\tilde t=-t/\sqrt{2g_\rho h}$"
+                if smooth
+                else r"$\tilde t=-t/(\kappa_{\rm loc}^{2/3}h^{1/3})$"
             )
             axes[1].set_ylabel(
-                r"$\tilde m=m\sqrt{g_\rho/(2h)}$" if smooth else r"$m/(h/\kappa)^{2/3}$"
+                r"$\tilde m=m\sqrt{g_\rho/(2h)}$"
+                if smooth
+                else r"$\tilde m=m/(h/\kappa_{\rm loc})^{2/3}$"
             )
-            axes[1].set_xlim(-1 if smooth else -1.25, 2)
-            axes[1].set_ylim(0, 2.2 if smooth else 2.0)
+            axes[1].set_xlim(xmin, 2)
+            axes[1].set_ylim(0, np.ceil(4.2 * max(ymax, theory.max())) / 4)
             for ax, location in zip(axes, ("upper left", "upper right")):
                 namespace["style_log_axes"](ax)
                 ax.legend(
@@ -225,7 +225,7 @@ def plot_scaling_collapses(namespace, source, output):
                     ncol=2,
                     columnspacing=0.7,
                     handletextpad=0.3,
-                    title=r"$p=1-\rho$",
+                    title=r"$p=1-\rho$" if smooth else r"$h$",
                 )
             fig.tight_layout(pad=1.0, w_pad=2.0)
             for suffix in ("pdf", "png"):
@@ -239,15 +239,21 @@ def plot_scaling_collapses(namespace, source, output):
         output / "scaling_collapse.npz",
         smooth=namespace["smooth"],
         kinked=namespace["kink"],
+        kinked_kappa=(1 + namespace["kink"][:, 1]) * RELU_KAPPA,
     )
     report = {
         "source": "notebooks/mean_field.ipynb:cell12",
         "source_sha256": hashlib.sha256(source.encode()).hexdigest(),
         "smooth_columns": ["proxy", "t", "h", "g", "m"],
-        "kinked_columns": ["proxy", "t", "h", "m"],
-        "fixed_parameter": "Each curve holds rho=1/(1+proxy) fixed; legend p=1-rho.",
-        "horizontal_axes": "Smooth: tilde_t=-t/sqrt(2*g*h). Kinked: -u=-t/(kappa**(2/3)*h**(1/3)); u is the positive-t argument defined in the paper.",
-        "scope": "Smooth uses tanh mean-field fixed points. Kinked uses the formal affine arc-cosine map; the exact field varies along each fixed-rho curve.",
+        "kinked_columns": ["target_h", "t", "h", "m"],
+        "fixed_parameter": {
+            "smooth": "Each curve fixes rho=1/(1+proxy); legend p=1-rho; exact h varies.",
+            "kinked": "Each curve fixes h; rho=chi/(chi+h) varies with t=chi-1.",
+        },
+        "kinked_kappa": "Per-point local coefficient chi*2*sqrt(2)/(3*pi).",
+        "horizontal_axes": "Smooth: tilde_t=-t/sqrt(2*g*h). Kinked: tilde_t=-t/(kappa_loc**(2/3)*h**(1/3)), the negative of the paper's u evaluated with the local coefficient.",
+        "scope": "Smooth uses tanh mean-field fixed points. Kinked solves the full formal map F(c)=chi*K(c)+1-chi-h; points are not normal-form roots. Finite-field deviations remain.",
+        "solver_sha256": hashlib.sha256((ROOT / "utils/scaling.py").read_bytes()).hexdigest(),
     }
     (output / "scaling_collapse.json").write_text(json.dumps(report, indent=2) + "\n")
 

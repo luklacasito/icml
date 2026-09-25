@@ -6,8 +6,10 @@ import numpy as np
 import pytest
 from scipy.integrate import quad
 from scipy.special import eval_hermitenorm
+from scipy.optimize import brentq
 
 from scripts.plot_mean_field import hermite_coefficients
+from utils.scaling import RELU_KAPPA, kinked_scaling, kinked_universal, relu_order_parameter
 
 
 def test_relu_coefficients_match_closed_expressions():
@@ -40,3 +42,51 @@ def test_tanh_coefficients_match_adaptive_integration():
             epsabs=1e-12,
         )
         assert tanh[degree] == pytest.approx(coefficient, abs=1e-11)
+
+
+@pytest.mark.parametrize("chi", [0.7, 0.95, 1.0, 1.3])
+@pytest.mark.parametrize("h", [1e-4, 1e-2, 1e-1])
+def test_fixed_field_relu_points_solve_the_exact_map(chi, h):
+    m = relu_order_parameter(chi, h)
+    c = 1 - m
+    rho = chi / (chi + h)
+    kernel = (np.sqrt(1 - c * c) + (np.pi - np.arccos(c)) * c) / np.pi
+    assert chi * kernel + 1 - chi / rho == pytest.approx(c, abs=2e-13)
+    assert 1 - (chi + 1 - chi / rho) == pytest.approx(h, abs=5e-16)
+    assert 0 < chi * (1 - np.arccos(c) / np.pi) < 1
+
+
+def test_kinked_collapse_converges_to_the_equation_of_state():
+    # Hold the rescaled coordinate fixed as h decreases. This catches the
+    # missing chi factor without assuming an exact collapse at finite field.
+    x = np.linspace(-1.25, 2, 14)
+    theory = kinked_universal(x)
+    errors = []
+    for h in [1e-3, 1e-5, 1e-7]:
+        t = np.array(
+            [
+                brentq(
+                    lambda t: -t / (((1 + t) * RELU_KAPPA) ** (2 / 3) * h ** (1 / 3)) - xi,
+                    -0.5,
+                    0.5,
+                )
+                for xi in x
+            ]
+        )
+        m = np.array([relu_order_parameter(1 + ti, h) for ti in t])
+        actual_x, scaled_m = kinked_scaling(t, h, m)
+        np.testing.assert_allclose(actual_x, x, atol=1e-9)
+        errors.append(np.max(np.abs(scaled_m / theory - 1)))
+    assert 1e-4 < errors[0] < 0.004  # Full-map corrections remain visible.
+    assert errors[1] < errors[0] / 10
+    assert errors[2] < errors[1] / 10
+    assert errors[2] < 1e-5
+
+
+def test_kinked_universal_positive_branch_and_axis_sign():
+    x = np.linspace(-1.25, 2, 100)
+    y = kinked_universal(x)
+    np.testing.assert_allclose(y**1.5 + x * y, 1, atol=1e-11)
+    assert np.all(np.diff(y) < 0)
+    assert kinked_universal(0) == pytest.approx(1)
+    assert kinked_universal(-1.25) > 2  # The old y limit cut off the theory.

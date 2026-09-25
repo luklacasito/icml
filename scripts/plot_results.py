@@ -16,18 +16,14 @@ import matplotlib.pyplot as plt  # noqa: E402
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from utils.results import load_json, load_npz_result  # noqa: E402
+from utils.plot_style import (  # noqa: E402
+    SCHEDULE_COLORS,
+    SCHEDULE_LABELS,
+    SCHEDULE_LINESTYLES,
+    paper_style,
+)
 
-STYLES = {
-    "none": ("No dropout", "#777777"),
-    "constant": ("Uniform", "#222222"),
-    "step": ("Step late", "#cc9a34"),
-    "reverse_step": ("Step early", "#2b8c6d"),
-    "linear": ("Linear increasing", "#4b79a1"),
-    "reverse_linear": ("Linear decreasing", "#c96b36"),
-    "big_step": ("Big step early", "#7561a4"),
-    "double": ("Uniform, double budget", "#ba6b8d"),
-    "triple": ("Uniform, triple budget", "#82774c"),
-}
+STYLES = {key: (SCHEDULE_LABELS[key], color) for key, color in SCHEDULE_COLORS.items()}
 METRICS = (
     ("train_loss", "Training loss", "Cross-entropy"),
     ("test_loss", "Test loss", "Cross-entropy"),
@@ -66,7 +62,14 @@ def plot_curves(results, title, output, shared_baseline=False):
             mean = values.mean(axis=0)
             sem = values.std(axis=0, ddof=1) / np.sqrt(seeds)
             label, color = STYLES[schedule]
-            ax.plot(x, mean, color=color, label=label, linewidth=1.7)
+            ax.plot(
+                x,
+                mean,
+                color=color,
+                label=label,
+                linewidth=1.7,
+                linestyle=SCHEDULE_LINESTYLES[schedule],
+            )
             ax.fill_between(x, mean - sem, mean + sem, color=color, alpha=0.14)
         ax.set_title(panel_title, loc="left")
         ax.set_ylabel(ylabel)
@@ -97,6 +100,7 @@ def main():
         "--sweeps", action="store_true", help="Include every saved MLP sweep condition"
     )
     args = parser.parse_args()
+    plt.rcParams.update(paper_style())
     plt.rcParams.update({"font.size": 10, "axes.titlesize": 11})
     results = ROOT / "results"
     for name, title in (

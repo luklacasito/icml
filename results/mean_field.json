@@ -8,7 +8,7 @@
     8,
     10
   ],
-  "source_sha256": "5ffd2b966a93642853afc39d7f8bf12277c7ef4ce76097fb999edeb819a56863",
+  "source_sha256": "17dbff476a8d07573a967671c0d70c6688eae632c282003b3c023be1a72f4be4",
   "method": "Deterministic mean-field recursions with 60-point Gauss-Hermite quadrature for tanh.",
   "uncertainty": "Ordinary least-squares log-log fit standard errors; not seed confidence intervals or numerical discretization errors.",
   "relu_scope": "The tunable ReLU map is a formal local family; chi > 1 and chi = 1 with dropout need not have nonnegative bias variance.",

@@ -77,6 +77,27 @@ retain their original counts.
 Run `python scripts/plot_results.py` from the repository root for the learning
 curves. Notebook reruns write into `runs/`.
 
+## Historical benchmark curves
+
+[benchmark_curves.npz](benchmark_curves.npz) contains the exact training and
+validation arrays behind the thirteen multi-panel appendix figures: 350 runs
+from twelve retained benchmark cohorts, plus the 30-run profile-geometry pilot.
+It preserves run IDs, per-run configurations, seed order, and the source archive
+hashes. The confirmation records came from the September 15 W&B export;
+excluded Amazon Reviews and zero-weight-decay FI-2010 Transformer cohorts are
+not included. The separate FI-2010 Transformer linear follow-up is retained.
+
+Each profile stores one row per seed and one column per zero-based epoch.
+Accuracies are fractions in the archive and percentages in the figures.
+Shaded bands are the sample standard deviation divided by the square root of
+the seed count. Only training loss uses a logarithmic axis. These curves remain
+the historical five- or ten-seed cohorts (three seeds for the pilot); they do
+not pool in the later extension or substitute validation loss for test loss.
+
+Run `python scripts/plot_benchmarks.py` to reproduce them in
+`runs/figures/benchmarks/`. The exporter uses the same schedule colors as the
+presentation and the other paper figures.
+
 ## Mean-field calculations
 
 | File | Contents |
@@ -96,3 +117,10 @@ fitted exponent.
 The tunable ReLU channel probes the local normal form with independently varied
 parameters; those parameters need not describe a realizable finite-variance
 network initialization. The paper states this restriction alongside the fits.
+
+The ReLU collapse holds the actual field `h` fixed, setting `rho=chi/(chi+h)`.
+Its rescaling uses the local coefficient `kappa_loc=chi*2*sqrt(2)/(3*pi)` from
+the full map. The archive saves that coefficient for each point. The smooth
+scan instead fixes dropout probability and recomputes its field and curvature
+at each point. Both plots retain finite-field departures from the leading
+equation of state; the horizontal axis runs opposite to the paper's `u`.

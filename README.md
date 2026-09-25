@@ -77,11 +77,15 @@ To reproduce figures and tables without training:
 
 ```bash
 python scripts/plot_results.py          # Saved learning curves; add --sweeps for all
+python scripts/plot_paper_results.py    # Rebuild the eight original paper figures
+python scripts/plot_benchmarks.py       # Historical benchmark appendix curves
 python scripts/plot_mean_field.py       # Critical exponents and scaling collapse
 python scripts/confidence_intervals.py  # Paired intervals and both paper tables
 ```
 
-These write to `runs/figures/`, `runs/mean_field/`, and `runs/confidence/`.
+The original-paper exporter updates `manuscript/figures/experiments/`; the other
+commands write to `runs/figures/`, `runs/mean_field/`, and `runs/confidence/`.
+All exporters share the presentation's colors through `utils/plot_style.py`.
 The paper's exported figures are in [manuscript/figures/](manuscript/figures/).
 
 ## Additional datasets

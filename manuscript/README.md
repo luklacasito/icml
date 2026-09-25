@@ -37,6 +37,10 @@ The [confidence-interval script](../scripts/confidence_intervals.py) computes
 both main tables from the [paired seed measurements](../results/confidence_seed_metrics.json).
 For the critical-exponent, scaling-collapse, and Hermite figures, run
 `python scripts/plot_mean_field.py` from the repository root.
+`python scripts/plot_paper_results.py` rebuilds the eight original experimental
+figures in this folder. `python scripts/plot_benchmarks.py` exports the
+historical appendix curves from the archived seed histories. The exporters
+share `utils/plot_style.py` for the presentation's colors on a white background.
 
 The two calculations carry different kinds of uncertainty: training seeds vary
 from run to run, while the mean-field curves are deterministic and their fit

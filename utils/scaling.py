@@ -33,17 +33,31 @@ def relu_order_parameter(chi, h):
     )
 
 
+def relu_fixed_rho_scan(h0_values, t_values):
+    """Return (h0, t, h, m) rows at fixed rho=1/(1+h0) along each curve.
+
+    h0 is the field at criticality. The actual field is h=(1+t)*h0.
+    """
+    return np.array(
+        [
+            (h0, t, (1 + t) * h0, relu_order_parameter(1 + t, (1 + t) * h0))
+            for h0 in h0_values
+            for t in t_values
+        ]
+    )
+
+
 def kinked_scaling(t, h, m):
-    """Rescale with the actual kink coefficient (1+t)*kappa_0 of the map.
+    """Rescale with the critical coefficient kappa_0, as in the paper.
 
     The horizontal variable x=-u makes the curve decrease, as in the smooth
-    plot. The leading equation of state is Y**1.5 + x*Y = 1.
+    plot. The leading equation of state is Y**1.5 + x*Y = 1. The full map's
+    coefficient (1+t)*kappa_0 contributes finite-t corrections to scaling.
     """
     t, h, m = np.broadcast_arrays(t, h, m)
-    kappa = (1 + t) * RELU_KAPPA
-    if np.any(kappa <= 0) or np.any(h <= 0):
-        raise ValueError("Scaling requires a positive slope and field")
-    return -t / (kappa ** (2 / 3) * h ** (1 / 3)), m / (h / kappa) ** (2 / 3)
+    if np.any(h <= 0):
+        raise ValueError("Scaling requires a positive field")
+    return -t / (RELU_KAPPA ** (2 / 3) * h ** (1 / 3)), m / (h / RELU_KAPPA) ** (2 / 3)
 
 
 def kinked_universal(x):

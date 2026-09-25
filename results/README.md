@@ -118,9 +118,13 @@ The tunable ReLU channel probes the local normal form with independently varied
 parameters; those parameters need not describe a realizable finite-variance
 network initialization. The paper states this restriction alongside the fits.
 
-The ReLU collapse holds the actual field `h` fixed, setting `rho=chi/(chi+h)`.
-Its rescaling uses the local coefficient `kappa_loc=chi*2*sqrt(2)/(3*pi)` from
-the full map. The archive saves that coefficient for each point. The smooth
-scan instead fixes dropout probability and recomputes its field and curvature
-at each point. Both plots retain finite-field departures from the leading
-equation of state; the horizontal axis runs opposite to the paper's `u`.
+The ReLU collapse fixes `rho=1/(1+h0)` along each curve. Legends give `h0`,
+the field at `chi=1`; rescaling uses the actual field `h=chi*h0` and the
+critical coefficient `kappa=2*sqrt(2)/(3*pi)`, as in the paper. Variation of
+the full map's coefficient `chi*kappa` contributes to the visible departures
+from the leading equation of state. The 70-point sweep and display window
+`-1.25 <= -u <= 2`, `0 <= m/(h/kappa)**(2/3) <= 2` reproduce the original
+ReLU figure; the archive retains all points outside that window too.
+The smooth scan fixes dropout probability and recomputes its field and
+curvature at each point. Both plots retain finite-field departures; the
+ReLU horizontal axis runs opposite to the paper's `u`.

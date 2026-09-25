@@ -155,7 +155,7 @@ def plot_hermite(output):
 
 
 def plot_scaling_collapses(namespace, source, output):
-    """Export full-map fixed points with their actual fields and local coefficients."""
+    """Export full-map fixed points with the paper's critical scaling convention."""
     if "# Universal scaling functions" not in source:
         raise ValueError("Notebook collapse cell changed; review the export script")
     exec(compile(source, "mean_field.ipynb:cell12", "exec"), namespace)
@@ -167,19 +167,19 @@ def plot_scaling_collapses(namespace, source, output):
         with plt.rc_context(
             {
                 **paper_style(),
-                "axes.labelsize": 14,
-                "xtick.labelsize": 12,
-                "ytick.labelsize": 12,
-                "legend.fontsize": 10.5,
+                "axes.labelsize": 14 if smooth else 12,
+                "xtick.labelsize": 12 if smooth else 10,
+                "ytick.labelsize": 12 if smooth else 10,
+                "legend.fontsize": 10.5 if smooth else 9,
             }
         ):
-            fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.4))
+            fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.4) if smooth else (10.4, 3.65))
             xmin = -1 if smooth else -1.25
             ymax = 0.0
             for proxy, color in zip(namespace["h_list"], field_palette(len(namespace["h_list"]))):
                 rows = data[np.isclose(data[:, 0], proxy)]
                 t, h = rows[:, 1], rows[:, 2]
-                # Tanh fixes rho; ReLU now fixes the field itself.
+                # Both scans fix rho. ReLU labels its critical-point field h0.
                 legend_value = proxy / (1 + proxy) if smooth else proxy
                 mantissa, exponent = f"{legend_value:.1e}".split("e")
                 label = rf"${mantissa}\times10^{{{int(exponent)}}}$"
@@ -209,15 +209,14 @@ def plot_scaling_collapses(namespace, source, output):
             axes[1].set_xlabel(
                 r"$\tilde t=-t/\sqrt{2g_\rho h}$"
                 if smooth
-                else r"$\tilde t=-t/(\kappa_{\rm loc}^{2/3}h^{1/3})$"
+                else r"$-u=(1-\chi)/(\kappa^{2/3}h^{1/3})$"
             )
             axes[1].set_ylabel(
-                r"$\tilde m=m\sqrt{g_\rho/(2h)}$"
-                if smooth
-                else r"$\tilde m=m/(h/\kappa_{\rm loc})^{2/3}$"
+                r"$\tilde m=m\sqrt{g_\rho/(2h)}$" if smooth else r"$m/(h/\kappa)^{2/3}$"
             )
             axes[1].set_xlim(xmin, 2)
-            axes[1].set_ylim(0, np.ceil(4.2 * max(ymax, theory.max())) / 4)
+            # Retain the original ReLU figure's near-critical display window.
+            axes[1].set_ylim(0, np.ceil(4.2 * max(ymax, theory.max())) / 4 if smooth else 2)
             for ax, location in zip(axes, ("upper left", "upper right")):
                 namespace["style_log_axes"](ax)
                 ax.legend(
@@ -225,7 +224,7 @@ def plot_scaling_collapses(namespace, source, output):
                     ncol=2,
                     columnspacing=0.7,
                     handletextpad=0.3,
-                    title=r"$p=1-\rho$" if smooth else r"$h$",
+                    title=r"$p=1-\rho$" if smooth else r"$h_0=1/\rho-1$",
                 )
             fig.tight_layout(pad=1.0, w_pad=2.0)
             for suffix in ("pdf", "png"):
@@ -239,20 +238,21 @@ def plot_scaling_collapses(namespace, source, output):
         output / "scaling_collapse.npz",
         smooth=namespace["smooth"],
         kinked=namespace["kink"],
-        kinked_kappa=(1 + namespace["kink"][:, 1]) * RELU_KAPPA,
+        kinked_kappa=np.full(len(namespace["kink"]), RELU_KAPPA),
     )
     report = {
         "source": "notebooks/mean_field.ipynb:cell12",
         "source_sha256": hashlib.sha256(source.encode()).hexdigest(),
         "smooth_columns": ["proxy", "t", "h", "g", "m"],
-        "kinked_columns": ["target_h", "t", "h", "m"],
+        "kinked_columns": ["h0", "t", "h", "m"],
         "fixed_parameter": {
             "smooth": "Each curve fixes rho=1/(1+proxy); legend p=1-rho; exact h varies.",
-            "kinked": "Each curve fixes h; rho=chi/(chi+h) varies with t=chi-1.",
+            "kinked": "Each curve fixes rho=1/(1+h0); h0 is the field at chi=1; actual h=chi*h0 varies.",
         },
-        "kinked_kappa": "Per-point local coefficient chi*2*sqrt(2)/(3*pi).",
-        "horizontal_axes": "Smooth: tilde_t=-t/sqrt(2*g*h). Kinked: tilde_t=-t/(kappa_loc**(2/3)*h**(1/3)), the negative of the paper's u evaluated with the local coefficient.",
-        "scope": "Smooth uses tanh mean-field fixed points. Kinked solves the full formal map F(c)=chi*K(c)+1-chi-h; points are not normal-form roots. Finite-field deviations remain.",
+        "kinked_kappa": "Critical coefficient 2*sqrt(2)/(3*pi), constant across the scan.",
+        "horizontal_axes": "Smooth: tilde_t=-t/sqrt(2*g*h). Kinked: -u=-t/(kappa**(2/3)*h**(1/3)), with the paper's critical kappa.",
+        "kinked_display_window": {"x": [-1.25, 2], "y": [0, 2]},
+        "scope": "Smooth uses tanh mean-field fixed points. Kinked solves the full formal map F(c)=chi*K(c)+1-chi/rho at fixed rho; points are not normal-form roots. Finite-field and finite-t deviations remain, including the full map's chi-dependent kink coefficient.",
         "solver_sha256": hashlib.sha256((ROOT / "utils/scaling.py").read_bytes()).hexdigest(),
     }
     (output / "scaling_collapse.json").write_text(json.dumps(report, indent=2) + "\n")

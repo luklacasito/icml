@@ -1,6 +1,6 @@
 {
   "source": "notebooks/mean_field.ipynb:cell12",
-  "source_sha256": "2fd92810a6d993f5f99df65a29440f2d073306e3541c6ba42fa68f420d8f7feb",
+  "source_sha256": "17ebeaade099e3a833b5cc32438edd01d63f42f0394268b3fd42dacd6746cd49",
   "smooth_columns": [
     "proxy",
     "t",
@@ -9,17 +9,27 @@
     "m"
   ],
   "kinked_columns": [
-    "target_h",
+    "h0",
     "t",
     "h",
     "m"
   ],
   "fixed_parameter": {
     "smooth": "Each curve fixes rho=1/(1+proxy); legend p=1-rho; exact h varies.",
-    "kinked": "Each curve fixes h; rho=chi/(chi+h) varies with t=chi-1."
+    "kinked": "Each curve fixes rho=1/(1+h0); h0 is the field at chi=1; actual h=chi*h0 varies."
   },
-  "kinked_kappa": "Per-point local coefficient chi*2*sqrt(2)/(3*pi).",
-  "horizontal_axes": "Smooth: tilde_t=-t/sqrt(2*g*h). Kinked: tilde_t=-t/(kappa_loc**(2/3)*h**(1/3)), the negative of the paper's u evaluated with the local coefficient.",
-  "scope": "Smooth uses tanh mean-field fixed points. Kinked solves the full formal map F(c)=chi*K(c)+1-chi-h; points are not normal-form roots. Finite-field deviations remain.",
-  "solver_sha256": "a00c113177a51e98a6fa950bf3740171b89f16b1d92d281cfda97a50038dc9c3"
+  "kinked_kappa": "Critical coefficient 2*sqrt(2)/(3*pi), constant across the scan.",
+  "horizontal_axes": "Smooth: tilde_t=-t/sqrt(2*g*h). Kinked: -u=-t/(kappa**(2/3)*h**(1/3)), with the paper's critical kappa.",
+  "kinked_display_window": {
+    "x": [
+      -1.25,
+      2
+    ],
+    "y": [
+      0,
+      2
+    ]
+  },
+  "scope": "Smooth uses tanh mean-field fixed points. Kinked solves the full formal map F(c)=chi*K(c)+1-chi/rho at fixed rho; points are not normal-form roots. Finite-field and finite-t deviations remain, including the full map's chi-dependent kink coefficient.",
+  "solver_sha256": "e0731de00d1832a7798619acfd405e23225dcc1e699819a083d2cf5d31a60fb0"
 }

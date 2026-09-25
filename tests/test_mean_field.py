@@ -1,4 +1,4 @@
-"""Check plotted Hermite coefficients against independent closed expressions."""
+"""Check mean-field figures against exact maps and the reference scan."""
 
 import math
 
@@ -6,10 +6,15 @@ import numpy as np
 import pytest
 from scipy.integrate import quad
 from scipy.special import eval_hermitenorm
-from scipy.optimize import brentq
 
 from scripts.plot_mean_field import hermite_coefficients
-from utils.scaling import RELU_KAPPA, kinked_scaling, kinked_universal, relu_order_parameter
+from utils.scaling import (
+    RELU_KAPPA,
+    kinked_scaling,
+    kinked_universal,
+    relu_fixed_rho_scan,
+    relu_order_parameter,
+)
 
 
 def test_relu_coefficients_match_closed_expressions():
@@ -57,30 +62,32 @@ def test_fixed_field_relu_points_solve_the_exact_map(chi, h):
 
 
 def test_kinked_collapse_converges_to_the_equation_of_state():
-    # Hold the rescaled coordinate fixed as h decreases. This catches the
-    # missing chi factor without assuming an exact collapse at finite field.
+    # Hold the critical scaling coordinate fixed as h decreases. Finite-t
+    # corrections vanish; an exact collapse is not expected at finite field.
     x = np.linspace(-1.25, 2, 14)
     theory = kinked_universal(x)
     errors = []
     for h in [1e-3, 1e-5, 1e-7]:
-        t = np.array(
-            [
-                brentq(
-                    lambda t: -t / (((1 + t) * RELU_KAPPA) ** (2 / 3) * h ** (1 / 3)) - xi,
-                    -0.5,
-                    0.5,
-                )
-                for xi in x
-            ]
-        )
+        t = -x * RELU_KAPPA ** (2 / 3) * h ** (1 / 3)
         m = np.array([relu_order_parameter(1 + ti, h) for ti in t])
         actual_x, scaled_m = kinked_scaling(t, h, m)
         np.testing.assert_allclose(actual_x, x, atol=1e-9)
         errors.append(np.max(np.abs(scaled_m / theory - 1)))
-    assert 1e-4 < errors[0] < 0.004  # Full-map corrections remain visible.
-    assert errors[1] < errors[0] / 10
-    assert errors[2] < errors[1] / 10
-    assert errors[2] < 1e-5
+    assert 0.05 < errors[0] < 0.1  # The original figure shows these departures.
+    assert errors[1] < errors[0] / 3
+    assert errors[2] < errors[1] / 3
+    assert errors[2] < 0.004
+
+
+def test_kinked_scan_preserves_the_original_figure():
+    # Independent values from the original arc-cosine-map figure generator.
+    # Catch changes to the fixed parameter or to the critical normalization.
+    rows = relu_fixed_rho_scan([0.1], [-0.3, 0.3])
+    np.testing.assert_allclose(rows[:, 2], [0.07, 0.13], atol=1e-15)
+    np.testing.assert_allclose(rows[:, 3], [0.1795603267404471, 1.045076230424892], atol=1e-11)
+    x, y = kinked_scaling(rows[:, 1], rows[:, 2], rows[:, 3])
+    np.testing.assert_allclose(x, [1.623950038999491, -1.321166520908098], atol=1e-11)
+    np.testing.assert_allclose(y, [0.4738718796627341, 1.825443151742836], atol=1e-11)
 
 
 def test_kinked_universal_positive_branch_and_axis_sign():
@@ -89,4 +96,4 @@ def test_kinked_universal_positive_branch_and_axis_sign():
     np.testing.assert_allclose(y**1.5 + x * y, 1, atol=1e-11)
     assert np.all(np.diff(y) < 0)
     assert kinked_universal(0) == pytest.approx(1)
-    assert kinked_universal(-1.25) > 2  # The old y limit cut off the theory.
+    assert kinked_universal(-1.25) > 2  # The displayed window is a zoom.

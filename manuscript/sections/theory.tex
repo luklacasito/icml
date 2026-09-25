@@ -279,7 +279,7 @@ so a fixed \(h\)-budget and a fixed dropout-probability budget agree to leading 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.93\textwidth]{figures/theory/river_ink.pdf}
-\caption{A set amount of ink is distributed along a river with the goal of corrupting every cross section as much as possible. Front-loading and letting the current propagate the ink forward is the way to go. The ink is carried downstream without fading, and the percentages show average exposure along the river.}
+\caption{Imagine you have a flowing river and a set amount of ink, with the goal of causing as much corruption as possible at every point: where would you drop it? Framing current dropout practice through this lens makes it clear why front-loading is more effective: the current carries the ink forward.}
 \label{fig:river_reach}
 \end{figure*}
 
@@ -301,7 +301,7 @@ For kinked activations at $t=0$, one has $\xi^{-1}\propto h^{1/3}$, so the objec
 \paragraph{Where should the ink enter?}
 Dropout is used to ``corrupt'' the network so as to prevent it from memorizing certain ``paths'' from input to output. A toy model for understanding how to best corrupt every part of the network with a set amount of damage is to imagine a similar system: a river where a set amount of ink is to be distributed with the goal of corrupting every cross section as much as possible. Reframed this way, it is obvious that front-loading and letting the current propagate the ink forward is the way to go. While this serves as an intuitive explanation, regularization reach makes this intuition explicit.
 
-To make the toy model precise, use normalized depth $x=\ell/L$ and write $j(x)=h(x)/\bar h$ for the injection density, with $\bar h>0$ and $\int_0^1j(x)\,dx=1$. In the limit of negligible attenuation shown in Fig.~\ref{fig:river_reach}, the accumulated exposure at $x$ and its average along the river are
+To make the toy model precise, use normalized depth $x=\ell/L$ and write $j(x)=h(x)/\bar h$ for the injection density, with $\bar h>0$ and $\int_0^1j(x)\,dx=1$. For the river in Fig.~\ref{fig:river_reach}, where the ink does not fade as it travels downstream, the accumulated exposure at $x$ and its average along the river are
 \begin{align}
 E(x)&=\int_0^x j(s)\,ds,\\
 \bar E&=\int_0^1 E(x)\,dx

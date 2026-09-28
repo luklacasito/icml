@@ -1,0 +1,16 @@
+\section{Conclusions}
+Smooth and kinked activations respond differently to dropout, giving different scaling laws for how far input correlations propagate at initialization. At fixed average dropout field, our propagation approximation favours concentrating dropout in fewer layers, while regularization reach favours placing those layers near the input, where each mask can affect more of the network. We show front-loading can improve the model chosen by validation loss and restrain the rise in test loss when training continues. In the CIFAR-10 budget comparison, uniform dropout's mean test loss rises by $32.0\%$ from its minimum to the final epoch, compared with $4.3\%$ for big-step dropout, while the latter's accuracy continues to improve. Speech Commands shows clear gains in both architectures on held-out clips; whether these gains extend to unseen speakers remains to be tested. Across the broader benchmarks, MLP gains are more consistent, while the difference in test loss for the larger Tiny ImageNet Transformer remains inconclusive when we choose the models by validation loss. It remains to extend this mean-field analysis to attention mechanisms and include finite-width corrections.
+
+\section{Limitations}
+Our theory describes initialization. Training changes the weights and the correlation curves, as Fig.~\ref{fig:cifar_correlations} shows, so the initialization calculation alone cannot predict the trained network's performance. We assume wide MLPs, with finite-width corrections that remain small as they accumulate with depth through $L/N$. In the scheduling calculation, we approximate each layer by its local fixed point, while regularization reach adds the effects of separate masks using the same decay scale. Strong dropout and interactions between masks can make these approximations fail.
+
+The Transformer experiments test whether the same scheduling idea works beyond the MLPs described by our theory. Appendix~\ref{app:cnn_extension} discusses related Gaussian kernels in CNNs and residual branches; how dropout changes propagation through the full network remains to be derived. The observed loss curves measure overfitting, rather than memorization directly.
+
+\noindent\emph{Acknowledgments.} The author thanks Riccardo Penco for support and discussions, and the anonymous ICML reviewers for feedback that sharpened the scheduling discussion and the treatment of the kinked-class scaling path. This work is partially supported by the U.S. Department of Energy under grant DE-SC0010118.
+
+\section*{Reproducibility Statement}
+\phantomsection\label{sec:reproducibility}
+The repository contains training code, saved measurements and scripts for plotting and confidence intervals. Appendix~\ref{app:experimental_info} gives the CIFAR protocols; App.~\ref{app:benchmark_protocols} gives the protocols for the other datasets and identifies settings that could not be recovered. The missing CIFAR-100 configuration is documented alongside its reported training settings in Table~\ref{tab:vit_config}.
+
+\section*{Impact Statement}
+The main practical benefit is improved performance at fixed training cost, or potentially less training to reach a given level of performance. We do not anticipate additional ethical risks.

@@ -1,0 +1,279 @@
+\section{Critical Exponents and Non-Analyticity}
+\label{ap:exponent_derivations}
+
+The Hermite decomposition in App.~\ref{sec:hermite} determines which expansion is valid near perfect alignment. In the Gaussian channel,
+\begin{equation}
+F(c)=\frac{\sigma_w^2\sum_{n\ge0}a_n^2 c^n+\sigma_b^2}{q^*}.
+\end{equation}
+The derivative moments assumed for smooth activations make this series differentiable to the order needed at $c=1$, giving the finite Taylor expansion used in the Landau equation below. This does not require analyticity or convergence of an infinite Taylor series. A kink produces a power-law Hermite tail, so high-degree modes contribute collectively as \(c\to1\); the Taylor expansion is replaced by the branch-point term \(m^{3/2}\), which is the source of the kinked exponents.
+
+\begin{table}[h]
+\caption{Definitions of critical exponents near the correlation edge in the infinite-width theory ($t,h\to0$). Here $C_{\rm sing}=-\partial_t^2 f_{\rm sing,on}(t,0)$, where $f_{\rm sing,on}$ is the singular Landau potential evaluated at its stable stationary point.}
+\label{tab:math_exponents}
+\centering
+\renewcommand{\arraystretch}{1.8}
+\begin{tabular}{lc}
+\toprule
+Exponent & Mathematical Definition \\
+\midrule
+$\beta$ & $m \sim t^\beta \quad (h=0,\ t\to0^+)$ \\
+$\delta$ & $m \sim |h|^{1/\delta} \quad (t=0)$ \\
+$\gamma$ & $\chi_M \equiv \left. \frac{\partial m}{\partial h} \right|_{h \to 0} \sim |t|^{-\gamma}$ \\
+$\alpha$ & $C_{\rm sing} \sim t^{-\alpha} \quad (t\to0^+)$ \\
+$\nu_t$ & $\xi \sim |t|^{-\nu_t} \quad (h=0)$ \\
+$\nu_\rho$ & $\xi \sim |h|^{-\nu_\rho} \quad (t=0)$ \\
+$\theta_{\rm rel}$ & $m \sim \ell^{-\theta_{\rm rel}} \quad (t=0, h=0)$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Smooth Networks}
+
+The nonnegative solution of the leading smooth equation is
+\begin{equation}
+m(t,h)=\frac{t+\sqrt{t^2+2g_\rho h}}{g_\rho},
+\label{eq:m_smooth_solution}
+\end{equation}
+and at the edge,
+\begin{equation}
+m(0,h)=\sqrt{\frac{2h}{g_\rho}}.
+\label{eq:m_at_edge}
+\end{equation}
+
+Along the critical isotherm \(t=0\), \eqref{eq:EoS_correct} gives
+\begin{equation}
+h=\frac{g_\rho}{2}m^2 \qquad\Rightarrow\qquad m\sim h^{1/2},
+\end{equation}
+so \(\delta=2\). The analogue of the magnetic susceptibility is \(\chi_M(t)\equiv \left.\partial m/\partial h\right|_{h\to 0}\).
+On the subcritical side \(t<0\), the analytic branch satisfies \(m\simeq -h/t\), hence \(\chi_M(t)\sim |t|^{-1}\) and \(\gamma=1\).
+Along \(h=0\), the physical branch is \(m=0\) for \(t\le 0\) and \(m=2t/g_\rho\) for \(t\ge 0\), so \(m\sim t\) as \(t\to 0^+\) and \(\beta=1\).
+
+\vspace{0.25em}
+\noindent
+The depth correlation length follows from linearizing the correlation dynamics about the displaced fixed point.
+To leading order,
+\begin{equation}
+\lambda \equiv \bar F_\rho'(c^*) = \bar F_\rho'(1-m)\simeq \chi_\rho-g_\rho m = 1+t-g_\rho m,
+\end{equation}
+and substituting \eqref{eq:m_smooth_solution} gives
+\begin{equation}
+\lambda(t,h)=1-\sqrt{t^2+2g_\rho h}.
+\label{eq:lambda_smooth_correct}
+\end{equation}
+For \(\lambda\simeq 1\) with \(\lambda>0\), the depth correlation length satisfies
+\begin{equation}
+\xi_{c,\rho}^{-1}\equiv -\log\lambda \simeq 1-\lambda = \sqrt{t^2+2g_\rho h}.
+\end{equation}
+Thus \(\xi_{c,\rho}(t,0)\sim |t|^{-1}\) and \(\nu_t=1\), while \(\xi_{c,\rho}(0,h)\sim h^{-1/2}\) and \(\nu_\rho=1/2\).
+Equivalently, \(y_t=1/\nu_t=1\) and \(y_\rho=1/\nu_\rho=2\), so dropout is the more relevant perturbation of the correlation edge.
+
+At the marginal point \(t=h=0\), the same smooth normal form gives the depth relaxation law:
+\begin{equation}
+m_{\ell+1}-m_\ell\simeq-\frac{g_\rho}{2}m_\ell^2.
+\end{equation}
+In a continuum-depth approximation this gives \(m(\ell)\sim \ell^{-1}\), hence \(\theta_{\rm rel}=1\) for the smooth class.
+
+\vspace{0.25em}
+\noindent
+A pseudo-free-energy functional consistent with \eqref{eq:EoS_correct} is
+\begin{equation}
+f(t,m;h) = -\frac{t}{2} m^2 + \frac{g_\rho}{6} m^3 - h m,
+\label{eq:free_energy_correct}
+\end{equation}
+since \(\partial f/\partial m=0\) is equivalent to \eqref{eq:EoS_correct}. As with a low-order one-particle-irreducible (1PI) effective action, its stationarity condition gives the equation of state, while its singular part evaluated at the stationary point gives analogues of the thermodynamic exponents; analytic \(m\)-independent backgrounds can be added without changing the physics of the recursion.
+
+At \(h=0\), substituting the physical branch
+\(m=0\) for \(t\le 0\) and \(m=2t/g_\rho\) for \(t\ge 0\) yields
+\begin{equation}
+f_{\rm on}(t,0)=0 \quad (t\le 0), \qquad f_{\rm on}(t,0)=-\frac{2}{3g_\rho^{2}} t^{3}\quad (t\ge 0).
+\end{equation}
+Therefore the analogue of the specific heat, \(C\equiv -\partial_t^{2} f_{\rm on}\), stays finite and vanishes linearly:
+\begin{equation}
+C(t)=\frac{4}{g_\rho^{2}} t \Theta(t)\sim |t|,
+\end{equation}
+where $\Theta(t)$ is the Heaviside step function. In standard exponent language \(C_{\rm sing}(t)\sim |t|^{-\alpha}\), this corresponds to
+\begin{equation}
+\alpha=-1,
+\end{equation}
+up to an additive analytic background \(f_0(t,h)\) that does not affect the equation of state.
+
+Collecting exponents for the smooth universality class:
+\begin{equation}
+\beta=1, \qquad \gamma=1, \qquad \delta=2, \qquad \nu_t=1, \qquad \nu_\rho=\frac{1}{2}, \qquad \theta_{\rm rel}=1, \qquad \alpha=-1.
+\end{equation}
+
+\subsection{Kinked Networks}
+\label{sec:kinks}
+
+For \relu{}, take \(\sigma_b=0\) and the same inverted-dropout convention, with masks drawn independently across inputs. The clean correlation map has the arc-cosine form \cite{ChoSaul2009ArcCosine}
+\begin{align}
+F_{\ReLU}(c) &= \frac{1}{\pi} \Bigl[ \sqrt{1-c^{2}} + \bigl(\pi-\cos^{-1}c\bigr)c \Bigr].
+\label{eq:relu_map_rho1}
+\end{align}
+Near perfect alignment, setting \(c=1-m\) with \(0<m\ll 1\), one obtains the non-analytic expansion
+\begin{align}
+F_{\ReLU}(1-m) &= 1-m+\kappa m^{3/2}+{\cal O}(m^{2}),
+\label{eq:relu_expand}\\
+\kappa &\equiv \frac{2\sqrt{2}}{3\pi}. \nonumber
+\end{align}
+With dropout, the field is exactly
+\begin{equation}
+h \;=\; 1-\bar F_\rho(1) \;=\; 1-\rho,
+\label{eq:relu_h_correct}
+\end{equation}
+since independent masks supply the mismatch at \(c=1\). For the literal bias-free \relu{} map, \(\bar F_\rho(c)=\rho F_{\ReLU}(c)\), so \(\chi_\rho=\rho\) and \(t=\rho-1=-h\). Thus the \(t=0,h>0\) direction below is the field direction of the kinked normal form, while standard \relu{} dropout follows a constrained path through the same scaling function.
+
+The fixed-point condition \(c^*=\bar F_\rho(c^*)\), with \(m^*=1-c^*\ll1\), combines the field, slope and branch term into
+\begin{equation}
+h \;=\; \kappa m^{3/2} - t m + \mathcal O(m^2), \qquad t\equiv \chi_\rho-1.
+\label{eq:eos_kink_correct}
+\end{equation}
+Along the critical isotherm \(t=0\) of the normal form, this gives
+\begin{equation}
+m^* \;\sim\; \left(\frac{h}{\kappa}\right)^{2/3}, \qquad (t=0),
+\label{eq:kink_mstar}
+\end{equation}
+so the smooth exponent \(\delta=2\) is replaced by
+\begin{equation}
+m \propto h^{1/\delta_{\mathrm{kink}}}, \qquad \delta_{\mathrm{kink}}=\frac{3}{2}.
+\label{eq:kink_delta}
+\end{equation}
+And with this we immediately find the smoking gun telling us that kinked and smooth activations fall into distinct mean-field universality classes under the dropout deformation. As before, the depth scale follows from linearizing the correlation dynamics around \(c^*\). Differentiating \eqref{eq:relu_expand} gives
+\begin{equation}
+\lambda \equiv \bar F_\rho'(c^*) \simeq 1+t-\frac{3\kappa}{2}\sqrt{m^*}.
+\label{eq:kink_slope}
+\end{equation}
+At \(t=0\) we therefore have
+\begin{equation}
+1-\lambda \propto \sqrt{m^*}\propto h^{1/3}.
+\end{equation}
+Using \(\xi_{c,\rho}^{-1}\simeq 1-\lambda\) for \(\lambda\simeq 1\) yields
+\begin{equation}
+\xi_{c,\rho}(0,h) \sim h^{-1/3}, \qquad \nu_{\rho,\mathrm{kink}}=\frac{1}{3},
+\label{eq:kink_nu}
+\end{equation}
+to be compared with the smooth result \(\xi_{c,\rho}(0,h)\sim h^{-1/2}\).
+For ordinary bias-free \relu{} dropout, substituting the constrained path \(t=-h\) into \eqref{eq:eos_kink_correct} gives
+\begin{equation}
+h=\kappa m^{3/2}+hm+\mathcal O(m^2).
+\end{equation}
+Since the leading solution has \(m\sim h^{2/3}\), the \(hm\) term is subleading. Moreover,
+\begin{equation}
+1-\lambda\simeq h+\frac{3\kappa}{2}\sqrt m\sim h^{1/3},
+\end{equation}
+so the same \(\nu_{\rho,\mathrm{kink}}=1/3\) survives along this constrained path.
+
+The remaining kinked exponents follow from the same equation of state. At \(h=0\) and \(t>0\),
+\begin{equation}
+\kappa m^{3/2}=tm \qquad\Rightarrow\qquad m=\left(\frac{t}{\kappa}\right)^2,
+\end{equation}
+so \(\beta_{\rm kink}=2\). On the subcritical side \(t<0\), the small-field balance is \(h\simeq |t|m\), giving \(\chi_M\sim |t|^{-1}\) and therefore \(\gamma_{\rm kink}=1\). Substituting the zero-field branch into \eqref{eq:kink_slope} gives \(1-\lambda\propto t\), so \(\xi_{c,\rho}(t,0)\sim t^{-1}\) and \(\nu_{t,\rm kink}=1\).
+
+Adding nonzero \relu{} bias variance does not restore a finite-\(q^*\) critical isotherm. With inverted dropout,
+\begin{equation}
+\bar q_{\ell+1}=\frac{\sigma_w^2}{2\rho}\bar q_\ell+\sigma_b^2,
+\end{equation}
+so finite variance requires \(a\equiv\sigma_w^2/(2\rho)<1\), while angular criticality requires \(\chi_\rho=\sigma_w^2/2=1\), incompatible with \(\rho<1\). Equivalently, \(h=a(1-\rho)\) and \(t=\rho a-1=-h-(1-a)\). Fixed subcritical detuning cuts off the divergence as \(h\to0\), whereas \(1-a=\mathcal O(h^{1/3})\) retains the \(h^{-1/3}\) scaling with a prefactor set by the rescaled detuning; \(1-a=o(h^{1/3})\) recovers the critical-isotherm prefactor.
+
+The pseudo-free-energy corresponding to \eqref{eq:eos_kink_correct} is
+\begin{equation}
+f_{\mathrm{kink}}(t,m;h) \;=\; -\frac{t}{2} m^2 + \frac{2\kappa}{5} m^{5/2} - h m,
+\label{eq:free_energy_kink}
+\end{equation}
+since $\partial f_{\mathrm{kink}}/\partial m=0$ gives $h=\kappa m^{3/2}-tm$ at leading order. In the effective-action language, the \(m^{5/2}\) term is the pseudo-free-energy avatar of the branch point in the \relu{} correlation map; this is precisely where the kinked universality class departs from the analytic Landau polynomial above.\footnote{
+As before, $f_{\mathrm{kink}}$ is defined only up to addition of an $m$-independent analytic background $f_0(t,h)$, which does not affect the equation of state.
+}
+At zero field the physical branch is $m=0$ for $t\le 0$ and $m=(t/\kappa)^2$ for $t\ge 0$, so the on-shell free energy behaves as
+\begin{equation}
+f_{\mathrm{kink,on}}(t,0)=0 \quad (t\le 0), \qquad f_{\mathrm{kink,on}}(t,0)=-\frac{1}{10\kappa^{4}} t^{5}\quad (t\ge 0).
+\end{equation}
+Thus the analogue of the specific heat, $C\equiv-\partial_t^{2} f_{\mathrm{kink,on}}$, stays finite and in fact vanishes as
+\begin{equation}
+C(t)\;=\;\frac{2}{\kappa^{4}} t^{3} \Theta(t)\;\sim\;|t|^{3}.
+\end{equation}
+In the standard exponent convention $C_{\mathrm{sing}}(t)\sim |t|^{-\alpha}$, this corresponds to
+\begin{equation}
+\alpha_{\mathrm{kink}}=-3.
+\end{equation}
+
+At the marginal point \(\rho=1\), \(t=0\), the same non-analytic term controls relaxation. Writing \(m_\ell\equiv1-c_\ell\), \eqref{eq:relu_expand} gives
+\begin{equation}
+m_{\ell+1}-m_\ell \simeq -\kappa m_\ell^{3/2}.
+\label{eq:kink_relax}
+\end{equation}
+In a continuum-depth approximation \(m_{\ell+1}-m_\ell\to \partial_\ell m\), we obtain
+\begin{equation}
+\partial_\ell m \simeq -\kappa m^{3/2} \qquad\Rightarrow\qquad m(\ell)\sim \ell^{-2},
+\label{eq:kink_relax_sol}
+\end{equation}
+which reproduces the characteristic \(1-c_\ell\sim \ell^{-2}\) relaxation of \relu{} activations at the edge-of-chaos \cite{hayou2019impact} and gives \(\theta_{\rm rel}=2\).
+
+\subsection{Origin of the $m^{3/2}$ Term for Kinked Activations}
+\label{app:tube_argument_kink}
+
+To establish the fractional power beyond \relu{}, assume \(\phi\) is continuous and piecewise \(C^2\), with a finite slope jump at the kink, a locally bounded regular second derivative, and Gaussian square-integrability of \(\phi\), \(\phi'\) and that regular derivative. Absorb the fixed marginal variance into \(\phi\) and let \((u_1,u_2)\) be standard Gaussian marginals with correlation \(c=1-m\), \(0<m\ll1\). Introduce the sum and difference coordinates
+\begin{equation}
+s=\frac{u_{1}+u_{2}}{\sqrt{2}}, \qquad d=\frac{u_{1}-u_{2}}{\sqrt{2}}.
+\end{equation}
+A direct covariance computation gives
+\begin{equation}
+\mathrm{Var}(s)=1+c=2-m, \qquad \mathrm{Var}(d)=1-c=m, \qquad \mathbb{E}[sd]=0.
+\end{equation}
+The transverse fluctuation therefore has root-mean-square size \(\sqrt m\), concentrating the joint Gaussian measure in a thin tube around \(u_1=u_2\). The probability of straddling the kink is \(\mathcal O(\sqrt m)\), and within that region the activation mismatch produced by the slope jump has root-mean-square size \(\mathcal O(\sqrt m)\). The kernel correction is consequently \(\mathcal O(\sqrt m)\times\mathcal O(m)=\mathcal O(m^{3/2})\).
+
+For an explicit calculation with a single kink, put it at \(u=0\), let its one-sided slopes be \(a_\pm\), and write locally
+\begin{equation}
+\phi(u)=\phi(0)+a_- u+\big(a_+-a_-\big) \ReLU(u)+r(u), \qquad r(u)=\mathcal O(u^2)\ \ \text{as }u\to 0,
+\end{equation}
+where \(r\) has no slope jump. For \(K(c)=\mathbb E[\phi(u_1)\phi(u_2)]\), Price's second derivative pairs the delta functions from the jump \(\Delta a=a_+-a_-\), giving
+\begin{equation}
+K''(c)=\frac{(\Delta a)^2}{2\pi\sqrt{1-c^2}}+\mathcal O(1).
+\end{equation}
+The mixed and regular terms are bounded under the stated assumptions. Integrating twice toward \(c=1\) yields
+\begin{equation}
+K(1-m)=K(1)-K'(1)m+\frac{\sqrt2(\Delta a)^2}{3\pi}m^{3/2}+\mathcal O(m^2).
+\end{equation}
+At the marginal zero-field point, variance normalization therefore gives
+\begin{equation}
+F(1-m)=1-m+\kappa_\phi m^{3/2}+\mathcal O(m^2).
+\end{equation}
+For \relu{}, \(F=2K\) recovers \(\kappa=2\sqrt2/(3\pi)\) in \eqref{eq:relu_expand}. Moving the kink changes the Gaussian density at its location and hence the amplitude, while the exponent remains \(3/2\). Mere continuity of \(r'\) would not suffice for the stated remainder.
+
+\subsection{Crossover Functions and Limiting Branches}
+\label{app:crossover_details}
+
+The smooth solution \eqref{eq:m_smooth_solution} yields the rescaled curve \eqref{eq:universal_scaling_function_smooth_correct}. Its crossover scale is
+\begin{equation}
+|t|\sim\sqrt{g_\rho h}.
+\label{eq:crossover_scale_smooth}
+\end{equation}
+For $|t|\ll\sqrt{g_\rho h}$, dropout controls the response,
+\begin{equation}
+m\sim\sqrt{\frac{2h}{g_\rho}}.
+\label{eq:field_dominated_smooth}
+\end{equation}
+For $|t|\gg\sqrt{g_\rho h}$, the two limiting branches are
+\begin{align}
+t<0:\qquad m&=\frac{h}{|t|}+\mathcal O\!\left(\frac{g_\rho h^2}{|t|^3}\right),\\
+t>0:\qquad m&=\frac{2t}{g_\rho}+\frac{h}{t}+\mathcal O\!\left(\frac{g_\rho h^2}{t^3}\right).
+\end{align}
+These are asymptotic expansions of the leading equation of state, with its coefficients held fixed; the full smooth map also contains $\mathcal O(m^3)$ terms.
+
+For kinked activations, define the rescaled detuning $u$ and response function $\mathcal F$ by
+\begin{align}
+u&\equiv\frac{t}{\kappa^{2/3}h^{1/3}},
+\label{eq:def_u}\\
+m(t,h)&=\left(\frac{h}{\kappa}\right)^{2/3}\mathcal F(u).
+\label{eq:m_kink_scaling_form}
+\end{align}
+The leading equation \eqref{eq:eos_kink_correct} fixes $\mathcal F$ through the positive real root $y(u)$ of
+\begin{equation}
+y^3-uy^2-1=0,\qquad \mathcal F(u)=y(u)^2.
+\label{eq:cubic_y_correct}
+\end{equation}
+The crossover occurs at
+\begin{equation}
+|t|\sim\kappa^{2/3}h^{1/3}.
+\label{eq:crossover_scale_kink}
+\end{equation}
+The ordinary bias-free \relu{} path $t=-h$ satisfies $u\to0$ as $h\to0$, retaining the field-dominated $\xi\sim h^{-1/3}$ law derived above. Corrections to this collapse include the $\mathcal O(m^2)$ terms in the kinked map, changes in its coefficients away from the reference edge, and the nonlinear microscopic relation between $h$ and $\rho$.

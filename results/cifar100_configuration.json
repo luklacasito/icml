@@ -1,0 +1,97 @@
+{
+  "status": "Partial recovery: dataset sizes inferred; settings used for the saved runs remain unverified.",
+  "result_file": "results/vit_schedules.json",
+  "result_sha256": "9301bcbd5c3404970da872bbac3966585a0ca5d20e49ce96ad8833c100ccefb6",
+  "sources": {
+    "initial_git_commit": "48cc5ee (2026-02-11)",
+    "original_result_path": "Transformer CIFAR100 overfitting/vit_dropout_results.json",
+    "original_result_byte_identical": true,
+    "original_notebook_path": "Transformer CIFAR100 overfitting/vit_dropout_scheduling_cifar100_final.ipynb",
+    "original_notebook_git_sha256": "047fa38f31c41599fb4c256043dd3b7c2abb44e45175d717c0b180ae8863c492",
+    "retained_notebook_snapshot_sha256": "563c8aa0baa3f3c417d27ff86893a55772e19417ee3244d1c097967b5b2b3fea",
+    "configuration_cell": 2,
+    "dataset_cell": 6,
+    "evaluation_cell": 7,
+    "cell_numbering": "zero-based"
+  },
+  "confirmed": {
+    "profiles": [
+      "none",
+      "constant",
+      "reverse_step",
+      "reverse_linear"
+    ],
+    "runs_per_profile": 10,
+    "epochs_per_run": 75,
+    "saved_configuration": false,
+    "saved_seed_ids": false
+  },
+  "dataset_size_inference": {
+    "train_examples": 50000,
+    "test_examples": 10000,
+    "method": "The least common denominator of all accuracy fractions (percentage/100) fixes the minimum number of equally weighted examples. It equals the full CIFAR-100 partition size for each split.",
+    "assumptions": [
+      "Saved evaluator computes 100 * integer_correct / total over one pass, as in original notebook cell 7.",
+      "Each dataset is a subset without replacement of its CIFAR-100 partition, as in original notebook cell 6.",
+      "Accuracy entries are not averages over different subsets or repetitions."
+    ],
+    "checks": {
+      "train_acc": {
+        "values_checked": 3000,
+        "minimum_common_sample_denominator": 50000
+      },
+      "test_acc": {
+        "values_checked": 3000,
+        "minimum_common_sample_denominator": 10000
+      }
+    }
+  },
+  "reported_notebook_settings_not_run_verified": {
+    "embed_dim": 128,
+    "depth": 10,
+    "heads": 16,
+    "mlp_ratio": 4.0,
+    "patch_size_in_actual_model": 4,
+    "mean_dropout": 0.1,
+    "maximum_dropout": 0.2,
+    "optimizer": "AdamW",
+    "learning_rate": 0.0005,
+    "weight_decay": 0.0,
+    "epochs": 75,
+    "batch_size": 250,
+    "scheduler": "CosineAnnealingLR(T_max=75, eta_min=5e-6), step after each training epoch",
+    "loss": "CrossEntropyLoss",
+    "gradient_clip_norm": 1.0,
+    "seed_rule": "42 + sim",
+    "activation": "ReLU",
+    "normalization": "pre-LayerNorm",
+    "dropout_location": "attention output and feedforward output before each residual addition",
+    "initialization": "Linear weights and learned class/position embeddings truncated normal std 0.02; linear biases 0; LayerNorm weight 1/bias 0; patch Conv2d library default",
+    "preprocessing": {
+      "scale": 255,
+      "mean": [
+        0.5071,
+        0.4867,
+        0.4408
+      ],
+      "std": [
+        0.2675,
+        0.2565,
+        0.2761
+      ],
+      "augmentation": null
+    },
+    "precision": "CUDA autocast bfloat16 if supported, otherwise float16; actual runtime unknown"
+  },
+  "notebook_mismatch": {
+    "original_configuration": "One simulation, 2,000 training examples and 5,000 test examples, already present in the earliest Git notebook.",
+    "restored_defaults": "Commit d5e7379 (2026-09-21) changed the notebook to ten simulations and full data to match the paper; this is not saved run metadata.",
+    "saved_outputs": "The retained notebook prints 2,006,756 parameters and Train: 2000, Test: 5000. Its summary reproduces the archived means by loading the JSON, while the training cell has no saved output."
+  },
+  "remaining_uncertainty": [
+    "Exact historical optimizer and architecture settings are reported in original code, but no saved config ties them to these rows.",
+    "Seeds 42-51 follow the code rule but are not stored as row identifiers.",
+    "No original checkpoint weights, source/config hashes stored with runs, library versions, or runtime hardware records were found."
+  ],
+  "tracker_or_weights_recovery": "The original notebook has no W&B, MLflow or TensorBoard logging and does not save model weights."
+}

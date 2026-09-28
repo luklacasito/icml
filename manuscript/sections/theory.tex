@@ -1,0 +1,241 @@
+\section{Universality Classes and Critical Scaling under Dropout}
+
+The following analysis provides the mathematical basis for our scheduling argument, with results on critical scaling and universality that may be of particular interest to physicists. Readers primarily interested in experimental performance can skip directly to Sec.~\ref{sec:experiments}.
+
+Dropout \cite{srivastava2014dropout,wager2013dropout} is often used as a regularizer that reduces overfitting by randomly masking activations during training, thereby reducing the network's reliance on any single subset of pathways and discouraging co-adaptation. In the previous literature, dropout was explored in MFT \cite{lee2019mean, schoenholz2017deepinformationpropagation}, but not in the universality class sense. We apply dropout after the activation as multiplicative Bernoulli noise,
+\begin{equation}
+p^{(\ell)}_{j} \sim \mathrm{Bernoulli}(\rho), \qquad y^{(\ell)}_j \;\mapsto\; \tilde y^{(\ell)}_j \equiv \frac{p^{(\ell)}_{j}}{\rho} y^{(\ell)}_j,
+\end{equation}
+i.e.\ the standard inverted-dropout convention in which $\mathbb E_p[\tilde y^{(\ell)}_j]=y^{(\ell)}_j$, and hence $\mathbb E_p[\tilde z^{\ell+1}_i\mid W,b,y^\ell]=z^{\ell+1}_i$, so the mean preactivation is invariant to the dropout rate \cite{schoenholz2017deepinformationpropagation}. Throughout, $\rho$ is the keep probability. When comparing two inputs, we draw the dropout masks independently for each input\footnote{Correlated dropout masks can alleviate this detuning: if the same mask is shared across the batch, the \(c=1\) fixed point is preserved and near-critical scaling can be recovered by retuning, but the noise becomes batch coupled and the regularization is correspondingly weaker and more structured. We leave detailed analysis of correlated masks to future work.}; this independence is the source of the decorrelation effect analyzed below.
+
+The smooth/kinked distinction also appears in the Hermite expansion of the activation: $\tanh$ has rapidly decaying coefficients, while \relu{} has a power-law tail. These coefficients determine which derivatives of the correlation map remain finite near perfect alignment, connecting activation regularity to the dropout scaling laws (App.~\ref{sec:var-opt-act}).
+
+Our classification differs from the distinction between scale-invariant and non-scale-invariant activations in \cite{roberts2022principlesdeeplearningtheory}: the decay of the Hermite coefficients depends primarily on analytic structure rather than scale invariance. We distinguish the two classes because (a) near-critical scaling laws differ between smooth and kinked activations, and (b) ordinary kinks produce power-law Hermite tails, whereas the smooth examples considered here have much faster decay (Apps.~\ref{ap:exponent_derivations} and~\ref{sec:var-opt-act}).
+
+Consider sending exactly the same input through the same network twice. Without dropout, the two representations remain identical at every layer. With independently sampled dropout masks, different coordinates are erased on the two passes, so even identical inputs no longer produce perfectly aligned representations. Rescaling the surviving activations preserves their mean, but does not restore the missing agreement between the two passes. Perfect alignment therefore ceases to be a fixed point, cutting off the divergence of the depth correlation length at the edge \cite{schoenholz2017deepinformationpropagation}. For a single input, the corresponding variance increase can instead be absorbed into an effective weight variance, $\sigma_w^2\mapsto\sigma_w^2/\rho$.
+
+With keep probability $\rho$, the preactivations become
+\begin{equation}
+z_i^\ell = \frac{1}{\rho} \sum_{j=1}^{N_{\ell-1}} W_{ij}^\ell p_j^{\ell-1} y_j^{\ell-1} + b_i^\ell.
+\end{equation}
+The single-input variance recursion becomes
+\begin{equation}
+\bar{q}_{aa}^{\ell} = \frac{\sigma_{w}^{2}}{\rho} \int Dz \phi^{2}\left( \sqrt{\bar{q}_{aa}^{\ell-1}} z \right) + \sigma_{b}^{2},
+\end{equation}
+where the bar marks the change in variance due to dropout, and a variance fixed point, if it exists, satisfies
+\begin{equation}
+\bar q^{*} \;=\; \frac{\sigma_w^2}{\rho}\int Dz \phi^2\big(\sqrt{\bar q^{*}} z\big) + \sigma_b^2.
+\label{eq:qstar-dropout}
+\end{equation}
+Assuming this variance fixed point exists and is positive, two distinct inputs $a\neq b$ that are perfectly aligned at one layer become less correlated at the next. If $c^{\ell}_{ab}=1$, then \cite{schoenholz2017deepinformationpropagation}
+\begin{equation}
+\bar F_\rho(1)= \bar c^{\ell+1}_{ab} = 1 - \frac{1 - \rho}{\rho \bar{q}^{*}} \sigma_{w}^{2} \int Dz \phi^{2}\left( \sqrt{\bar{q}^{*}} z \right).
+\end{equation}
+We call this departure from perfect alignment the dropout field
+\begin{align}
+h &\;\equiv\; 1-\bar F_\rho(1)\nonumber\\
+&\;=\; \frac{1-\rho}{\rho \bar q^{*}}\; \sigma_w^2\int Dz \phi^2\big(\sqrt{\bar q^{*}} z\big).
+\label{eq:Delta_exact}
+\end{align}
+For a nondegenerate channel with $\sigma_w^2\int Dz\,\phi(\sqrt{\bar q^*}z)^2>0$, construction gives $\rho<1\Rightarrow h>0$,
+so the fixed point at $c^*=1$ is immediately spoiled: even if two inputs are perfectly aligned at some depth, the next layer produces $\bar c_{ab}=1-h<1$. For weak dropout, writing $\delta\rho\equiv 1-\rho$ with $\delta\rho\ll 1$, suppose the no-dropout variance fixed point is positive, isolated and stable, with variance-map derivative $|\chi_q|<1$. The implicit-function theorem then gives $\bar q^*=q^*+\mathcal O(\delta\rho)$, so to leading order
+\begin{equation}
+h = \delta\rho\; \frac{\sigma_w^2}{\bar q^{*}}\int Dz \phi^2\big(\sqrt{\bar q^{*}} z\big) + \mathcal O(\delta\rho^2).
+\label{eq:Delta_weakdrop}
+\end{equation}
+This variance expansion excludes a marginal variance fixed point. For bias-free \relu{} at unchanged He initialization, dropout gives $q_{\ell+1}=q_\ell/\rho$; its normalized correlation map can still be analyzed without a converged variance, as in App.~\ref{sec:kinks}.
+The backward pass has the same source of asymmetry. Let \(\delta^\ell_{j,a}\) be the backpropagated preactivation gradient for input \(a\). With inverted dropout,
+\begin{equation}
+\delta^\ell_{j,a} = \frac{p^\ell_{j,a}}{\rho} \phi'(z^\ell_{j,a}) \sum_i W^{\ell+1}_{ij}\delta^{\ell+1}_{i,a}.
+\end{equation}
+For equal hidden-layer widths, let \(G^\ell_{ab}\equiv \mathbb E[\delta^\ell_{j,a}\delta^\ell_{j,b}]\) denote the covariance per coordinate. Under the usual gradient-independence approximation at infinite width, the recursion contains
+\begin{equation}
+G^\ell_{ab} = \sigma_w^2 \mathbb E\left[ \frac{p^\ell_a p^\ell_b}{\rho^2} \phi'(u_a)\phi'(u_b) \right] G^{\ell+1}_{ab}.
+\end{equation}
+Thus independent masks give a diagonal factor \(\mathbb E[p_a^2]/\rho^2=1/\rho\) but an off-diagonal factor \(\mathbb E[p_a p_b]/\rho^2=1\). Dropout inflates single-sample gradient variance without similarly inflating cross-sample covariance, mirroring the forward asymmetry that produced \(h\). After normalization this suggests a backward field \(h_\nabla(\rho)\) that moves perfect gradient alignment below one. We do not identify it with the forward field: the backward kernel is built from \(\phi'\), not \(\phi\), and for \relu{} \(\phi'\) is discontinuous. A full dropout-deformed backward critical theory, including finite-width gradient susceptibilities and training-time mask correlations, is left for future work.
+
+\subsection{Activation Regularity and Critical Exponents}
+
+With masks drawn independently across units and inputs, we measure the fixed point's departure from perfect correlation by $m\equiv1-c^*$, and its detuning from the correlation edge by $t\equiv\chi_\rho-1$, where $\chi_\rho\equiv\bar F_\rho'(1)$ is the slope at perfect alignment. The dropout field $h$ is defined in \eqref{eq:Delta_exact}. For smooth activations, Price's theorem gives
+\begin{align}
+\chi_\rho &= \sigma_w^2\int Dz \big[\phi'(\sqrt{\bar q^{*}} z)\big]^2,
+\label{eq:chi_dropout}\\
+g_\rho &\equiv \bar F_\rho''(1) = \sigma_w^2 \bar q^{*}\int Dz \big[\phi''(\sqrt{\bar q^{*}} z)\big]^2.
+\label{eq:g_dropout}
+\end{align}
+We assume the derivative identities hold through third order, with $\phi',\phi'',\phi^{\prime\prime\prime}\in L^2(\mathcal N(0,\bar q^*))$, and that $\bar q^*$ and $g_\rho$ have finite positive limits near the reference edge (App.~\ref{app:price_dropout}). Expanding the fixed-point condition $1-m=\bar F_\rho(1-m)$ then gives, to leading order,
+\begin{equation}
+h = \frac{g_\rho}{2}m^2-tm.
+\label{eq:EoS_correct}
+\end{equation}
+The omitted term is $\mathcal O(m^3)$; when $g_\rho=0$, as for a linear activation, this smooth-class balance does not apply.
+
+For \relu{}, imagine two nearly identical signals arriving on opposite sides of zero: one passes through, while the other is clipped. At a fixed nonzero Gaussian variance and correlation $c$ close to one, the signals have a root-mean-square separation $\mathcal O(\sqrt{1-c})$, so a fraction $\mathcal O(\sqrt{1-c})$ can straddle the kink. Within this small region, their mean squared activation difference is $\mathcal O(1-c)$, giving a contribution $\mathcal O((1-c)^{3/2})$. A continuous, piecewise $C^2$ activation with a finite slope jump and locally bounded, Gaussian-integrable regular second derivative therefore has the leading balance
+\begin{equation}
+h=\kappa m^{3/2}-tm+\mathcal O(m^2),
+\label{eq:eos_kink_again}
+\end{equation}
+where $\kappa>0$ is the kink coefficient; for the normalized bias-free \relu{} map at the zero-dropout edge, $\kappa=2\sqrt{2}/(3\pi)$ (App.~\ref{app:tube_argument_kink}). At $t=0$, the two balances give $m\sim h^{1/2}$ for smooth activations and $m\sim h^{2/3}$ for kinked activations.
+
+To see what this changes in propagation, let $\lambda\equiv\bar F_\rho'(c^*)$ be the slope at the displaced fixed point. For $0<\lambda<1$, small correlation perturbations decay over the depth scale $\xi_{c,\rho}\equiv-1/\log\lambda$. At $t=0$, linearizing the two maps gives
+\begin{equation}
+\xi_{c,\rho}(0,h)\sim
+\begin{cases}
+h^{-1/2}, & \text{smooth activations},\\
+h^{-1/3}, & \text{kinked activations}.
+\end{cases}
+\end{equation}
+Independent dropout therefore makes the propagation length finite at the edge, and whether the activation is smooth or kinked determines how this length depends on dropout. It measures how quickly the network loses sensitivity to input correlations at initialization, which we use below to compare dropout schedules.
+
+Table~\ref{tab:critical_exponents} collects our exponents: $\xi(t,0)\sim|t|^{-\nu_t}$, $\xi(0,h)\sim h^{-\nu_\rho}$, $m(t,0)\sim t^\beta$ for $t>0$, $m(0,h)\sim h^{1/\delta}$, and $\left.\partial_hm\right|_{h\to0}\sim|t|^{-\gamma}$, with $\xi$ denoting $\xi_{c,\rho}$. At $t=h=0$, $m_\ell\equiv1-c_\ell\sim\ell^{-\theta_{\rm rel}}$ defines the relaxation exponent. For completeness, $\alpha$ describes $f_{\rm sing,on}(t,0)\sim t^{2-\alpha}$ as $t\to0^+$, where $f_{\rm sing,on}$ is the singular stationary value of a potential obtained by integrating the equation of state. App.~\ref{ap:exponent_derivations} gives the definitions and derivations.
+
+\begin{table}[h]
+\caption{Critical exponents for the two activation classes at initialization. The $\nu$ exponents measure depth correlation length. Ordinary bias-free \relu{} dropout follows $t=-h$, retaining the leading $\xi\sim h^{-1/3}$ law of the kinked field direction (App.~\ref{ap:exponent_derivations}).}
+\label{tab:critical_exponents}
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{} l ccccccc @{}}
+\toprule
+\textbf{Universality Class} & $\boldsymbol{\nu_t}$ & $\boldsymbol{\beta}$ & $\boldsymbol{\theta}_{\rm rel}$ & $\boldsymbol{\gamma}$ & $\boldsymbol{\delta}$ & $\boldsymbol{\nu_\rho}$ & $\boldsymbol{\alpha}$ \\
+\midrule
+\textbf{Smooth activation} & $1$ & $1$ & $1$ & $1$ & $2$ & $\frac{1}{2}$ & $-1$ \\[6pt]
+\textbf{Kinked activation} & $1$ & $2$ & $2$ & $1$ & $\frac{3}{2}$ & $\frac{1}{3}$ & $-3$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Figure~\ref{fig:dropout_scaling} checks these power laws by iterating the mean-field map and shows where the curves depart from them as we move away from the asymptotic regime.
+
+\begin{figure*}[ht]
+ \centering
+ \includegraphics[width=1.0 \textwidth]{\PaperRoot/figures/theory/critical_exponents.pdf}
+\caption{
+Critical scaling from the mean-field calculation. The top row shows the depth scale $-1/\log\chi$ on the ordered side, fixed-point decorrelation above the edge, and relaxation at criticality. The bottom row varies the dropout field at $\chi=1$. Dashed lines are log--log fits; quoted errors are regression standard errors on deterministic curves. Finite fitting windows and numerical approximation errors are not included. The tunable \relu{} channel is the formal family specified in App.~\ref{app:experimental_info}, rather than an independently tunable finite-variance \relu{} initialization.}
+ \label{fig:dropout_scaling}
+\end{figure*}
+
+\subsection{Scaling Collapse and Crossover Region}
+A scaling collapse asks whether curves that look different are the same response measured with different rulers. Here, changing the dropout strength changes both the natural scale of decorrelation and the amount of detuning needed to compete with it, so measuring each axis in its corresponding scale brings the different curves onto a common curve. For the smooth equation of state, define
+\begin{equation}
+\tilde m \equiv m \sqrt{\frac{g_\rho}{2h}}, \qquad \tilde t \equiv -\frac{t}{\sqrt{2g_\rho h}}.
+\label{eq:rescaled_vars_smooth}
+\end{equation}
+The rescaled response is
+\begin{equation}
+\tilde m = \sqrt{1+\tilde t^{2}}-\tilde t.
+\label{eq:universal_scaling_function_smooth_correct}
+\end{equation}
+This collapse is exact for the leading equation of state \cite{ZinnJustin2002QFTCritical}; the full mean-field curves approach it near criticality (Fig.~\ref{fig:uni_scaling}). The crossover occurs at $|t|\sim\sqrt{g_\rho h}$ for smooth activations and $|t|\sim\kappa^{2/3}h^{1/3}$ for kinked activations, separating the region where dropout sets the decorrelation from the region where distance to criticality matters more. App.~\ref{app:crossover_details} gives both scaling functions and their limiting branches.
+
+For ordinary bias-free \relu{}, the microscopic dropout path locks $t=-h$, so dropout controls the leading response as $h\to0$, without allowing us to vary the two parameters independently along $t=0,h>0$. Higher-order terms in the map and the nonlinear relation between $h$ and $\rho$ cause the curves to depart from the leading prediction at larger fields. These crossover scales indicate how close an initialization must be to the edge before dropout controls its propagation length; they do not by themselves predict trained performance.
+
+\begin{figure*}[ht]
+ \centering
+ \includegraphics[width=1.0\textwidth]{\PaperRoot/figures/theory/smooth_scaling_collapse.pdf}
+ \caption{
+ Two-parameter crossover and scaling collapse for the smooth universality class (tanh), computed from the full mean-field map. Each curve fixes the dropout probability $p=1-\rho$; its field $h$ and curvature $g_\rho$ are recomputed at each point. After rescaling, near-critical points approach the leading equation-of-state curve, while larger fields and decorrelations show departures from it. The kinked counterpart is shown in Fig.~\ref{fig:kinked_collapse}.}
+ \label{fig:uni_scaling}
+\end{figure*}
+
+\subsection{Optimal Dropout Scheduling and Regularization Reach}
+\label{subsec:optimal_dropout}
+
+Thus far, we have considered only homogeneous dropout schedules, where dropout is treated as a constant hyperparameter in depth. We now seek profiles that will keep or improve the regularization, while aiding information propagation through longer correlation lengths. Let us introduce a depth-dependent keep probability $\rho_\ell$ for the mask applied after the activation at layer $\ell$ and define the associated dropout field
+\begin{equation}
+h_\ell \;\equiv\; 1-\bar F_{\rho_\ell}(1),
+\end{equation}
+i.e. the shift of the correlation map at perfect alignment induced by keep probability $\rho_\ell$. If variances have settled so that a scalar map applies at each layer, the exact linear response along the trajectory $c_{\ell+1}=\bar F_{\rho_\ell}(c_\ell)$ is
+\begin{equation}
+\delta c_{L+1}=\left[\prod_{\ell=1}^L \bar F_{\rho_\ell}'(c_\ell)\right]\delta c_1.
+\end{equation}
+To compare schedules, we approximate each derivative by its value at the local fixed point and hold the near-critical coefficients $t$ and $g_\rho$ at the same reference values. In the smooth class it follows that (see \eqref{eq:lambda_smooth_correct})
+\begin{equation}
+\lambda(t,h_\ell)\;\simeq\; 1-\sqrt{t^2+2g_\rho h_\ell}.
+\end{equation}
+For $0<\lambda_\ell\lesssim 1$, this approximates the propagated perturbation by
+\begin{equation}
+\delta c_{L+1} \;\sim\; \prod_{\ell=1}^L \lambda_\ell \delta c_1, \qquad \lambda_\ell \;\equiv\; \lambda(t,h_\ell),
+\label{delta_c_dropout_perturb}
+\end{equation}
+so we define the effective correlation length as
+\begin{equation}
+\xi_{\rm eff}^{-1} \;\equiv\; -\frac{1}{L}\sum_{\ell=1}^L \log\lambda_\ell \;\simeq\; \frac{1}{L}\sum_{\ell=1}^L \sqrt{t^2+2g_\rho h_\ell}.
+\end{equation}
+At the correlation edge $t=0$, this reduces to
+\begin{equation}
+\xi_{\rm eff}^{-1}(t=0) \;\simeq\; \sqrt{2g_\rho} \frac{1}{L}\sum_{\ell=1}^L h_\ell^{1/2} \;\propto\; \frac{1}{L}\sum_{\ell=1}^L h_\ell^{1/2}.
+\label{eff_corr}
+\end{equation}
+Fix $\bar h=L^{-1}\sum_\ell h_\ell$ and $0\le h_\ell\le h_{\max}$, with $0<\bar h\le h_{\max}$. Jensen's inequality and the chord bound give
+\begin{equation}
+\frac{\bar h}{\sqrt{h_{\max}}}
+\le \frac1L\sum_{\ell=1}^L\sqrt{h_\ell}
+\le \sqrt{\bar h}.
+\end{equation}
+Uniform dropout therefore maximizes the leading-order decay rate and minimizes $\xi_{\rm eff}$. In the continuum, the minimum decay rate uses only $0$ and $h_{\max}$, with active fraction $f=\bar h/h_{\max}$. Its position is unrestricted; regularization reach below selects the input side:
+\begin{equation}
+h(x)=\begin{cases}h_{\max},&0\le x\le f,\\
+0,&f<x\le1,\end{cases}
+\qquad x=\ell/L.
+\end{equation}
+For finite $L$, at most one layer remains partially filled. The field budget agrees with a dropout-probability budget to leading order in weak dropout, by \eqref{eq:Delta_weakdrop}. These conclusions assume weak fields and local fixed points; abrupt schedules need not preserve this approximation.
+
+Comparing this step profile with uniform dropout in the continuum, to leading order uniform dropout yields $\xi_{\rm eff}\sim \bar h^{-1/2}$ while the step schedule gives
+\begin{equation}
+\frac{\xi_{\rm eff,step}}{\xi_{\rm eff,uniform}} = \sqrt{\frac{h_{\max}}{\bar h}} \;\ge\; 1.
+\end{equation}
+For kinked activations at $t=0$, the same local approximation gives $\xi_{\rm eff}^{-1}\propto L^{-1}\sum_\ell h_\ell^{1/3}$. Jensen's inequality and the chord bound now give
+\begin{equation*}
+\frac{\bar h}{h_{\max}^{2/3}}
+\le \frac1L\sum_{\ell=1}^L h_\ell^{1/3}
+\le \bar h^{1/3}.
+\end{equation*}
+Concentrating dropout therefore again maximizes the approximate $\xi_{\rm eff}$, with at most one partially filled layer; regularization reach selects the earliest layers.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.93\textwidth]{\PaperRoot/figures/theory/river_ink.pdf}
+\caption{Imagine you have a flowing river and a set amount of ink, with the goal of causing as much corruption as possible at every point: where would you drop it?}
+\label{fig:river_reach}
+\end{figure*}
+
+
+As an exercise to intuitively understand why this schedule makes sense without the need for MFT machinery, we consider the following thought experiment: dropout is used to ``corrupt'' the network so as to prevent it from memorizing certain ``paths'' from input to output. A toy model for understanding how to best corrupt every part of the network with a set amount of damage is to imagine a similar system: a river where a set amount of ink is to be distributed with the goal of corrupting every cross section as much as possible. Reframed this way, it is obvious that front-loading and letting the current propagate the ink forward is the way to go. While this serves as an intuitive explanation, the following regularization reach argument makes this intuition explicit mathematically.
+
+Let us normalize depth $x=\ell/L$ and write $j(x)=h(x)/\bar h$ for the injection density, with $\bar h>0$ and $\int_0^1j(x)\,dx=1$. For the river in Fig.~\ref{fig:river_reach}, where the ink does not fade as it travels downstream, the accumulated exposure at $x$ and its average along the river are
+\begin{align}
+E(x)&=\int_0^x j(s)\,ds,\\
+\bar E&=\int_0^1 E(x)\,dx
+       =\int_0^1(1-s)j(s)\,ds.
+\end{align}
+Uniform injection has $j=1$ throughout; early and late injection have $j=2$ over their respective halves. Thus
+\begin{equation}
+\bar E_{\rm early}=\tfrac34,\qquad
+\bar E_{\rm uniform}=\tfrac12,\qquad
+\bar E_{\rm late}=\tfrac14.
+\end{equation}
+All three schedules deliver the same total ink to the outlet, but expose different amounts of the river along the way.
+
+An early mask affects many later layers, even as its influence fades; a late mask has fewer layers left to regularize. To quantify this, compare the same signal with and without a mask at layer $\ell$, writing $c_k$ for their normalized second-moment overlap at layer $k$ and $\eta_k=1-c_k$. Inverted dropout preserves the cross moment but multiplies the masked second moment by $1/\rho_\ell$, so
+\begin{equation}
+\eta_\ell=1-\sqrt{\rho_\ell}
+=\frac{1-\rho_\ell}{2}+\mathcal O((1-\rho_\ell)^2).
+\end{equation}
+By \eqref{eq:Delta_weakdrop}, this is $\eta_\ell\simeq C h_\ell$ for a constant $C>0$. Neglecting variance transients, linearizing the ordered correlation map with $\lambda=F'(1)\in(0,1)$ gives
+\begin{align}
+\eta_{k+1}&\simeq\lambda\eta_k,\\
+\eta_{\ell+r}&\simeq\lambda^r\eta_\ell
+\simeq C h_\ell e^{-r/\xi_c},\qquad
+\xi_c=-\frac{1}{\log\lambda}.
+\end{align}
+Holding the same background, $C$ and $\xi_c$ fixed across mask positions, we add this influence over the remaining layers to define the exposure:
+\begin{align}
+\mathcal D_\ell\equiv\sum_{r=1}^{L-\ell}\eta_{\ell+r}
+&\simeq C h_\ell\sum_{r=1}^{L-\ell}e^{-r/\xi_c}\nonumber\\
+&\approx C h_\ell\xi_c\left(1-e^{-(L-\ell)/\xi_c}\right)\nonumber\\
+&\equiv C h_\ell w_\ell.
+\label{eq:regularization_reach}
+\end{align}
+The second line replaces the sum by its continuum integral. Since $w_\ell$ decreases with depth, moving dropout to earlier layers increases the summed exposure $\sum_\ell h_\ell w_\ell$. At fixed budget and per-layer bounds, its maximum fills the earliest layers first. Adding mask effects in this way is our regularization heuristic; whether the resulting schedule improves generalization is tested experimentally. App.~\ref{app:regularization_reach} gives further details and the limits of the approximation.

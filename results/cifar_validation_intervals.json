@@ -1,0 +1,458 @@
+{
+  "inference": {
+    "paired_unit": "training seed, ordered identically across the four recipes within each study",
+    "intervals_included": true,
+    "suggested_reporting": "Recompute the paper's paired Fieller CE-reduction and paired Student-t accuracy intervals from these per-seed measurements; do not substitute saved bootstrap intervals.",
+    "population_scope": "Seed variation conditional on the recorded fixed split and frozen selection procedure; not uncertainty over new datasets or splits.",
+    "independence_limit": "The fixed and tuned comparisons within each study share confirmation seed IDs and data. They are separate comparisons, not independent datasets.",
+    "interval_method": "Paired Fieller CE reductions and paired Student-t accuracy gains; nominal 95% intervals with n-1 degrees of freedom."
+  },
+  "comparisons": [
+    {
+      "comparison_id": "expanded_cifar10_mlp_fixed",
+      "study": "CIFAR-10 MLP, expanded optimizer search",
+      "recipe": "Common recipe",
+      "n": 10,
+      "seeds": [
+        200,
+        201,
+        202,
+        203,
+        204,
+        205,
+        206,
+        207,
+        208,
+        209
+      ],
+      "profile": "Big step",
+      "metrics": {
+        "checkpoint_loss": {
+          "estimate": 2.119009213806323,
+          "df": 9,
+          "ci95": [
+            1.6992924173032442,
+            2.5360670792335505
+          ],
+          "kind": "bounded",
+          "intervals": [
+            [
+              1.6992924173032442,
+              2.5360670792335505
+            ]
+          ],
+          "n": 10,
+          "seeds": [
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209
+          ],
+          "uniform_mean": 1.7091374810791014,
+          "frontloaded_mean": 1.672920700378418
+        },
+        "checkpoint_accuracy_percent": {
+          "estimate": 1.2719999999999998,
+          "ci95": [
+            0.8556319631618893,
+            1.6883680368381104
+          ],
+          "df": 9,
+          "kind": "bounded",
+          "n": 10,
+          "seeds": [
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209
+          ],
+          "uniform_mean": 39.698,
+          "frontloaded_mean": 40.97
+        },
+        "final_loss": {
+          "estimate": 20.46587983287331,
+          "df": 9,
+          "ci95": [
+            19.6314750339212,
+            21.29061225424509
+          ],
+          "kind": "bounded",
+          "intervals": [
+            [
+              19.6314750339212,
+              21.29061225424509
+            ]
+          ],
+          "n": 10,
+          "seeds": [
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209
+          ],
+          "uniform_mean": 2.1745414343261715,
+          "frontloaded_mean": 1.7295023974609376
+        },
+        "final_accuracy_percent": {
+          "estimate": 1.532,
+          "ci95": [
+            0.9558250229336182,
+            2.108174977066382
+          ],
+          "df": 9,
+          "kind": "bounded",
+          "n": 10,
+          "seeds": [
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209
+          ],
+          "uniform_mean": 40.922000000000004,
+          "frontloaded_mean": 42.454
+        }
+      }
+    },
+    {
+      "comparison_id": "expanded_cifar10_mlp_tuned",
+      "study": "CIFAR-10 MLP, expanded optimizer search",
+      "recipe": "Validation-tuned",
+      "n": 10,
+      "seeds": [
+        200,
+        201,
+        202,
+        203,
+        204,
+        205,
+        206,
+        207,
+        208,
+        209
+      ],
+      "profile": "Big step",
+      "metrics": {
+        "checkpoint_loss": {
+          "estimate": 2.154130768434762,
+          "df": 9,
+          "ci95": [
+            1.2684069699647749,
+            3.032644228132697
+          ],
+          "kind": "bounded",
+          "intervals": [
+            [
+              1.2684069699647749,
+              3.032644228132697
+            ]
+          ],
+          "n": 10,
+          "seeds": [
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209
+          ],
+          "uniform_mean": 1.7144147003173829,
+          "frontloaded_mean": 1.6774839657592775
+        },
+        "checkpoint_accuracy_percent": {
+          "estimate": 1.5919999999999994,
+          "ci95": [
+            0.7284417702682849,
+            2.455558229731714
+          ],
+          "df": 9,
+          "kind": "bounded",
+          "n": 10,
+          "seeds": [
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209
+          ],
+          "uniform_mean": 39.63,
+          "frontloaded_mean": 41.222
+        },
+        "final_loss": {
+          "estimate": 32.50874812992635,
+          "df": 9,
+          "ci95": [
+            31.563703298643286,
+            33.432046210765265
+          ],
+          "kind": "bounded",
+          "intervals": [
+            [
+              31.563703298643286,
+              33.432046210765265
+            ]
+          ],
+          "n": 10,
+          "seeds": [
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209
+          ],
+          "uniform_mean": 3.016363485107422,
+          "frontloaded_mean": 2.0357814770507816
+        },
+        "final_accuracy_percent": {
+          "estimate": 1.193999999999999,
+          "ci95": [
+            0.75690710888822,
+            1.6310928911117781
+          ],
+          "df": 9,
+          "kind": "bounded",
+          "n": 10,
+          "seeds": [
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209
+          ],
+          "uniform_mean": 41.455999999999996,
+          "frontloaded_mean": 42.650000000000006
+        }
+      }
+    },
+    {
+      "comparison_id": "pilot_cifar100_vit_fixed",
+      "study": "CIFAR-100 ViT, small-data optimizer-search pilot",
+      "recipe": "Common recipe",
+      "n": 3,
+      "seeds": [
+        100,
+        101,
+        102
+      ],
+      "profile": "Linear decreasing",
+      "metrics": {
+        "checkpoint_loss": {
+          "estimate": -0.018650566995184144,
+          "df": 2,
+          "ci95": [
+            -0.5380704861562613,
+            0.4998151113193128
+          ],
+          "kind": "bounded",
+          "intervals": [
+            [
+              -0.5380704861562613,
+              0.4998151113193128
+            ]
+          ],
+          "n": 3,
+          "seeds": [
+            100,
+            101,
+            102
+          ],
+          "uniform_mean": 3.9562014607747393,
+          "frontloaded_mean": 3.9569393147786456
+        },
+        "checkpoint_accuracy_percent": {
+          "estimate": 0.01333333333333305,
+          "ci95": [
+            -2.454021156215356,
+            2.4806878228820226
+          ],
+          "df": 2,
+          "kind": "bounded",
+          "n": 3,
+          "seeds": [
+            100,
+            101,
+            102
+          ],
+          "uniform_mean": 10.22,
+          "frontloaded_mean": 10.233333333333333
+        },
+        "final_loss": {
+          "estimate": 1.4344592335511657,
+          "df": 2,
+          "ci95": [
+            -0.29779857266045706,
+            3.0869039014814748
+          ],
+          "kind": "bounded",
+          "intervals": [
+            [
+              -0.29779857266045706,
+              3.0869039014814748
+            ]
+          ],
+          "n": 3,
+          "seeds": [
+            100,
+            101,
+            102
+          ],
+          "uniform_mean": 4.195564538574218,
+          "frontloaded_mean": 4.135380875651042
+        },
+        "final_accuracy_percent": {
+          "estimate": 0.19333333333333394,
+          "ci95": [
+            -1.2348478262731193,
+            1.6215144929397873
+          ],
+          "df": 2,
+          "kind": "bounded",
+          "n": 3,
+          "seeds": [
+            100,
+            101,
+            102
+          ],
+          "uniform_mean": 11.406666666666666,
+          "frontloaded_mean": 11.600000000000001
+        }
+      }
+    },
+    {
+      "comparison_id": "pilot_cifar100_vit_tuned",
+      "study": "CIFAR-100 ViT, small-data optimizer-search pilot",
+      "recipe": "Validation-tuned",
+      "n": 3,
+      "seeds": [
+        100,
+        101,
+        102
+      ],
+      "profile": "Linear decreasing",
+      "metrics": {
+        "checkpoint_loss": {
+          "estimate": -0.19049703424749126,
+          "df": 2,
+          "ci95": [
+            -0.5638650847055171,
+            0.17952820910156486
+          ],
+          "kind": "bounded",
+          "intervals": [
+            [
+              -0.5638650847055171,
+              0.17952820910156486
+            ]
+          ],
+          "n": 3,
+          "seeds": [
+            100,
+            101,
+            102
+          ],
+          "uniform_mean": 3.952967390950521,
+          "frontloaded_mean": 3.960497676595052
+        },
+        "checkpoint_accuracy_percent": {
+          "estimate": -0.39333333333333204,
+          "ci95": [
+            -2.0141895666163823,
+            1.2275228999497183
+          ],
+          "df": 2,
+          "kind": "bounded",
+          "n": 3,
+          "seeds": [
+            100,
+            101,
+            102
+          ],
+          "uniform_mean": 10.573333333333332,
+          "frontloaded_mean": 10.18
+        },
+        "final_loss": {
+          "estimate": 1.4197041054483732,
+          "df": 2,
+          "ci95": [
+            0.20336900251077816,
+            2.590000496717726
+          ],
+          "kind": "bounded",
+          "intervals": [
+            [
+              0.20336900251077816,
+              2.590000496717726
+            ]
+          ],
+          "n": 3,
+          "seeds": [
+            100,
+            101,
+            102
+          ],
+          "uniform_mean": 4.191862805175782,
+          "frontloaded_mean": 4.132350756835938
+        },
+        "final_accuracy_percent": {
+          "estimate": 0.25333333333333324,
+          "ci95": [
+            -1.5027488121417696,
+            2.009415478808436
+          ],
+          "df": 2,
+          "kind": "bounded",
+          "n": 3,
+          "seeds": [
+            100,
+            101,
+            102
+          ],
+          "uniform_mean": 11.386666666666665,
+          "frontloaded_mean": 11.64
+        }
+      }
+    }
+  ]
+}

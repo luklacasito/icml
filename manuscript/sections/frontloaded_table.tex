@@ -1,0 +1,25 @@
+\begin{table*}[t]
+\centering
+\caption{Test loss and accuracy with frontloaded dropout, compared with uniform dropout. Positive values mean lower loss or higher accuracy. Loss is cross-entropy; its reduction is $100(L_U-L_F)/L_U$ using seed means, and accuracy gains are in percentage points (pp). Brackets give nominal paired 95\% confidence intervals. Best means the epoch with the lowest validation loss in each run; final means the last epoch. Each evaluation gives its number of paired seeds, $n$. Each row uses the same profile for both evaluations. Speech Commands holds out clips, with overlapping speakers. Learning rate and mean dropout are tuned separately for each profile, so average dropout can differ. App.~\ref{app:benchmark_methods} gives the selection procedure, available measurements and interval calculations.}
+\label{tab:frontloaded_results}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}llrrrrrr@{}}
+\toprule
+& & \multicolumn{3}{c}{Best validation epoch} & \multicolumn{3}{c}{Final epoch} \\
+\cmidrule(lr){3-5}\cmidrule(l){6-8}
+Experiment (training $N$) & Profile & $n$ & \shortstack{Loss reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} & $n$ & \shortstack{Loss reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} \\
+\midrule
+\shortstack[l]{Speech Commands (20,020)\\MLP} & Step early & 10 & \shortstack{$+12.56$\\[-1pt]{\scriptsize $[11.36, 13.73]$}} & \shortstack{$+1.72$\\[-1pt]{\scriptsize $[1.28, 2.16]$}} & 5 & \shortstack{$+12.59$\\[-1pt]{\scriptsize $[9.95, 15.13]$}} & \shortstack{$+1.71$\\[-1pt]{\scriptsize $[0.78, 2.64]$}} \\
+\shortstack[l]{Speech Commands (20,020)\\Transformer} & Big step & 10 & \shortstack{$+9.04$\\[-1pt]{\scriptsize $[2.52, 15.24]$}} & \shortstack{$+2.06$\\[-1pt]{\scriptsize $[0.72, 3.41]$}} & 5 & \shortstack{$+15.51$\\[-1pt]{\scriptsize $[6.44, 23.04]$}} & \shortstack{$+1.10$\\[-1pt]{\scriptsize $[-0.10, 2.30]$}} \\
+\addlinespace[3pt]
+\shortstack[l]{Tiny ImageNet (20,000)\\MLP} & Step early & 10 & \shortstack{$+2.04$\\[-1pt]{\scriptsize $[1.72, 2.37]$}} & \shortstack{$+1.28$\\[-1pt]{\scriptsize $[0.99, 1.57]$}} & 5 & \shortstack{$+21.48$\\[-1pt]{\scriptsize $[19.59, 23.35]$}} & \shortstack{$+0.80$\\[-1pt]{\scriptsize $[0.47, 1.14]$}} \\
+\shortstack[l]{Tiny ImageNet (20,000)\\Transformer} & Step early & 10 & \shortstack{$+2.21$\\[-1pt]{\scriptsize $[1.69, 2.73]$}} & \shortstack{$+1.49$\\[-1pt]{\scriptsize $[1.06, 1.92]$}} & 5 & \shortstack{$+21.06$\\[-1pt]{\scriptsize $[20.27, 21.83]$}} & \shortstack{$+0.73$\\[-1pt]{\scriptsize $[-0.19, 1.66]$}} \\
+\shortstack[l]{Tiny ImageNet (80,000)\\MLP} & Step early & 10 & \shortstack{$+1.17$\\[-1pt]{\scriptsize $[0.92, 1.42]$}} & \shortstack{$+0.77$\\[-1pt]{\scriptsize $[0.50, 1.05]$}} & 10 & \shortstack{$+8.65$\\[-1pt]{\scriptsize $[8.26, 9.04]$}} & \shortstack{$+0.68$\\[-1pt]{\scriptsize $[0.48, 0.88]$}} \\
+\shortstack[l]{Tiny ImageNet (80,000)\\Transformer} & Linear decreasing & 10 & \shortstack{$+0.76$\\[-1pt]{\scriptsize $[-0.24, 1.76]$}} & \shortstack{$+0.13$\\[-1pt]{\scriptsize $[-0.41, 0.67]$}} & 10 & \shortstack{$+1.66$\\[-1pt]{\scriptsize $[0.51, 2.81]$}} & \shortstack{$-0.00$\\[-1pt]{\scriptsize $[-0.41, 0.40]$}} \\
+\addlinespace[3pt]
+\shortstack[l]{FI-2010 (40,000)\\MLP} & Big step & 10 & \shortstack{$+4.25$\\[-1pt]{\scriptsize $[2.57, 5.88]$}} & \shortstack{$+0.81$\\[-1pt]{\scriptsize $[0.38, 1.25]$}} & 5 & \shortstack{$+68.23$\\[-1pt]{\scriptsize $[67.30, 69.12]$}} & \shortstack{$-2.48$\\[-1pt]{\scriptsize $[-2.86, -2.09]$}} \\
+\bottomrule
+\end{tabular}
+\end{table*}

@@ -1,0 +1,25 @@
+\section{Hermite Spectral Perspective}
+\label{sec:var-opt-act}
+\label{sec:hermite}
+
+The distinction between smooth and kinked activations can also be read from their Hermite coefficients. For the channel without dropout, at a positive variance fixed point $q^*$, set $f(z)=\phi(\sqrt{q^*}z)$ and assume $f\in L^2(Dz)$. The normalized probabilists' Hermite polynomials $h_n(z)=\mathrm{He}_n(z)/\sqrt{n!}$ form an orthonormal basis under the standard Gaussian measure, so
+\begin{equation}
+f(z)=\sum_{n\ge0}a_n h_n(z),\qquad a_n=\int Dz\,f(z)h_n(z),\qquad \sum_{n\ge0}a_n^2=\int Dz\,f(z)^2.
+\end{equation}
+For jointly standard Gaussian variables of correlation $c$, this basis satisfies $\mathbb E[h_n(z_1)h_m(z_2)]=c^n\delta_{nm}$; using Lemma~11 of \citet{Daniely2016DualView}, the correlation map becomes
+\begin{equation}
+F(c)=\frac{\sigma_w^2\sum_{n\ge0}a_n^2c^n+\sigma_b^2}{q^*},\qquad q^*=\sigma_w^2\sum_{n\ge0}a_n^2+\sigma_b^2.
+\end{equation}
+The coefficient tail determines whether the derivatives needed near perfect alignment remain finite: for each integer $k\ge1$ whose weighted sum converges,
+\begin{equation}
+F^{(k)}(1)=\frac{\sigma_w^2}{q^*}\sum_{n\ge k}\frac{n!}{(n-k)!}a_n^2.
+\end{equation}
+Thus the Gaussian derivative moments assumed for the smooth class give the finite-order Taylor expansion used in the Landau equation; convergence of an infinite Taylor series is unnecessary. The smooth example $\tanh$ has rapidly decaying coefficients, whereas \relu{} has a power-law tail for which $F''(1)$ diverges (Fig.~\ref{fig:hermite-decomposition}). A kink with a finite jump in slope, under the regularity assumptions in App.~\ref{app:tube_argument_kink}, produces the $m^{3/2}$ correction in place of the smooth class's $m^2$ term.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.58\linewidth]{\PaperRoot/figures/theory/hermite_decomposition.pdf}
+\caption{Hermite coefficient magnitudes for the unscaled activations $\ReLU(z)$ and $\tanh(z)$. The \relu{} coefficients use their exact expression; tanh uses 220-point Gauss--Hermite quadrature. The coefficient tail exposes the difference in regularity at $c=1$.}
+\label{fig:hermite-decomposition}
+\end{figure}
+\FloatBarrier

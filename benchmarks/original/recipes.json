@@ -1,0 +1,160 @@
+{
+  "relu": {
+    "recipe": {
+      "dataset": "cifar10",
+      "train_size": 5000,
+      "test_size": 5000,
+      "split_seed": 0,
+      "subset_sampling": "numpy RandomState(0).choice train followed by test, both without replacement",
+      "depth": 6,
+      "width": 256,
+      "hidden_affine_layers": 6,
+      "output_affine_layers": 1,
+      "activation": "relu",
+      "sigma_w_sq": 2.0,
+      "sigma_b_sq": 0.0,
+      "epochs": 125,
+      "optimizer": "AdamW",
+      "learning_rate": 0.0001,
+      "weight_decay": 1e-07,
+      "batch_size": 75,
+      "scheduler": "CosineAnnealingLR(T_max=125,eta_min=1e-7), step after train before test",
+      "uniform_dropout": [
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ],
+      "frontloaded_dropout": [
+        0.3,
+        0.3,
+        0,
+        0,
+        0,
+        0
+      ],
+      "dropout_placement": "After ReLU at each hidden affine, before next affine",
+      "test_endpoint": "Every epoch; final and retrospective minimum",
+      "precision": "CUDA autocast bfloat16 when supported, else float16; TF32 allowed; cudnn benchmark true",
+      "normalization_mean": [
+        0.4914,
+        0.4822,
+        0.4465
+      ],
+      "normalization_std": [
+        0.247,
+        0.2435,
+        0.2616
+      ]
+    },
+    "source": {
+      "results_file": "mlp_dropout_sweep.npz",
+      "results_sha256": "932478a2e7a9943993472be172e6430fa9b61ded4be2f284b535abb1485d82f5",
+      "uniform_key": "(0.1, 'constant')",
+      "frontloaded_key": "(0.1, 'big_step')",
+      "notebook_sha256": "03435284fcb1da042b43de216ef113944c347162ff32d5ac59b173f858fd8bb5"
+    },
+    "model": "ReLU p=0.1",
+    "existing_seeds": [
+      42,
+      43,
+      44
+    ],
+    "planned_seeds": [
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51
+    ]
+  },
+  "vit": {
+    "recipe": {
+      "dataset": "cifar10",
+      "train_size": 50000,
+      "test_size": 10000,
+      "split_seed": 0,
+      "depth": 12,
+      "embedding_dim": 128,
+      "heads": 16,
+      "mlp_ratio": 4,
+      "patch_size": 4,
+      "epochs": 75,
+      "optimizer": "AdamW",
+      "learning_rate": 0.0005,
+      "weight_decay": 0,
+      "batch_size": 1000,
+      "scheduler": "CosineAnnealingLR(T_max=75,eta_min=5e-6), step after train before test",
+      "gradient_clip_norm": 1,
+      "uniform_dropout": [
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1
+      ],
+      "frontloaded_dropout": [
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0.2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "ablation_mode": "both",
+      "test_endpoint": "Every epoch; final and retrospective minimum",
+      "precision": "CUDA autocast bfloat16 when supported, else float16; TF32 allowed; cudnn benchmark true",
+      "historical_gpu": "A100 according to manuscript",
+      "initialization": "Linear weights trunc_normal std .02,bias0;LayerNorm1/0;patchConv2d defaultinit;cls/pos trunc_normal std .02",
+      "normalization_mean": [
+        0.4914,
+        0.4822,
+        0.4465
+      ],
+      "normalization_std": [
+        0.247,
+        0.2435,
+        0.2616
+      ]
+    },
+    "source": {
+      "results_file": "vit_ablation.json",
+      "results_sha256": "86e2d0df7937cdf75336f8d47fa476ed3953c4aab253a15d362c84ece0e07470",
+      "uniform_key": "both_constant",
+      "frontloaded_key": "both_reverse_step",
+      "notebook_sha256": "22249e12af4e76823623e43b690ad7235a1ca0091ea5f46b4eee97cd576a7359"
+    },
+    "model": "ViT both-block ablation",
+    "existing_seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "planned_seeds": [
+      47,
+      48,
+      49,
+      50,
+      51
+    ]
+  }
+}

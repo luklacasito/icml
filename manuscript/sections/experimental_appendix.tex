@@ -1,0 +1,204 @@
+\FloatBarrier
+\raggedbottom
+\section{Extended Experiments Across Datasets}
+\label{app:extended_experiments}
+We compare dropout placement across datasets, architectures and training-set sizes, using five paired seeds for each profile and keeping the data split and training procedure fixed within each comparison. Table~\ref{tab:frontloaded_results} combines all available seeds for uniform and the selected front-loaded profiles, reporting the seed count separately for each evaluation. The figures below retain five seeds per profile; Table~\ref{tab:fi2010_standalone_comparison} reports the separate FI-2010 study. Section~\ref{app:benchmark_methods} gives the architectures, data splits, optimizer settings, search grids and seeds, and identifies settings that could not be recovered.
+
+\paragraph{Choosing profiles and measuring performance.}
+We tune learning rate and mean dropout separately for each profile using validation data. For each completed five-seed comparison, we average the lowest validation CE reached by each seed, then choose the nonuniform profile with the lowest average. Test CE and accuracy are measured at the epoch with the lowest validation loss in each run; we keep the chosen profile even where it loses to uniform. Of these five-seed experiments, only Tiny ImageNet 80k saved test CE at the final epoch. Results are means $\pm$ SEM and curve bands show SEM over five seeds unless stated otherwise; paired CE differences subtract uniform from the named profile. No-dropout controls have their own tuned learning rates. In the separate FI-2010 study, we instead choose the profile retrospectively from mean test CE.
+
+\paragraph{Curves and profiles.}
+The benchmark figures show training and validation curves for the first five seeds; the separate CIFAR-10 pilot uses three. Where both models appear, the MLP is above the Transformer; columns show training CE, validation CE, training accuracy, and validation accuracy. Training CE has a logarithmic axis. Training metrics average batches with dropout enabled, while validation evaluates each epoch's final weights with dropout disabled. Step early fills the earliest layers at probability $0.20$, with a partially filled last active layer when needed. Big step uses $3\bar p$ in the first third; linear profiles run between $0$ and $2\bar p$. Thus profiles can differ in both mean and peak dropout. Transformer profiles are empirical extensions; the MLP reference-field diagnostic is only a proxy.
+
+\input{\PaperRoot/sections/benchmark_methods}
+\FloatBarrier
+\noindent\begin{minipage}{\textwidth}
+\subsection{Speech Commands}
+The MLP and Transformer share 20,020/5,005/10,010 training/validation/test examples and train for 50 epochs with zero weight decay. The balanced random clip split uses the official training subset, with most speakers shared across partitions, so it does not establish performance on unseen speakers. The selected profiles' paired differences in test CE from uniform are \(-0.136\pm0.007\) for the MLP (step early) and \(-0.036\pm0.037\) for the Transformer (big step). The five-seed minimum/final validation-loss reductions are $13.23\%/13.47\%$ and $3.33\%/6.49\%$, respectively; these differ from the extended test comparisons in Table~\ref{tab:frontloaded_results}.
+
+\par\medskip
+\begingroup
+\centering
+\includegraphics[width=\textwidth]{\PaperRoot/figures/experiments/benchmarks/speech-commands.pdf}
+\par\medskip
+\begingroup\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrr@{\hspace{10pt}}rrrr@{}}
+\toprule
+Profile & \multicolumn{4}{c}{MLP} & \multicolumn{4}{c}{Transformer} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+ & $\bar p$ & LR & Test CE & Acc. (\%) & $\bar p$ & LR & Test CE & Acc. (\%) \\
+\midrule
+No dropout & 0.00 & 1e-03 & \(1.203\pm0.011\) & \(67.16\pm0.35\) & 0.00 & 3e-04 & \(0.807\pm0.018\) & \(77.65\pm0.65\) \\
+Uniform & 0.10 & 1e-03 & \(1.073\pm0.006\) & \(72.23\pm0.12\) & 0.15 & 3e-04 & \(0.743\pm0.017\) & \(79.54\pm0.61\) \\
+Step early & 0.05 & 1e-03 & \(0.937\pm0.003\) & \(74.06\pm0.13\) & 0.05 & 1e-04 & \(0.852\pm0.027\) & \(77.85\pm0.64\) \\
+Big step & 0.05 & 1e-03 & \(0.950\pm0.004\) & \(74.07\pm0.11\) & 0.15 & 3e-04 & \(0.707\pm0.036\) & \(81.07\pm0.89\) \\
+Linear decreasing & 0.05 & 1e-03 & \(1.002\pm0.005\) & \(73.87\pm0.45\) & 0.20 & 3e-04 & \(0.711\pm0.033\) & \(81.27\pm1.05\) \\
+Linear increasing & 0.05 & 1e-03 & \(1.202\pm0.009\) & \(69.40\pm0.54\) & 0.10 & 3e-04 & \(0.832\pm0.022\) & \(77.67\pm0.67\) \\
+\bottomrule
+\end{tabular}
+\endgroup
+\captionof{figure}{Speech Commands: learning curves and test results for five seeds on randomly held-out clips, with speakers shared across splits. Both no-dropout controls have separately tuned learning rates. The table reports test results at the epoch with the lowest validation loss, while the curves show training and validation performance.}
+\label{fig:speech-commands}
+\endgroup\par
+\end{minipage}\par\bigskip
+
+\noindent\begin{minipage}{\textwidth}
+\subsection{Tiny ImageNet: 20,000 training examples}
+Both models train for 75 epochs with zero weight decay on a fixed 20,000/5,000/10,000 training/validation/test split. Step early, chosen using validation loss, has paired differences in test CE from uniform of \(-0.094\pm0.011\) for the MLP and \(-0.086\pm0.013\) for the Transformer.
+
+\par\medskip
+\begingroup
+\centering
+\includegraphics[width=\textwidth]{\PaperRoot/figures/experiments/benchmarks/tiny-imagenet-20k.pdf}
+\par\medskip
+\begingroup\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrr@{\hspace{10pt}}rrrr@{}}
+\toprule
+Profile & \multicolumn{4}{c}{MLP} & \multicolumn{4}{c}{Transformer} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+ & $\bar p$ & LR & Test CE & Acc. (\%) & $\bar p$ & LR & Test CE & Acc. (\%) \\
+\midrule
+No dropout & 0.00 & 1e-03 & \(4.856\pm0.005\) & \(3.88\pm0.05\) & 0.00 & 3e-04 & \(3.981\pm0.012\) & \(14.92\pm0.21\) \\
+Uniform & 0.05 & 1e-03 & \(4.868\pm0.006\) & \(3.45\pm0.06\) & 0.10 & 3e-04 & \(3.976\pm0.007\) & \(14.63\pm0.17\) \\
+Step early & 0.05 & 3e-04 & \(4.774\pm0.006\) & \(4.84\pm0.04\) & 0.15 & 1e-04 & \(3.890\pm0.008\) & \(16.26\pm0.10\) \\
+Big step & 0.05 & 3e-04 & \(4.787\pm0.003\) & \(4.61\pm0.10\) & 0.15 & 3e-04 & \(3.960\pm0.012\) & \(15.45\pm0.29\) \\
+Linear decreasing & 0.05 & 3e-04 & \(4.823\pm0.004\) & \(4.38\pm0.10\) & 0.20 & 3e-04 & \(3.980\pm0.011\) & \(14.71\pm0.22\) \\
+Linear increasing & 0.05 & 1e-03 & \(4.898\pm0.007\) & \(3.36\pm0.09\) & 0.05 & 3e-04 & \(3.981\pm0.017\) & \(14.73\pm0.30\) \\
+\bottomrule
+\end{tabular}
+\endgroup
+\captionof{figure}{Tiny ImageNet 20k: learning curves and test results for five seeds, including all six profiles and both no-dropout controls.}
+\label{fig:tiny-imagenet-20k}
+\endgroup\par
+\end{minipage}\par\bigskip
+
+\noindent\begin{minipage}{\textwidth}
+\subsection{Tiny ImageNet: 80,000 training examples}
+This separate balanced split has 80,000/10,000/10,000 training/validation/test examples; both models train for 75 epochs with zero weight decay. Every listed configuration uses learning rate $3\times10^{-4}$. The selected profiles' paired differences in test CE from uniform are \(-0.058\pm0.005\) for the MLP (step early) and \(-0.031\pm0.015\) for the Transformer (linear decreasing). Test CE at the final epoch is available for every profile in this comparison.
+
+\par\medskip
+\begingroup
+\centering
+\includegraphics[width=\textwidth]{\PaperRoot/figures/experiments/benchmarks/tiny-imagenet-80k.pdf}
+\par\medskip
+\begingroup\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrr@{\hspace{10pt}}rrrr@{}}
+\toprule
+Profile & \multicolumn{4}{c}{MLP} & \multicolumn{4}{c}{Transformer} \\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+ & $\bar p$ & Test CE & Acc. (\%) & Final CE & $\bar p$ & Test CE & Acc. (\%) & Final CE \\
+\midrule
+No dropout & 0.00 & \(4.561\pm0.004\) & \(7.64\pm0.15\) & \(28.876\pm0.230\) & 0.00 & \(3.125\pm0.025\) & \(29.57\pm0.44\) & \(7.126\pm0.068\) \\
+Uniform & 0.05 & \(4.575\pm0.002\) & \(7.09\pm0.14\) & \(5.627\pm0.004\) & 0.20 & \(3.035\pm0.014\) & \(31.49\pm0.17\) & \(6.104\pm0.043\) \\
+Step early & 0.05 & \(4.518\pm0.004\) & \(7.95\pm0.10\) & \(5.130\pm0.009\) & 0.15 & \(3.053\pm0.015\) & \(31.22\pm0.21\) & \(6.164\pm0.025\) \\
+Big step & 0.05 & \(4.541\pm0.003\) & \(7.53\pm0.12\) & \(5.321\pm0.007\) & 0.10 & \(3.026\pm0.013\) & \(31.35\pm0.38\) & \(6.296\pm0.034\) \\
+Linear decreasing & 0.05 & \(4.563\pm0.003\) & \(7.19\pm0.15\) & \(5.286\pm0.013\) & 0.15 & \(3.004\pm0.016\) & \(31.78\pm0.23\) & \(6.002\pm0.042\) \\
+Linear increasing & 0.05 & \(4.608\pm0.005\) & \(6.75\pm0.12\) & \(7.764\pm0.023\) & 0.20 & \(3.118\pm0.017\) & \(29.72\pm0.26\) & \(7.026\pm0.052\) \\
+\bottomrule
+\end{tabular}
+\endgroup
+\captionof{figure}{Tiny ImageNet 80k: learning curves and test results for five seeds. Test CE and accuracy use the epoch with the lowest validation loss; final CE uses the last epoch. All learning rates are $3\times10^{-4}$.}
+\label{fig:tiny-imagenet-80k}
+\endgroup\par
+\end{minipage}\par\bigskip
+
+\noindent\begin{minipage}{\textwidth}
+\subsection{FI-2010 benchmark MLP}
+The depth-12 width-256 MLP uses 40,000/10,000/20,000 training/validation/test examples, 50 epochs, and zero weight decay. Big step, chosen using validation loss, has a paired difference in test CE from uniform of \(-0.039\pm0.005\).
+
+A separate Transformer linear-profile follow-up has no saved matching uniform control. Results for its two profiles, learning curves and training procedure are available at \path{results/supplementary/fi2010-linear.md}; without a matching uniform control, we cannot include it in the comparisons here.
+\par\medskip
+\begingroup
+\centering
+\includegraphics[width=0.92\textwidth]{\PaperRoot/figures/experiments/benchmarks/fi2010-mlp.pdf}
+\par\medskip
+\begingroup\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Profile & $\bar p$ & LR & Test CE & Acc. (\%) \\
+\midrule
+
+No dropout & 0.00 & 3e-03 & \(1.118\pm0.017\) & \(42.19\pm2.20\) \\
+Uniform & 0.05 & 1e-04 & \(1.093\pm0.004\) & \(47.70\pm0.37\) \\
+Step early & 0.10 & 3e-05 & \(1.061\pm0.004\) & \(48.19\pm0.33\) \\
+Big step & 0.10 & 3e-05 & \(1.054\pm0.004\) & \(48.37\pm0.39\) \\
+Linear decreasing & 0.05 & 3e-05 & \(1.074\pm0.008\) & \(47.48\pm0.27\) \\
+Linear increasing & 0.15 & 1e-03 & \(1.115\pm0.011\) & \(37.62\pm0.39\) \\
+\bottomrule
+\end{tabular}
+\endgroup
+\captionof{figure}{FI-2010 benchmark MLP: learning curves and test results for five seeds, including the tuned no-dropout control. The no-dropout validation loss continues above the plotted limit of 5.}
+\label{fig:fi2010-mlp}
+\endgroup\par
+\end{minipage}\par\bigskip
+
+\noindent\begin{minipage}{\textwidth}
+\subsection{Standalone FI-2010 vanilla MLPs}
+These plain feedforward ReLU MLPs flatten a $128\times40$ input window and use day 6 for training, day 7 for validation, and days 8--10 for test. Each architecture trains for 100 epochs with five paired confirmation seeds (100--104), zero weight decay, and mean dropout $0.10$ for nonzero profiles. Weights have variance $1.98/\mathrm{fan\_in}$ and biases variance $0.02$. We use validation loss with uniform dropout to choose one learning rate per architecture, then hold it fixed across profiles, including no dropout. These runs are separate from the benchmark comparison above.
+
+Test CE, accuracy and macro-F1 are evaluated once, at the epoch with the lowest validation loss. The saved results contain means and SEMs, but no validation losses, individual seeds' test results or test curves, so we cannot report final test loss or its minimum during training. Table~\ref{tab:fi2010_standalone_comparison} gives the reductions relative to uniform, choosing the nonuniform profile retrospectively by its mean test CE and reporting accuracy for that same profile.
+\input{\PaperRoot/sections/fi2010_comparison_table}
+\par\medskip
+\begingroup
+\centering
+\captionof{table}{Test results for the standalone FI-2010 MLPs (mean $\pm$ SEM, five paired seeds), measured at the epoch with the lowest validation loss. All controls and early/late profiles are shown.}
+\label{tab:fi2010_standalone_profiles}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrr@{\hspace{10pt}}rrr@{}}
+\toprule
+Profile & \multicolumn{3}{c}{Width 256} & \multicolumn{3}{c}{Width 512} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+ & Test CE & Acc. (\%) & Macro-F1 (\%) & Test CE & Acc. (\%) & Macro-F1 (\%) \\
+
+\midrule
+\multicolumn{7}{l}{\textit{Depth 6}} \\
+No dropout & \(0.8348\pm0.0071\) & \(69.667\pm0.403\) & \(32.96\pm0.34\) & \(0.8327\pm0.0057\) & \(69.838\pm0.392\) & \(32.63\pm1.27\) \\
+Uniform & \(0.8338\pm0.0035\) & \(70.830\pm0.030\) & \(31.74\pm0.31\) & \(0.8318\pm0.0024\) & \(70.854\pm0.020\) & \(31.27\pm0.70\) \\
+Step early & \(0.8332\pm0.0024\) & \(70.851\pm0.027\) & \(30.25\pm0.97\) & \(0.8341\pm0.0044\) & \(70.851\pm0.023\) & \(31.41\pm1.05\) \\
+Big step & \(0.8279\pm0.0019\) & \(70.839\pm0.010\) & \(30.44\pm1.17\) & \(0.8330\pm0.0042\) & \(70.853\pm0.007\) & \(30.91\pm1.27\) \\
+Linear decreasing & \(0.8312\pm0.0035\) & \(70.851\pm0.011\) & \(28.36\pm0.54\) & \(0.8267\pm0.0071\) & \(70.865\pm0.029\) & \(31.15\pm0.81\) \\
+Linear increasing & \(0.8293\pm0.0026\) & \(70.865\pm0.009\) & \(31.45\pm0.56\) & \(0.8342\pm0.0037\) & \(70.866\pm0.005\) & \(31.17\pm0.87\) \\
+Step late & \(0.8227\pm0.0016\) & \(70.855\pm0.019\) & \(31.97\pm0.45\) & \(0.8308\pm0.0033\) & \(70.841\pm0.036\) & \(31.58\pm0.76\) \\
+\midrule
+\multicolumn{7}{l}{\textit{Depth 12}} \\
+No dropout & \(0.8260\pm0.0062\) & \(70.884\pm0.024\) & \(29.67\pm0.70\) & \(0.8161\pm0.0034\) & \(70.817\pm0.014\) & \(31.53\pm0.98\) \\
+Uniform & \(0.8210\pm0.0029\) & \(70.870\pm0.011\) & \(31.93\pm0.89\) & \(0.8228\pm0.0028\) & \(70.829\pm0.016\) & \(31.39\pm0.93\) \\
+Step early & \(0.8232\pm0.0032\) & \(70.856\pm0.013\) & \(32.16\pm0.52\) & \(0.8162\pm0.0049\) & \(70.845\pm0.030\) & \(32.11\pm0.65\) \\
+Big step & \(0.8224\pm0.0017\) & \(70.809\pm0.040\) & \(32.43\pm0.29\) & \(0.8220\pm0.0031\) & \(70.826\pm0.019\) & \(32.79\pm0.05\) \\
+Linear decreasing & \(0.8175\pm0.0025\) & \(70.814\pm0.035\) & \(32.84\pm0.03\) & \(0.8201\pm0.0027\) & \(70.849\pm0.013\) & \(32.87\pm0.02\) \\
+Linear increasing & \(0.8227\pm0.0019\) & \(70.844\pm0.017\) & \(32.76\pm0.06\) & \(0.8175\pm0.0019\) & \(70.853\pm0.016\) & \(32.15\pm0.67\) \\
+Step late & \(0.8234\pm0.0038\) & \(70.805\pm0.020\) & \(32.78\pm0.09\) & \(0.8238\pm0.0017\) & \(70.835\pm0.024\) & \(31.85\pm1.05\) \\
+\bottomrule
+\end{tabular}\par
+\endgroup\par\medskip
+The lowest nonuniform mean test CE occurs for step late at depth 6, width 256, and for linear decreasing at depth 6, width 512 and depth 12, width 256. At depth 12, width 512, no dropout is slightly better than the best nonuniform profile (0.816111 versus 0.816155). The profiles selected for Table~\ref{tab:fi2010_standalone_comparison} exclude no dropout; these results do not establish that nonuniform dropout beats every control.
+\end{minipage}\par\bigskip
+
+\noindent\begin{minipage}{\textwidth}
+\subsection{CIFAR-10 profile-geometry pilot}
+This small experiment compares validation performance for ten fixed profiles, including exact early/late reversals, at mean probability $\bar p=0.10$, with seeds $0,1,2$ (30 runs). Six-layer width-256 ReLU MLPs train on 4,000 class-balanced examples with 1,000 validation examples (split seed 20260812), using AdamW, LR $10^{-4}$, weight decay $10^{-7}$, batch size 75, and 75 epochs of the benchmark cosine schedule without clipping. Images use fixed channel means $(0.4914,0.4822,0.4465)$ and standard deviations $(0.2470,0.2435,0.2616)$, without augmentation. Power profiles use layer-cell centers and cap $0.20$. The manifest records the exact arrays, settings and source/split hashes; the code for this pilot is not included in the released benchmark code. We do not tune hyperparameters or evaluate on the test set, so these runs do not enter the main test comparisons.
+\par\medskip
+\begingroup\centering
+\includegraphics[width=0.85\textwidth]{\PaperRoot/figures/experiments/benchmarks/profile-geometry-pilot.pdf}
+\captionof{figure}{Different dropout profiles at fixed mean dropout. Training and validation curves show mean $\pm$ SEM over three seeds.}
+\label{fig:profile-geometry-pilot}\endgroup\par
+\begin{center}\small\begin{tabular}{@{}lrr@{}}\toprule
+Profile & Final validation CE & Final validation accuracy (\%) \\
+\midrule
+No dropout & \(3.872\pm0.053\) & \(38.10\pm0.40\) \\
+Uniform & \(2.303\pm0.019\) & \(41.17\pm0.55\) \\
+Step early & \(1.864\pm0.009\) & \(42.17\pm0.43\) \\
+Linear decreasing & \(1.933\pm0.019\) & \(42.97\pm0.15\) \\
+Linear increasing & \(3.025\pm0.045\) & \(39.30\pm0.40\) \\
+Step late & \(3.688\pm0.097\) & \(39.27\pm0.30\) \\
+Quadratic early & \(1.852\pm0.001\) & \(43.73\pm0.38\) \\
+Quadratic late & \(3.382\pm0.042\) & \(39.43\pm0.80\) \\
+Quartic early & \(1.831\pm0.016\) & \(43.53\pm0.41\) \\
+Quartic late & \(3.534\pm0.048\) & \(39.00\pm0.50\) \\
+\bottomrule\end{tabular}\end{center}
+The saved records do not contain a complete width-transfer comparison. The geometry pilot alone does not establish successful $\mu$P transfer.
+\end{minipage}\par\bigskip

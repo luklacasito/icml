@@ -1,0 +1,413 @@
+#!/usr/bin/env python
+"""Reproduce the paper's paired-seed intervals and two comparison tables.
+
+NumPy and SciPy compute intervals; pandas exports tables. The input contains endpoint vectors
+in matching seed order; it does not select profiles or checkpoints again. An
+endpoint can name a subset of the row's seeds when historical values are absent.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from scipy.stats import t
+
+
+def _paired(uniform, frontloaded):
+    arrays = tuple(np.asarray(values, dtype=float) for values in (uniform, frontloaded))
+    if (
+        any(values.ndim != 1 for values in arrays)
+        or arrays[0].shape != arrays[1].shape
+        or len(arrays[0]) < 2
+        or not all(np.isfinite(values).all() for values in arrays)
+    ):
+        raise ValueError("Need at least two finite observations in matching seed order")
+    return arrays
+
+
+def fieller_reduction(uniform, frontloaded):
+    """95% paired Fieller set for 100 * (1 - mean(frontloaded)/mean(uniform)).
+
+    Invert the paired t statistic for F - r U, retaining its covariance. An
+    uncertain denominator can give an unbounded set; never turn that into a
+    finite interval. A null bound in ``intervals`` represents infinity.
+    """
+    uniform, frontloaded = _paired(uniform, frontloaded)
+    if np.any(uniform < 0) or np.any(frontloaded < 0) or uniform.mean() <= 0:
+        raise ValueError("Losses must be nonnegative with a positive uniform mean")
+    n = len(uniform)
+    u, f = float(uniform.mean()), float(frontloaded.mean())
+    covariance = np.cov([uniform, frontloaded], ddof=1) / n
+    q = float(t.ppf(0.975, n - 1)) ** 2
+    ratio = f / u
+    a = u * u - q * covariance[0, 0]
+    # Center the quadratic at the estimated ratio to avoid cancellation when
+    # paired outcomes are nearly proportional.
+    b = 2 * q * (covariance[0, 1] - ratio * covariance[0, 0])
+    residual_variance = float(np.var(frontloaded - ratio * uniform, ddof=1) / n)
+    c = -q * residual_variance
+    discriminant = max(0.0, float(b * b - 4 * a * c))
+    estimate = 100 * (u - f) / u
+    result = {"estimate": estimate, "df": n - 1, "ci95": None}
+    if a == 0:
+        if b == 0:
+            result.update(kind="unbounded", intervals=[[None, None]])
+        else:
+            boundary = 100 * (1 - (ratio - c / b))
+            bounds = [boundary, None] if b > 0 else [None, boundary]
+            result.update(kind="unbounded", intervals=[bounds])
+    elif a < 0 and b * b - 4 * a * c <= 0:
+        result.update(kind="unbounded", intervals=[[None, None]])
+    else:
+        root = math.sqrt(discriminant)
+        roots = sorted((ratio + (-b - root) / (2 * a), ratio + (-b + root) / (2 * a)))
+        low, high = 100 * (1 - roots[1]), 100 * (1 - roots[0])
+        if a > 0:
+            result.update(kind="bounded", ci95=[low, high], intervals=[[low, high]])
+        else:
+            result.update(kind="disjoint", intervals=[[None, low], [high, None]])
+    return result
+
+
+def accuracy_gain(uniform, frontloaded):
+    """95% paired Student-t interval; inputs are accuracies in percent units."""
+    uniform, frontloaded = _paired(uniform, frontloaded)
+    if any(np.any((values < 0) | (values > 100)) for values in (uniform, frontloaded)):
+        raise ValueError("Accuracy vectors must be in percent units between 0 and 100")
+    differences = frontloaded - uniform
+    estimate = float(differences.mean())
+    sem = float(differences.std(ddof=1) / math.sqrt(len(differences)))
+    radius = float(t.ppf(0.975, len(differences) - 1)) * sem
+    return {
+        "estimate": estimate,
+        "ci95": [estimate - radius, estimate + radius],
+        "df": len(differences) - 1,
+        "kind": "bounded",
+    }
+
+
+def default_data_path():
+    candidate = Path(__file__).resolve().parents[1] / "results/confidence_seed_metrics.json"
+    if candidate.is_file():
+        return candidate
+    raise FileNotFoundError("Pass --data pointing to confidence_seed_metrics.json")
+
+
+def load_evidence(path=None):
+    data = json.loads(Path(path or default_data_path()).read_text())
+    if data.get("schema_version") != 1:
+        raise ValueError("Unsupported confidence evidence schema")
+    return data
+
+
+def summarize(evidence):
+    """Compute intervals from vectors, preserving the input's fixed row order."""
+    result = {"schema_version": 1, "inference": evidence["inference"]}
+    for section in ("original", "benchmarks"):
+        result[section] = []
+        for row in evidence[section]:
+            seeds = row["seeds"]
+            if len(seeds) != row["n"] or len(set(seeds)) != len(seeds):
+                raise ValueError("Seed identifiers must be unique and match n")
+            summary = {key: value for key, value in row.items() if key != "metrics"}
+            summary["metrics"] = {}
+            for name, pair in row["metrics"].items():
+                if pair is None:
+                    summary["metrics"][name] = None
+                    continue
+                endpoint_seeds = pair.get("seeds", seeds)
+                if len(set(endpoint_seeds)) != len(endpoint_seeds) or not set(
+                    endpoint_seeds
+                ).issubset(seeds):
+                    raise ValueError("Endpoint seeds must be a unique subset of row seeds")
+                if any(len(pair[arm]) != len(endpoint_seeds) for arm in ("uniform", "frontloaded")):
+                    raise ValueError("Endpoint vectors must match their paired seed identifiers")
+                function = accuracy_gain if name.endswith("accuracy_percent") else fieller_reduction
+                metric = function(pair["uniform"], pair["frontloaded"])
+                metric.update(n=len(endpoint_seeds), seeds=list(endpoint_seeds))
+                for arm in ("uniform", "frontloaded"):
+                    metric[f"{arm}_mean"] = float(np.mean(pair[arm]))
+                summary["metrics"][name] = metric
+            result[section].append(summary)
+    return result
+
+
+def _tex(text):
+    return str(text).replace("&", r"\&").replace("_", r"\_").replace("%", r"\%")
+
+
+def _cell(metric):
+    if metric is None:
+        return "--"
+    interval = metric["ci95"]
+    bounds = "unbounded" if interval is None else f"$[{interval[0]:.2f}, {interval[1]:.2f}]$"
+    return rf"\shortstack{{${metric['estimate']:+.2f}$\\[-1pt]{{\scriptsize {bounds}}}}}"
+
+
+def _dataset_label(row):
+    extended = row["dataset"] == "Jannis" and row.get("weight_decay") == 1e-7
+    return row["dataset"] + (" extended" if extended else "")
+
+
+def _sample_sizes(row, endpoints):
+    """Use the observations available for the displayed endpoints."""
+    counts = [
+        str(row["metrics"][name]["n"]) if row["metrics"][name] else "--" for name in endpoints
+    ]
+    return counts[0] if len(set(counts)) == 1 else "/".join(counts)
+
+
+def _table(rows, caption, label, columns, header):
+    body = pd.DataFrame(rows).to_latex(
+        index=False, header=False, escape=False, column_format=columns
+    )
+    body = body.replace(r"\midrule", header + "\n" + r"\midrule", 1)
+    return rf"""\begin{{table*}}[t]
+\centering
+\caption{{{caption}}}
+\label{{{label}}}
+\footnotesize
+\setlength{{\tabcolsep}}{{4pt}}
+\renewcommand{{\arraystretch}}{{1.15}}
+{body.rstrip()}
+\end{{table*}}
+"""
+
+
+def render_original_table(comparisons):
+    caption = (
+        r"Improvement over uniform dropout on CIFAR, keeping mean dropout at $\bar p=0.1$. "
+        r"Positive values mean lower test loss or higher test accuracy. Loss is cross-entropy; "
+        r"brackets give nominal paired $95\%$ confidence intervals."
+    )
+    # Use model names and actual placements rather than names of result archives.
+    labels = {
+        "MLP schedules": ("MLP (ReLU)", r"\shortstack[l]{First 3 layers\\$p=0.2$}"),
+        "MLP budget controls": ("MLP (ReLU)", r"\shortstack[l]{First 2 layers\\$p=0.3$}"),
+        "ReLU p=0.1": ("MLP (ReLU)", r"\shortstack[l]{First 2 layers\\$p=0.3$}"),
+        "GELU p=0.1": ("MLP (GELU)", r"\shortstack[l]{First 2 layers\\$p=0.3$}"),
+        "ViT": ("ViT", r"\shortstack[l]{Linear decrease\\$0.2\to0$}"),
+        "ViT both-block ablation": ("ViT", r"\shortstack[l]{First 6 blocks\\$p=0.2$}"),
+    }
+    header = "\n".join(
+        [
+            r"& & & & Lowest test loss & \multicolumn{2}{c}{End of training} \\",
+            r"\cmidrule(lr){5-5}\cmidrule(l){6-7}",
+            r"\shortstack[l]{Dataset /\\model} & Epochs & Seeds & \shortstack[l]{Dropout\\placement} & \shortstack{Loss reduction\\(\%)} & \shortstack{Loss reduction\\(\%)} & \shortstack{Accuracy gain\\(percentage points)} \\",
+        ]
+    )
+    rows = []
+    for row in comparisons:
+        model, placement = labels[row["model"]]
+        cells = [
+            rf"\shortstack[l]{{{_tex(row['dataset'])}\\{model}}}",
+            str(row["epochs"]),
+            str(row["n"]),
+            placement,
+        ]
+        cells.extend(
+            _cell(row["metrics"][name])
+            for name in ("minimum_loss", "final_loss", "final_accuracy_percent")
+        )
+        if rows:
+            cells[0] = "\\addlinespace[4pt]\n" + cells[0]
+        rows.append(cells)
+    note = (
+        r"\par\smallskip\begin{minipage}{\textwidth}\scriptsize "
+        r"Lowest test loss is the minimum reached by each run; final results use the epoch count shown. "
+        r"Loss reductions compare seed means, $100(L_U-L_F)/L_U$; accuracy gains are absolute differences. "
+        r"Profiles were chosen by mean final test loss and kept unchanged when adding seeds; the epochs with the lowest loss "
+        r"also use test data. Intervals use Fieller's method for loss and Student-$t$ for accuracy, without "
+        r"correction for selection.\\[3pt] "
+        r"All MLPs have six hidden layers of width 256. The first two rows share their uniform baseline. "
+        r"The 125-epoch ReLU comparison also changes initialization and batch size (App.~\ref{app:sweeps}). "
+        r"The CIFAR-10 ViT applies dropout to both attention and MLP branches."
+        r"\end{minipage}"
+    )
+    table = _table(rows, caption, "tab:loss_improvements", "@{}lrrlrrr@{}", header)
+    return table.replace(r"\end{table*}", note + "\n" + r"\end{table*}")
+
+
+def render_frontloaded_table(comparisons):
+    """Render the manuscript's retained tasks; statistical exports keep all cohorts."""
+    comparisons = [row for row in comparisons if row["dataset"] != "Jannis"]
+    caption = (
+        r"Test loss and accuracy with frontloaded dropout, compared with uniform dropout. Positive values "
+        r"mean lower loss or higher accuracy. Loss is cross-entropy; its reduction is $100(L_U-L_F)/L_U$ "
+        r"using seed means, and accuracy gains are in percentage points (pp). Brackets give nominal paired "
+        r"95\% confidence intervals. Best means the epoch with the lowest validation loss in each run; "
+        r"final means the last epoch. Each evaluation gives its number of paired seeds, $n$. Each row uses the same profile "
+        r"for both evaluations. Speech Commands holds out clips, with overlapping speakers. "
+        r"Learning rate and mean dropout are tuned separately for each profile, "
+        r"so average dropout can differ. App.~\ref{app:benchmark_methods} gives the selection procedure, "
+        r"available measurements and interval calculations."
+    )
+    rows = []
+    header = "\n".join(
+        [
+            r"& & \multicolumn{3}{c}{Best validation epoch} & \multicolumn{3}{c}{Final epoch} \\",
+            r"\cmidrule(lr){3-5}\cmidrule(l){6-8}",
+            r"Experiment (training $N$) & Profile & $n$ & \shortstack{Loss reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} & $n$ & \shortstack{Loss reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} \\",
+        ]
+    )
+    for index, row in enumerate(comparisons):
+        dataset = _dataset_label(row)
+        checkpoint_n = _sample_sizes(row, ("checkpoint_loss", "checkpoint_accuracy_percent"))
+        final_n = _sample_sizes(row, ("final_loss", "final_accuracy_percent"))
+        cells = [
+            rf"\shortstack[l]{{{_tex(dataset)} ({row['train_size']:,})\\{_tex(row['model'])}}}",
+            _tex(row["profile"]),
+            checkpoint_n,
+            _cell(row["metrics"]["checkpoint_loss"]),
+            _cell(row["metrics"]["checkpoint_accuracy_percent"]),
+            final_n,
+            _cell(row["metrics"]["final_loss"]),
+            _cell(row["metrics"]["final_accuracy_percent"]),
+        ]
+        if index and comparisons[index - 1]["dataset"] != row["dataset"]:
+            cells[0] = "\\addlinespace[3pt]\n" + cells[0]
+        rows.append(cells)
+    return _table(rows, caption, "tab:frontloaded_results", "@{}llrrrrrr@{}", header)
+
+
+def write_outputs(output_dir, evidence):
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    summary = summarize(evidence)
+    (output_dir / "original_results_table.tex").write_text(
+        render_original_table(summary["original"])
+    )
+    (output_dir / "frontloaded_table.tex").write_text(
+        render_frontloaded_table(summary["benchmarks"])
+    )
+    (output_dir / "confidence_intervals.json").write_text(
+        json.dumps(summary, indent=2, allow_nan=False) + "\n"
+    )
+    records = []
+    for section in ("original", "benchmarks"):
+        for row in summary[section]:
+            for endpoint, metric in row["metrics"].items():
+                interval = metric["ci95"] if metric else None
+                records.append(
+                    {
+                        "table": section,
+                        **{
+                            key: row.get(key)
+                            for key in ("dataset", "model", "train_size", "weight_decay")
+                        },
+                        "n": metric["n"] if metric else None,
+                        "profile": row["profile"],
+                        "endpoint": endpoint,
+                        "units": "percentage points"
+                        if endpoint.endswith("accuracy_percent")
+                        else "percent reduction",
+                        "uniform_mean": metric["uniform_mean"] if metric else None,
+                        "frontloaded_mean": metric["frontloaded_mean"] if metric else None,
+                        "estimate": metric["estimate"] if metric else None,
+                        "ci95_lower": interval[0] if interval else None,
+                        "ci95_upper": interval[1] if interval else None,
+                        "interval_kind": metric["kind"] if metric else "missing",
+                    }
+                )
+    pd.DataFrame(records, dtype=object).to_csv(
+        output_dir / "confidence_intervals.csv", index=False, lineterminator="\n"
+    )
+    markdown = ["# Paired-seed confidence intervals", "", evidence["inference"], ""]
+    markdown += [
+        f"- **{key.replace('_', ' ')}:** {value}"
+        for key, value in evidence["endpoint_definitions"].items()
+    ]
+    markdown += [
+        "",
+        "Positive values favor frontloading. Loss changes are percentages; accuracy changes are percentage points.",
+        "Seed counts refer to the displayed endpoints. If counts differ within a table, they follow the endpoint column order.",
+        "",
+    ]
+    for title, section, endpoints in (
+        (
+            "Original paper",
+            "original",
+            [
+                ("final_loss", "Final CE reduction %"),
+                ("minimum_loss", "Minimum test CE reduction %"),
+                ("final_accuracy_percent", "Final accuracy gain pp"),
+            ],
+        ),
+        (
+            "Validation-selected test checkpoints",
+            "benchmarks",
+            [
+                ("checkpoint_loss", "Checkpoint CE reduction %"),
+                ("checkpoint_accuracy_percent", "Checkpoint accuracy gain pp"),
+            ],
+        ),
+        (
+            "Recorded final-epoch test results",
+            "benchmarks",
+            [
+                ("final_loss", "Final CE reduction %"),
+                ("final_accuracy_percent", "Final accuracy gain pp"),
+            ],
+        ),
+    ):
+        markdown += [f"## {title}", ""]
+        headings = ["Experiment", "n", "Profile"] + [label for _, label in endpoints]
+        rows = []
+        for row in summary[section]:
+            if all(row["metrics"][endpoint] is None for endpoint, _ in endpoints):
+                continue
+            dataset = _dataset_label(row)
+            experiment = f"{dataset} / {row['model']}"
+            if row.get("train_size"):
+                experiment += f" (N={row['train_size']:,})"
+            cells = [
+                experiment,
+                _sample_sizes(row, [endpoint for endpoint, _ in endpoints]),
+                row["profile"],
+            ]
+            for endpoint, _ in endpoints:
+                metric = row["metrics"][endpoint]
+                if metric is None:
+                    cells.append("—")
+                elif metric["ci95"] is None:
+                    cells.append(f"{metric['estimate']:+.2f} [unbounded]")
+                else:
+                    low, high = metric["ci95"]
+                    cells.append(f"{metric['estimate']:+.2f} [{low:.2f}, {high:.2f}]")
+            rows.append(cells)
+        markdown += [
+            pd.DataFrame(rows, columns=headings).to_markdown(
+                index=False,
+                disable_numparse=True,
+                colalign=("left", "right", "left", *(["right"] * len(endpoints))) if rows else None,
+            ),
+            "",
+        ]
+    markdown += [
+        "Extended Jannis uses weight decay 1e-7; the other benchmark rows use zero weight decay.",
+        "",
+        "[Full-precision CSV](confidence_intervals.csv) · [Structured results](confidence_intervals.json)",
+        "",
+    ]
+    (output_dir / "confidence_intervals.md").write_text("\n".join(markdown).rstrip() + "\n")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--data", type=Path, help="Portable paired seed metrics JSON")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path(__file__).resolve().parents[1] / "runs/confidence",
+    )
+    args = parser.parse_args()
+    write_outputs(args.output_dir, load_evidence(args.data))
+
+
+if __name__ == "__main__":
+    main()

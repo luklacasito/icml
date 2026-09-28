@@ -1,13 +1,13 @@
 \begin{table*}[t]
 \centering
-\caption{Test loss and accuracy with frontloaded dropout, compared with uniform dropout. Positive values mean lower loss or higher accuracy. Loss is cross-entropy; its reduction is $100(L_U-L_F)/L_U$ using seed means, and accuracy gains are in percentage points (pp). Brackets give nominal paired 95\% confidence intervals. Best means the epoch with the lowest validation loss in each run; final means the last epoch. Each evaluation gives its number of paired seeds, $n$. Each row uses the same profile for both evaluations. Speech Commands holds out clips, with overlapping speakers. Learning rate and mean dropout are tuned separately for each profile, so average dropout can differ. App.~\ref{app:benchmark_methods} gives the selection procedure, available measurements and interval calculations.}
+\caption{Improvements over uniform dropout, calculated from seed means and using the same profile across each row. Positive values mean lower test loss or higher test accuracy. Best means the epoch with the lowest validation loss in each run; final means the last epoch. Loss is cross-entropy; its reduction is $100(L_U-L_F)/L_U$, and accuracy gains are in percentage points (pp). Brackets give nominal paired 95\% confidence intervals, with the number of seed pairs, $n$, given for each evaluation. Profiles are chosen by their mean minimum validation loss among completed comparisons. Speech Commands holds out clips, with overlapping speakers. Learning rate and mean dropout are tuned separately for each profile, so average dropout can differ. App.~\ref{app:benchmark_methods} gives the selection procedure, available measurements and interval calculations.}
 \label{tab:frontloaded_results}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
 \renewcommand{\arraystretch}{1.15}
 \begin{tabular}{@{}llrrrrrr@{}}
 \toprule
-& & \multicolumn{3}{c}{Best validation epoch} & \multicolumn{3}{c}{Final epoch} \\
+& & \multicolumn{3}{c}{Test at best validation epoch} & \multicolumn{3}{c}{Test at final epoch} \\
 \cmidrule(lr){3-5}\cmidrule(l){6-8}
 Experiment (training $N$) & Profile & $n$ & \shortstack{Loss reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} & $n$ & \shortstack{Loss reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} \\
 \midrule

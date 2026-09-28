@@ -6,13 +6,13 @@ Dropout \cite{srivastava2014dropout,wager2013dropout} is often used as a regular
 \begin{equation}
 p^{(\ell)}_{j} \sim \mathrm{Bernoulli}(\rho), \qquad y^{(\ell)}_j \;\mapsto\; \tilde y^{(\ell)}_j \equiv \frac{p^{(\ell)}_{j}}{\rho} y^{(\ell)}_j,
 \end{equation}
-i.e.\ the standard inverted-dropout convention in which $\mathbb E_p[\tilde y^{(\ell)}_j]=y^{(\ell)}_j$, and hence $\mathbb E_p[\tilde z^{\ell+1}_i\mid W,b,y^\ell]=z^{\ell+1}_i$, so the mean preactivation is invariant to the dropout rate \cite{schoenholz2017deepinformationpropagation}. Throughout, $\rho$ is the keep probability. When comparing two inputs, we draw the dropout masks independently for each input\footnote{Correlated dropout masks can alleviate this detuning: if the same mask is shared across the batch, the \(c=1\) fixed point is preserved and near-critical scaling can be recovered by retuning, but the noise becomes batch coupled and the regularization is correspondingly weaker and more structured. We leave detailed analysis of correlated masks to future work.}; this independence is the source of the decorrelation effect analyzed below.
+i.e.\ the standard inverted-dropout convention in which $\mathbb E_p[\tilde y^{(\ell)}_j]=y^{(\ell)}_j$, and hence $\mathbb E_p[\tilde z^{\ell+1}_i\mid W,b,y^\ell]=z^{\ell+1}_i$, so the mean preactivation is invariant to the dropout rate \cite{schoenholz2017deepinformationpropagation}. Throughout, $\rho$ is the keep probability. When comparing two inputs, we draw the dropout masks independently for each input\footnote{If the two inputs share a mask, the same coordinates are removed, so identical representations remain identical and $c=1$ is preserved. Here we consider independently sampled masks.}; this independence is the source of the decorrelation effect analyzed below.
 
 The smooth/kinked distinction also appears in the Hermite expansion of the activation: $\tanh$ has rapidly decaying coefficients, while \relu{} has a power-law tail. These coefficients determine which derivatives of the correlation map remain finite near perfect alignment, connecting activation regularity to the dropout scaling laws (App.~\ref{sec:var-opt-act}).
 
 Our classification differs from the distinction between scale-invariant and non-scale-invariant activations in \cite{roberts2022principlesdeeplearningtheory}: the decay of the Hermite coefficients depends primarily on analytic structure rather than scale invariance. We distinguish the two classes because (a) near-critical scaling laws differ between smooth and kinked activations, and (b) ordinary kinks produce power-law Hermite tails, whereas the smooth examples considered here have much faster decay (Apps.~\ref{ap:exponent_derivations} and~\ref{sec:var-opt-act}).
 
-Consider sending exactly the same input through the same network twice. Without dropout, the two representations remain identical at every layer. With independently sampled dropout masks, different coordinates are erased on the two passes, so even identical inputs no longer produce perfectly aligned representations. Rescaling the surviving activations preserves their mean, but does not restore the missing agreement between the two passes. Perfect alignment therefore ceases to be a fixed point, cutting off the divergence of the depth correlation length at the edge \cite{schoenholz2017deepinformationpropagation}. For a single input, the corresponding variance increase can instead be absorbed into an effective weight variance, $\sigma_w^2\mapsto\sigma_w^2/\rho$.
+Consider sending exactly the same input through the network twice. Without dropout, its representations remain identical at every layer, whereas independent masks remove different coordinates on the two passes and break this alignment. Rescaling the surviving activations preserves their mean over masks, but does not restore the agreement between the two representations. Perfect alignment therefore ceases to be a fixed point, cutting off the divergence of the depth correlation length at the edge \cite{schoenholz2017deepinformationpropagation}. For a single input, the corresponding variance increase can instead be absorbed into an effective weight variance, $\sigma_w^2\mapsto\sigma_w^2/\rho$.
 
 With keep probability $\rho$, the preactivations become
 \begin{equation}
@@ -22,12 +22,12 @@ The single-input variance recursion becomes
 \begin{equation}
 \bar{q}_{aa}^{\ell} = \frac{\sigma_{w}^{2}}{\rho} \int Dz \phi^{2}\left( \sqrt{\bar{q}_{aa}^{\ell-1}} z \right) + \sigma_{b}^{2},
 \end{equation}
-where the bar marks the change in variance due to dropout, and a variance fixed point, if it exists, satisfies
+where the bar denotes the variance with dropout. A fixed point, if it exists, satisfies
 \begin{equation}
 \bar q^{*} \;=\; \frac{\sigma_w^2}{\rho}\int Dz \phi^2\big(\sqrt{\bar q^{*}} z\big) + \sigma_b^2.
 \label{eq:qstar-dropout}
 \end{equation}
-Assuming this variance fixed point exists and is positive, two distinct inputs $a\neq b$ that are perfectly aligned at one layer become less correlated at the next. If $c^{\ell}_{ab}=1$, then \cite{schoenholz2017deepinformationpropagation}
+Assuming a positive fixed point $\bar q^*$, we can evaluate the correlation map at perfect alignment to find how far independent masks move the representations away from $c=1$. For two distinct inputs $a\neq b$ with $c^{\ell}_{ab}=1$, we obtain \cite{schoenholz2017deepinformationpropagation}
 \begin{equation}
 \bar F_\rho(1)= \bar c^{\ell+1}_{ab} = 1 - \frac{1 - \rho}{\rho \bar{q}^{*}} \sigma_{w}^{2} \int Dz \phi^{2}\left( \sqrt{\bar{q}^{*}} z \right).
 \end{equation}
@@ -52,7 +52,13 @@ For equal hidden-layer widths, let \(G^\ell_{ab}\equiv \mathbb E[\delta^\ell_{j,
 \begin{equation}
 G^\ell_{ab} = \sigma_w^2 \mathbb E\left[ \frac{p^\ell_a p^\ell_b}{\rho^2} \phi'(u_a)\phi'(u_b) \right] G^{\ell+1}_{ab}.
 \end{equation}
-Thus independent masks give a diagonal factor \(\mathbb E[p_a^2]/\rho^2=1/\rho\) but an off-diagonal factor \(\mathbb E[p_a p_b]/\rho^2=1\). Dropout inflates single-sample gradient variance without similarly inflating cross-sample covariance, mirroring the forward asymmetry that produced \(h\). After normalization this suggests a backward field \(h_\nabla(\rho)\) that moves perfect gradient alignment below one. We do not identify it with the forward field: the backward kernel is built from \(\phi'\), not \(\phi\), and for \relu{} \(\phi'\) is discontinuous. A full dropout-deformed backward critical theory, including finite-width gradient susceptibilities and training-time mask correlations, is left for future work.
+Since $p_a^2=p_a$, the mask contributes
+\[
+\frac{\mathbb E[p_a^2]}{\rho^2}=\frac1\rho,
+\qquad
+\frac{\mathbb E[p_ap_b]}{\rho^2}=1\quad(a\ne b).
+\]
+Within the gradient-independence approximation, the variance therefore receives an extra factor that is absent from the covariance between different inputs. After normalization, this suggests a loss of gradient alignment, described by a backward field $h_\nabla(\rho)$. Its scaling requires a separate calculation: the backward kernel contains $\phi'$, which is discontinuous for \relu{}, so we cannot simply transfer the forward result.
 
 \subsection{Activation Regularity and Critical Exponents}
 
@@ -116,20 +122,20 @@ Critical scaling from the mean-field calculation. The top row shows the depth sc
  \label{fig:dropout_scaling}
 \end{figure*}
 
-\subsection{Scaling Collapse and Crossover Region}
-A scaling collapse asks whether curves that look different are the same response measured with different rulers. Here, changing the dropout strength changes both the natural scale of decorrelation and the amount of detuning needed to compete with it, so measuring each axis in its corresponding scale brings the different curves onto a common curve. For the smooth equation of state, define
+\subsection{Scaling collapse}
+Changing dropout changes both the decorrelation and the distance from criticality at which dropout becomes important. The equation of state tells us how to rescale these quantities so that curves obtained at different dropout strengths coincide near criticality. For smooth activations, we define
 \begin{equation}
 \tilde m \equiv m \sqrt{\frac{g_\rho}{2h}}, \qquad \tilde t \equiv -\frac{t}{\sqrt{2g_\rho h}}.
 \label{eq:rescaled_vars_smooth}
 \end{equation}
-The rescaled response is
+giving
 \begin{equation}
 \tilde m = \sqrt{1+\tilde t^{2}}-\tilde t.
 \label{eq:universal_scaling_function_smooth_correct}
 \end{equation}
-This collapse is exact for the leading equation of state \cite{ZinnJustin2002QFTCritical}; the full mean-field curves approach it near criticality (Fig.~\ref{fig:uni_scaling}). The crossover occurs at $|t|\sim\sqrt{g_\rho h}$ for smooth activations and $|t|\sim\kappa^{2/3}h^{1/3}$ for kinked activations, separating the region where dropout sets the decorrelation from the region where distance to criticality matters more. App.~\ref{app:crossover_details} gives both scaling functions and their limiting branches.
+The leading equation therefore gives the same curve at every dropout strength \cite{ZinnJustin2002QFTCritical}, which the full correlation map approaches near criticality (Fig.~\ref{fig:uni_scaling}). The crossover occurs at $|t|\sim\sqrt{g_\rho h}$ for smooth activations and $|t|\sim\kappa^{2/3}h^{1/3}$ for kinked activations, separating the region where dropout sets the decorrelation from the region where distance to criticality matters more. App.~\ref{app:crossover_details} gives both scaling functions and their limiting branches.
 
-For ordinary bias-free \relu{}, the microscopic dropout path locks $t=-h$, so dropout controls the leading response as $h\to0$, without allowing us to vary the two parameters independently along $t=0,h>0$. Higher-order terms in the map and the nonlinear relation between $h$ and $\rho$ cause the curves to depart from the leading prediction at larger fields. These crossover scales indicate how close an initialization must be to the edge before dropout controls its propagation length; they do not by themselves predict trained performance.
+For ordinary bias-free \relu{}, the microscopic dropout path locks $t=-h$, so dropout controls the leading response as $h\to0$, without allowing us to vary the two parameters independently along $t=0,h>0$. Higher-order terms in the map and changes in the kink coefficient cause the curves to depart from the leading prediction at larger fields. These crossover scales indicate how close an initialization must be to the edge before dropout controls its propagation length; they do not by themselves predict trained performance.
 
 \begin{figure*}[ht]
  \centering

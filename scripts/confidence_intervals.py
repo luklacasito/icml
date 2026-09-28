@@ -237,12 +237,13 @@ def render_frontloaded_table(comparisons):
     """Render the manuscript's retained tasks; statistical exports keep all cohorts."""
     comparisons = [row for row in comparisons if row["dataset"] != "Jannis"]
     caption = (
-        r"Test loss and accuracy with frontloaded dropout, compared with uniform dropout. Positive values "
-        r"mean lower loss or higher accuracy. Loss is cross-entropy; its reduction is $100(L_U-L_F)/L_U$ "
-        r"using seed means, and accuracy gains are in percentage points (pp). Brackets give nominal paired "
-        r"95\% confidence intervals. Best means the epoch with the lowest validation loss in each run; "
-        r"final means the last epoch. Each evaluation gives its number of paired seeds, $n$. Each row uses the same profile "
-        r"for both evaluations. Speech Commands holds out clips, with overlapping speakers. "
+        r"Improvements over uniform dropout, calculated from seed means and using the same profile across each row. "
+        r"Positive values mean lower test loss or higher test accuracy. Best means the epoch with the lowest "
+        r"validation loss in each run; final means the last epoch. Loss is cross-entropy; its reduction is "
+        r"$100(L_U-L_F)/L_U$, and accuracy gains are in percentage points (pp). Brackets give nominal paired "
+        r"95\% confidence intervals, with the number of seed pairs, $n$, given for each evaluation. "
+        r"Profiles are chosen by their mean minimum validation loss among completed comparisons. "
+        r"Speech Commands holds out clips, with overlapping speakers. "
         r"Learning rate and mean dropout are tuned separately for each profile, "
         r"so average dropout can differ. App.~\ref{app:benchmark_methods} gives the selection procedure, "
         r"available measurements and interval calculations."
@@ -250,7 +251,7 @@ def render_frontloaded_table(comparisons):
     rows = []
     header = "\n".join(
         [
-            r"& & \multicolumn{3}{c}{Best validation epoch} & \multicolumn{3}{c}{Final epoch} \\",
+            r"& & \multicolumn{3}{c}{Test at best validation epoch} & \multicolumn{3}{c}{Test at final epoch} \\",
             r"\cmidrule(lr){3-5}\cmidrule(l){6-8}",
             r"Experiment (training $N$) & Profile & $n$ & \shortstack{Loss reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} & $n$ & \shortstack{Loss reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} \\",
         ]

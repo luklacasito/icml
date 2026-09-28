@@ -14,7 +14,11 @@ The benchmark figures show training and validation curves for the first five see
 \FloatBarrier
 \noindent\begin{minipage}{\textwidth}
 \subsection{Speech Commands}
-The MLP and Transformer share 20,020/5,005/10,010 training/validation/test examples and train for 50 epochs with zero weight decay. The balanced random clip split uses the official training subset, with most speakers shared across partitions, so it does not establish performance on unseen speakers. The selected profiles' paired differences in test CE from uniform are \(-0.136\pm0.007\) for the MLP (step early) and \(-0.036\pm0.037\) for the Transformer (big step). The five-seed minimum/final validation-loss reductions are $13.23\%/13.47\%$ and $3.33\%/6.49\%$, respectively; these differ from the extended test comparisons in Table~\ref{tab:frontloaded_results}.
+We train the MLP and Transformer for 50 epochs without weight decay, using the same 20,020 training, 5,005 validation and 10,010 test clips. Clips are drawn randomly from the official training subset, so most test speakers also appear in training.
+
+Across the five seeds shown here, early-step dropout reduces the MLP's test loss by $0.136\pm0.007$, while big-step dropout reduces the Transformer's by $0.036\pm0.037$, measured at the epoch with the lowest validation loss. Errors are standard errors of the paired differences from uniform.
+
+The reductions in minimum and final validation loss are $13.23\%$ and $13.47\%$ for the MLP, and $3.33\%$ and $6.49\%$ for the Transformer. These figures use the five seeds plotted here; the main results table includes the additional seeds (Table~\ref{tab:frontloaded_results}).
 
 \par\medskip
 \begingroup
@@ -100,16 +104,16 @@ Linear increasing & 0.05 & \(4.608\pm0.005\) & \(6.75\pm0.12\) & \(7.764\pm0.023
 \bottomrule
 \end{tabular}
 \endgroup
-\captionof{figure}{Tiny ImageNet 80k: learning curves and test results for five seeds. Test CE and accuracy use the epoch with the lowest validation loss; final CE uses the last epoch. All learning rates are $3\times10^{-4}$.}
+\captionof{figure}{Tiny ImageNet with 80,000 training images, five seeds per profile. Curves show training and validation performance; the table gives test loss and accuracy at the epoch with the lowest validation loss, together with test loss at the final epoch. All profiles use an initial learning rate of $3\times10^{-4}$.}
 \label{fig:tiny-imagenet-80k}
 \endgroup\par
 \end{minipage}\par\bigskip
 
 \noindent\begin{minipage}{\textwidth}
-\subsection{FI-2010 benchmark MLP}
-The depth-12 width-256 MLP uses 40,000/10,000/20,000 training/validation/test examples, 50 epochs, and zero weight decay. Big step, chosen using validation loss, has a paired difference in test CE from uniform of \(-0.039\pm0.005\).
+\subsection{FI-2010}
+We train a 12-layer MLP with 256 neurons per hidden layer for 50 epochs without weight decay, using 40,000 training, 10,000 validation and 20,000 test examples. Big-step dropout, chosen by validation loss, reduces test loss by $0.039\pm0.005$ relative to uniform across five seeds, with the uncertainty given by the standard error of the paired differences.
 
-A separate Transformer linear-profile follow-up has no saved matching uniform control. Results for its two profiles, learning curves and training procedure are available at \path{results/supplementary/fi2010-linear.md}; without a matching uniform control, we cannot include it in the comparisons here.
+We also compared two linear dropout profiles in a separate Transformer experiment. Those runs have no matching uniform control, so they cannot give an improvement over uniform; their results and training details are available in the repository.
 \par\medskip
 \begingroup
 \centering

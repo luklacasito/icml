@@ -7,7 +7,7 @@ the same dropout budget toward the input improves on uniform allocation.
 ## Saved results
 
 Both profiles have five seeds (100–104). Test cross-entropy (CE) and accuracy
-use each run's first minimum-validation-loss checkpoint. Values are means ± SEM.
+use the model saved at the first epoch with the lowest validation loss. Values are means ± SEM.
 
 | Profile | Mean dropout | Learning rate | Test CE | Test accuracy (%) |
 |---|---:|---:|---:|---:|
@@ -36,9 +36,9 @@ validation uses each epoch's final weights with dropout disabled.
 - **Selection:** the documented validation search considers learning rates
   {5e-5, 1e-4, 3e-4, 1e-3, 3e-3} separately for the two linear directions and
   no dropout, then confirms the selected direction and tuned control. The full
-  historical tuning ledger and original source revision were not recovered.
+  learning-rate search record and original source revision were not recovered.
 
-[Frozen configurations](../../benchmarks/protocols.json) record the
+[Experiment settings](../../benchmarks/protocols.json) record the
 `fi2010-transformer-linear-followup` cohort, its layerwise probabilities,
 configuration hashes, seed IDs, and split hash. The
 [benchmark guide](../../benchmarks/README.md) gives data-preparation and training

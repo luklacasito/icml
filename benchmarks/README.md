@@ -1,8 +1,8 @@
-# Retained cross-dataset benchmarks
+# Training on speech, images and financial data
 
 This package runs the paper’s FI-2010,
-Speech Commands and Tiny ImageNet comparisons, with MLPs and transformers. It also retains
-the earlier Jannis configurations, which are no longer included in the paper.
+Speech Commands and Tiny ImageNet comparisons, with MLPs and transformers. Jannis configurations and results are indexed
+[separately](../results/supplementary/README.md).
 [protocols.json](protocols.json) contains the exact per-arm specifications,
 dropout vectors, earlier seeds, configuration hashes, and data-split hashes.
 The separate [standalone vanilla-MLP instructions](VANILLA.md) cover the four
@@ -23,7 +23,7 @@ For the CIFAR block-position and correlation studies, see the
 ## Code map
 
 - `prepare.py` builds caches; `data.py` loads and verifies the recorded splits.
-- `models.py` defines the retained networks; `training.py` fits and evaluates them.
+- `models.py` defines the networks; `training.py` fits and evaluates them.
 - `run.py` connects the recorded protocol, data, model, and saved checkpoints.
 - `run_original.py` extends the earlier CIFAR notebook comparisons.
 - `vanilla.py` and `run_vanilla.py` implement the separate financial MLP protocol.
@@ -112,13 +112,12 @@ Install the optional preparation dependencies, then prepare one dataset:
 
 ```sh
 python -m pip install -r benchmarks/requirements-prepare.txt
-python -m benchmarks.prepare openml_jannis --root /path/to/data --raw /path/to/raw
 python -m benchmarks.prepare speech_commands --root /path/to/data --raw /path/to/raw
 python -m benchmarks.prepare tiny_imagenet --root /path/to/data --raw /path/to/raw
 python -m benchmarks.prepare fi2010 --root /path/to/data --raw /path/to/raw
 ```
 
-Jannis is fetched as OpenML `jannis`, version 1. Speech Commands uses
+Speech Commands uses
 TorchAudio's V2 training subset and can download the archive. Tiny ImageNet
 expects the official `tiny-imagenet-200.zip` or extracted `tiny-imagenet-200/`
 under the raw directory; the preparer prints the upstream download URL if
@@ -138,7 +137,6 @@ features, checkpoints, and generated training outputs are not distributed here.
 | --- | --- | --- |
 | FI-2010 | First 40 book rows, 100-snapshot windows; target at horizon index 4, labels shifted to 0–2. One cumulative fold, stock 5 only. | Forward 40,000/10,000/20,000 windows, with 100 omitted windows at each boundary. |
 | Speech Commands | Sorted 35 keyword IDs; first audio channel padded/truncated to 16,000 samples at 16 kHz. Log-mel arrays are 1×64×64, flattened for MLPs. | Balanced 20,020/5,005/10,010 examples from the upstream training subset. |
-| Jannis | 54 float32 numerical features, sorted four-class label mapping. Transformer uses 54 tokens with one scalar each. | Balanced 3,840/960/1,920 examples. |
 | Tiny ImageNet | Official training images, sorted class directories and filenames, RGB 3×64×64 float32 divided by 255. | Balanced 20,000/5,000/10,000, or 80,000/10,000/10,000 examples, depending on cohort. |
 
 Balanced splits draw per-class rows without replacement with
@@ -171,7 +169,7 @@ recorded file checksum. A mismatch stops execution before training.
 MLPs have the recorded number of affine/ReLU/dropout hidden blocks and a separate
 linear readout. Every weight, including the readout, is initialized with
 Gaussian variance `sigma_w_sq / fan_in`; biases use variance `sigma_b_sq`.
-The retained values are 1.98 and 0.02. Initialization is fixed across profiles.
+The values are 1.98 and 0.02. Initialization is fixed across profiles.
 
 Transformers use the recorded width, depth and head count, a learned class token
 and positional embeddings, pre-LayerNorm residual blocks, bias-free QKV
@@ -212,7 +210,7 @@ followups have no matched uniform arm in their cohort.
 ## Provenance and limits
 
 [source_provenance.json](source_provenance.json) identifies the extracted source
-files by SHA-256 and retained definitions. The implementation preserves the
+files by SHA-256 and the functions used here. The implementation preserves the
 earlier model construction and training loop, including the recovered
 Tiny20 versus Tiny80 preprocessing difference. Unused orchestration,
 experiment families and optional parameterizations were removed. Per-cohort

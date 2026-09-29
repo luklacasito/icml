@@ -1,30 +1,28 @@
 # Sliding dropout and measured correlations
 
-The [source archive](sources/cifar-depth.tar.gz) contains the exact training code
+The [source directories](sources/cifar-depth/) contain the exact training code
 for these two paper experiments. Every recorded training-source hash matches
 the saved results; the activation-probe code also matches its recorded hash.
-`manifest.json` inside the archive lists every included file and checksum.
+[manifest.json](sources/cifar-depth/manifest.json) lists every included file and checksum.
 
 The two studies used different versions of the CIFAR runner. They are kept in
 separate directories so reproducing one does not silently substitute the other's
 initialization, split or checkpoint rules. Cluster submission scripts and local
 paths are unnecessary for running them and are not included.
 
-Use the repository's Python 3.11 environment. From the repository root:
-
-```bash
-mkdir -p runs/cifar-source
-tar -xzf benchmarks/sources/cifar-depth.tar.gz -C runs/cifar-source
-```
+Use the repository's Python 3.11 environment. The source is directly browsable
+on GitHub and runnable from a fresh checkout; no extraction is needed.
 
 ## Moving the block
+
+[Training entrypoint](sources/cifar-depth/sliding-block/benchmarks/original/slide.py).
 
 Six hidden layers, width 256, 75 epochs, five seeds. Three consecutive layers
 receive dropout 0.2; the others receive none. Average dropout stays at 0.1.
 [Saved measurements](../results/sliding_block.json) give the full settings.
 
 ```bash
-cd runs/cifar-source/sliding-block
+cd benchmarks/sources/cifar-depth/sliding-block
 python -m benchmarks.original.slide --model mlp --start 0 --seed 47 \
   --data-root /path/to/cifar --run-root /path/to/new-runs --device cuda
 ```
@@ -35,13 +33,16 @@ runs use synthetic data and do not reproduce the paper's measurements.
 
 ## Dropout rates and activation correlations
 
+[Training entrypoint](sources/cifar-depth/dropout-rates/benchmarks/original/rate_sweep.py) · [Activation probe](sources/cifar-depth/dropout-rates/probe_rates.py).
+
 Twelve hidden layers, width 256, 35 epochs, five seeds, ten uniform rates from
-0.001 to 0.25. `sweep.json` contains the exact grid and settings. This study saves
+0.001 to 0.25. `sweep.json` contain the exact grid and settings. This study saves
 both the model chosen by validation loss and the final model.
 
-From the extracted `dropout-rates/` directory:
+From the repository root, enter the second source directory:
 
 ```bash
+cd benchmarks/sources/cifar-depth/dropout-rates
 python -m benchmarks.original.rate_sweep --all \
   --data-root /path/to/cifar --run-root /path/to/new-runs --device cuda
 python probe_rates.py --data-root /path/to/cifar --run-root /path/to/new-runs

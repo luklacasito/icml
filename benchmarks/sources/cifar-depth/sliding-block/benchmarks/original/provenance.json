@@ -1,0 +1,108 @@
+{
+  "relu.py": {
+    "source": "icml-original/notebooks/mlp_dropout_sweep.ipynb",
+    "source_sha256": "ff9215d25e7c84c1910d045b13e8c203a5ae060a1b8c33b9688d5ffe0875dbd7",
+    "cells": [
+      5,
+      8,
+      9
+    ],
+    "definitions_ast_sha256": {
+      "get_dropout_schedule": "ac6f0f9995b24a1ff807fa62c4282c829bfde2ca0b93e0f3f790098c898952b4",
+      "CriticalReLUNet": "478d28ef45f1e235e73cb1706bb27244566d5009add8495ac451d1144ba1135d",
+      "autocast_context": "1501b23e42f1e5b9913e0ef36c69d90507e232ef75d6662400bfb747ef8ec135",
+      "iterate_batches": "46949826b7bd1cbd2b8f6fdefefb64d1696ce62c55a1acdf86d62226928b416f",
+      "train_epoch": "ca45a825be97f480a0824668cd25692fb5db446283f1ed0b8dbfddec1e97dcf2",
+      "evaluate": "d1058a9d1c691a0f0232218c0eb76f714a333c8670fd2aba324847dd248e62cb"
+    },
+    "ast_hash_python_version": "3.11.4",
+    "definitions_source_sha256": {
+      "get_dropout_schedule": "204136cf890f9fbe3ad120493b2dc7a5029fc170fbfbf4cc6388901fb6bf33ff",
+      "CriticalReLUNet": "2e62277501c1d7417f1b849082dad58d463c8eadc2a1e66261ca0fe4a53faf0b",
+      "autocast_context": "6243c667ae9db60e2b24477f079a8fdec1fb1825a13c84e2b1e28409383adbf5",
+      "iterate_batches": "d58b47f4bdb73db2003988cb8b39f8a6e0faa4995219807f1be9727646aaacde",
+      "train_epoch": "6d1efdefbd65056928aed72cbed2d4cc97f62f84a96bf97a1236c91e74ece6df",
+      "evaluate": "fe1376c60c17b264c1196f81144455534cd05d0a4ce9e87e331a10da259ddccb"
+    }
+  },
+  "vit.py": {
+    "source": "icml-original/notebooks/vit_ablation.ipynb",
+    "source_sha256": "1934e5e279ff0fe0c0f898a593b7e5a92172d7955467ca22d1a92cde96c36b20",
+    "cells": [
+      7
+    ],
+    "definitions_ast_sha256": {
+      "PatchEmbed": "4e1a582d2239e2718a400c216b1097806cb56e0e2de88ea300f60cf0b86bcf9b",
+      "Attention": "57be2898aed2cf19e72d1f90da6fe8214a3d8a986cff3e4a48b3b8d3d51250b7",
+      "MLP": "3be383521add0fddfd47d92ff244a75c5c02839de4ce70775b2ae5a324418d69",
+      "Block": "7f3a7d06614adc5c53d06d3bb2cab6944772c6f0f236dff4df3efd184fd38bb0",
+      "ViT": "f3902308d1476c14159f57352bda0f06272f196dcc4bc4ea0e6d09c61e9871d2"
+    },
+    "ast_hash_python_version": "3.11.4",
+    "definitions_source_sha256": {
+      "PatchEmbed": "451e81a53bb824778e826b965e43d1f850b77dc4df4652694b370e72c1d8a0d8",
+      "Attention": "13198ed78ffd7fcf567a9d89a127853c4bad9a6e04f5606393cfca5b04fd29e2",
+      "MLP": "cbb617ee8bbbedb34b0f26bafc38e58b58e8bda9d1689479e9a8195991057739",
+      "Block": "25fc91a3804c899f927ef8847363ae60fa6ab0243e065e685ea13285a7baee17",
+      "ViT": "15bcb8837557eeeb15780cb91d098abd232f215d158ade78d7be9968e272d32d"
+    }
+  },
+  "vit_training.py": {
+    "source": "icml-original/utils/training.py",
+    "source_sha256": "35c982f7b645d0eb1877f222705d792bd4bb8db42f90d1b29a665039f85c7eab",
+    "definitions_ast_sha256": {
+      "iterate_batches": "e66dc8d6c7aece8b079b648380e7e9dc121464e8af9913bffe6a924247ded691",
+      "train_epoch": "36ed59364c17934f8183c4174b19df67debbc7de81f72cec6c26ab3a71f5ccd8",
+      "evaluate": "09f50058d292f2086ba858afbb17e0f45347d99dfba6726009fb0b5f667aa1f4"
+    },
+    "ast_hash_python_version": "3.11.4",
+    "definitions_source_sha256": {
+      "iterate_batches": "682a4cd280410f1d4d6b02b9a85f27a310c155b8d4440f6b19709ae7edc21bd2",
+      "train_epoch": "35bfd6a0d7b592a3b0467f9aa6e67bc4f923264d36a6c842799bb59e3545373f",
+      "evaluate": "d0575df2f3e0dcc829277c75f78133bb1869ecc0688a26b188c628d395eb9764"
+    }
+  },
+  "adaptations": [
+    "Dataset location is configurable; the original subset RNG, normalization and sample order are preserved.",
+    "ReLU inputs are made contiguous in NCHW order because the frozen model uses view(batch,-1); its notebook loader emits a non-contiguous NCHW tensor in the current runtime.",
+    "Plotting, W&B logging, sweep loops, and progress-bar formatting are omitted; training operations are unchanged.",
+    "New final-state and provenance persistence happens after training; progress JSON writes do not draw random numbers."
+  ],
+  "vit_schedules.py": {
+    "source": "icml-original/utils/schedules.py",
+    "source_sha256": "4d0be25a4ef7d6a8adf0576019beec7b78aa7caceb7e2ee9b46c4ac65d7d59a9",
+    "definitions_ast_sha256": {
+      "get_dropout_schedule": "8d384fc8e30a3c5605f02402d086f026290bcbe384f42861fde2d8695c8c929b"
+    },
+    "ast_hash_python_version": "3.11.4",
+    "definitions_source_sha256": {
+      "get_dropout_schedule": "8dff4b96af0cf2ac4fa14f5abe2421c68546b7a0d7489ceb16a655bb466f36a3"
+    }
+  },
+  "public_extraction": {
+    "scope": "ReLU p=0.1 and CIFAR-10 ViT both-block seed extensions only",
+    "capsule": "headline-confirmation-20260921",
+    "original_execution_files_sha256": {
+      "original_runner.py": "e89b954809ef551c256a1f4b29475884a2d9ab7b2fac785d7c204eb971d2957e",
+      "original_support/relu.py": "f1fc11be7dcc72dfb5178e286cb4135dc894fe5b2ec990545ca21fcd9833673d",
+      "original_support/vit.py": "54cbd569d710b17b4b05e7592ce91d8461f25e44db48f4239c1aa930c63ca611",
+      "original_support/vit_training.py": "4ab59a2571339dfb263d5f3e148688922c60e330cc93e1efcfe489734f04a7ab",
+      "original_support/vit_schedules.py": "4d0be25a4ef7d6a8adf0576019beec7b78aa7caceb7e2ee9b46c4ac65d7d59a9",
+      "original_support/recipes.json": "9bdccbc779e7f9a2892dca8ac4b540cd062f67ed24f4c748ddd7ff68f6d71395",
+      "original_support/provenance.json": "805122cb10a33a0b24c66533495d87723ab216686be142fdc7ea2af2d91cd75e"
+    },
+    "public_definition_mapping": {
+      "original_support/relu.py": "benchmarks/original/relu.py",
+      "original_support/vit.py": "benchmarks/original/vit.py",
+      "original_support/vit_training.py": "utils/training.py",
+      "original_support/vit_schedules.py": "utils/schedules.py"
+    },
+    "public_adaptations": [
+      "Runner uses package-relative public imports.",
+      "ViT training and schedule functions reuse the exact AST-matching public utility definitions.",
+      "New source fingerprints cover the public runner, frozen definitions, recipes, provenance and both imported utility modules.",
+      "Cluster runtime identifiers are omitted; no orchestration is included."
+    ],
+    "source_identity": "A public rerun records its own source fingerprint; the original execution hashes identify the completed archived fits and are not substituted for new-run hashes."
+  }
+}

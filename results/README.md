@@ -2,7 +2,7 @@
 
 These are the measurements behind the paper. The original CIFAR experiments
 include learning curves; the additional benchmark comparisons contain paired
-test measurements at the selected checkpoints and, where recorded, at the end
+test measurements at the epochs chosen by validation loss and, where recorded, at the end
 of training.
 
 ## Main comparisons
@@ -27,12 +27,12 @@ these new seeds; the main tables pool earlier and new measurements. The
 intervals describe seed variation on that split and do not account for the
 earlier choice of schedule or hyperparameters. Each endpoint in
 `confidence_seed_metrics.json` lists its own seed IDs, so a five-pair final
-measurement cannot be mistaken for a ten-pair checkpoint measurement.
+measurement cannot be mistaken for a ten-pair measurement at the best validation epoch.
 
-The earlier Speech Commands records contain checkpoint test measurements
+The earlier Speech Commands records contain test measurements at the epochs chosen by validation loss
 but no complete paired final test measurements. Their final learning-curve
 values are validation losses and cannot fill that gap. The five new pairs
-retain both test endpoints: the pooled checkpoint comparison has ten pairs,
+retain both test endpoints: the comparison at the best validation epoch has ten pairs,
 while the final comparison has five. The same distinction applies to standard
 Jannis, Tiny ImageNet 20k, and FI-2010. Tiny ImageNet 80k has ten pairs at both
 endpoints; extended-search Jannis still has no final measurements.

@@ -66,14 +66,14 @@ def render_table(rows):
         r"Both recipes use fresh confirmation seeds and minimum-validation-CE checkpoints. "
         r"Positive values favor frontloading over uniform; brackets give nominal paired "
         r"95\% intervals (Fieller for relative CE reductions, Student-$t$ for accuracy gains). "
-        r"Final evaluations use epoch 75. These cohorts differ from the historical CIFAR "
+        r"Final evaluations use epoch 75. These cohorts differ from the paper’s CIFAR "
         r"runs in Table~\ref{tab:loss_improvements}; the ViT row is a small-data pilot. "
         r"The fixed and tuned comparisons share seeds and splits, and the test datasets "
         r"were used in the earlier experiments."
     )
     header = "\n".join(
         [
-            r"& & & \multicolumn{2}{c}{Validation-selected test} & \multicolumn{2}{c}{Final-epoch test} \\",
+            r"& & & \multicolumn{2}{c}{Test at best validation epoch} & \multicolumn{2}{c}{Final-epoch test} \\",
             r"\cmidrule(lr){4-5}\cmidrule(l){6-7}",
             r"Experiment & Recipe & $n$ & \shortstack{CE reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} & \shortstack{CE reduction\\(\%)} & \shortstack{Accuracy gain\\(pp)} \\",
         ]
@@ -95,13 +95,13 @@ def render_markdown(rows):
         "Profiles were fixed before tuning: big step for the MLP and linear decreasing for the ViT, "
         "both at mean dropout 0.1. Tuned recipes select learning rate and weight decay separately "
         "for each profile using validation loss. Confirmation uses fresh training seeds on the "
-        "recorded split; the test datasets had appeared in historical experiments.",
+        "recorded split; the test datasets had appeared in earlier experiments.",
         "",
         "Positive = improvement over uniform. CE reductions are percentages of the uniform mean; "
         "accuracy gains are percentage points. Brackets show nominal paired 95% intervals "
         "(Fieller for CE, Student-t for accuracy), conditional on the split and selected settings.",
         "",
-        "| Experiment | Recipe | n | Checkpoint CE % | Checkpoint accuracy pp | Final CE % | Final accuracy pp |",
+        "| Experiment | Recipe | n | Best-epoch loss reduction % | Best-epoch accuracy gain pp | Final loss reduction % | Final accuracy gain pp |",
         "|---|---|---:|---:|---:|---:|---:|",
     ]
     for row in rows:
@@ -113,7 +113,7 @@ def render_markdown(rows):
         lines.append("| " + " | ".join(cells) + " |")
     lines += [
         "",
-        "Checkpoint = test evaluation at the first minimum-validation-CE epoch; final = epoch 75. "
+        "Best epoch means the first epoch with the lowest validation loss; final means epoch 75. Both columns evaluate test data. "
         "These cohorts have no per-epoch test histories. The ViT is a 1,600-training-example pilot. "
         "Common and tuned recipes share seed IDs and data, so they are not independent replications.",
         "",

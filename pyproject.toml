@@ -1,7 +1,12 @@
 [tool.ruff]
 target-version = "py311"
 line-length = 100
+# Exact source snapshots are checked by hash, not reformatted.
+extend-exclude = ["benchmarks/sources"]
 
 [tool.ruff.lint.per-file-ignores]
 # Notebook setup finds the repo before importing its modules.
 "notebooks/*.ipynb" = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

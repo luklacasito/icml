@@ -183,9 +183,14 @@ def test_statistical_exports_retain_jannis_but_manuscript_omits_it(
 
     markdown = (tmp_path / "confidence_intervals.md").read_text()
     markdown = re.sub(r" *\| *", " | ", markdown)
-    checkpoints, final = markdown.split("## Recorded final-epoch test results")
+    checkpoints, final = markdown.split("## Test results at the final epoch")
     assert "| Speech Commands / Transformer (N=20,020) | 10 |" in checkpoints
     assert "| Speech Commands / Transformer (N=20,020) | 5 |" in final
+    assert "Jannis" not in markdown
+    supplementary = (tmp_path / "supplementary/jannis.md").read_text()
+    supplementary = re.sub(r" *\| *", " | ", supplementary)
+    checkpoints, final = supplementary.split("## Test results at the final epoch")
+    assert "Speech Commands" not in supplementary
     assert "| Jannis / Transformer (N=3,840) | 10 |" in checkpoints
     assert "| Jannis extended / Transformer (N=3,840) | 10 |" in checkpoints
     assert "| Jannis / Transformer (N=3,840) | 5 |" in final

@@ -3,7 +3,7 @@
 
 NumPy and SciPy compute intervals; pandas exports tables. The input contains endpoint vectors
 in matching seed order; it does not select profiles or checkpoints again. An
-endpoint can name a subset of the row's seeds when historical values are absent.
+endpoint can name a subset of the row's seeds when earlier runs did not save that measurement.
 """
 
 from __future__ import annotations
@@ -318,10 +318,25 @@ def write_outputs(output_dir, evidence):
     pd.DataFrame(records, dtype=object).to_csv(
         output_dir / "confidence_intervals.csv", index=False, lineterminator="\n"
     )
-    markdown = ["# Paired-seed confidence intervals", "", evidence["inference"], ""]
+    (output_dir / "confidence_intervals.md").write_text(render_markdown(summary, evidence))
+    supplementary = output_dir / "supplementary"
+    supplementary.mkdir(exist_ok=True)
+    (supplementary / "jannis.md").write_text(render_markdown(summary, evidence, supplementary=True))
+
+
+def render_markdown(summary, evidence, supplementary=False):
+    title = "Jannis" if supplementary else "Results in the paper"
+    markdown = [f"# {title}", "", evidence["inference"], ""]
+    definitions = {
+        "CIFAR final": "Last recorded training epoch.",
+        "CIFAR minimum": "Lowest test loss in each run. This uses test data to choose the epoch; CIFAR profiles were also selected using mean final test loss.",
+        "Benchmark best": "Test evaluation at the epoch with the lowest validation loss.",
+        "Benchmark final": "Last training epoch. Each column gives the number of available seed pairs.",
+    }
     markdown += [
-        f"- **{key.replace('_', ' ')}:** {value}"
-        for key, value in evidence["endpoint_definitions"].items()
+        f"- **{key}:** {value}"
+        for key, value in definitions.items()
+        if not supplementary or key.startswith("Benchmark")
     ]
     markdown += [
         "",
@@ -331,7 +346,7 @@ def write_outputs(output_dir, evidence):
     ]
     for title, section, endpoints in (
         (
-            "Original paper",
+            "CIFAR",
             "original",
             [
                 ("final_loss", "Final CE reduction %"),
@@ -340,15 +355,15 @@ def write_outputs(output_dir, evidence):
             ],
         ),
         (
-            "Validation-selected test checkpoints",
+            "Test results at the best validation epoch",
             "benchmarks",
             [
-                ("checkpoint_loss", "Checkpoint CE reduction %"),
-                ("checkpoint_accuracy_percent", "Checkpoint accuracy gain pp"),
+                ("checkpoint_loss", "Loss reduction %"),
+                ("checkpoint_accuracy_percent", "Accuracy gain pp"),
             ],
         ),
         (
-            "Recorded final-epoch test results",
+            "Test results at the final epoch",
             "benchmarks",
             [
                 ("final_loss", "Final CE reduction %"),
@@ -356,10 +371,14 @@ def write_outputs(output_dir, evidence):
             ],
         ),
     ):
+        if supplementary and section == "original":
+            continue
         markdown += [f"## {title}", ""]
         headings = ["Experiment", "n", "Profile"] + [label for _, label in endpoints]
         rows = []
         for row in summary[section]:
+            if section == "benchmarks" and (row["dataset"] == "Jannis") != supplementary:
+                continue
             if all(row["metrics"][endpoint] is None for endpoint, _ in endpoints):
                 continue
             dataset = _dataset_label(row)
@@ -389,13 +408,19 @@ def write_outputs(output_dir, evidence):
             ),
             "",
         ]
+    prefix = "../" if supplementary else ""
+    if supplementary:
+        markdown += ["Extended Jannis uses weight decay 1e-7; the other Jannis rows use zero.", ""]
+    else:
+        markdown += [
+            "Additional comparisons are in [supplementary results](supplementary/README.md).",
+            "",
+        ]
     markdown += [
-        "Extended Jannis uses weight decay 1e-7; the other benchmark rows use zero weight decay.",
-        "",
-        "[Full-precision CSV](confidence_intervals.csv) · [Structured results](confidence_intervals.json)",
+        f"[Full-precision CSV]({prefix}confidence_intervals.csv) · [Structured results]({prefix}confidence_intervals.json)",
         "",
     ]
-    (output_dir / "confidence_intervals.md").write_text("\n".join(markdown).rstrip() + "\n")
+    return "\n".join(markdown).rstrip() + "\n"
 
 
 def main():

@@ -34,27 +34,21 @@ experiments.
 | `appendix_original_experiments.tex` | CIFAR experiments and numerical fits |
 | `experimental_appendix.tex`, `benchmark_methods.tex`, `fi2010_comparison_table.tex` | Additional datasets, reproducible protocols, and the standalone FI-2010 comparison |
 
-## Rebuild figures and tables
+## Figures and tables
 
-Run these commands from the repository root:
+The [figure guide](FIGURES.md) lists every figure, its plotting command, input
+measurements and training or calculation code. From the repository root:
 
-| Command | Output |
-|---|---|
-| `python scripts/confidence_intervals.py` | Main tables and paired intervals in `runs/confidence/` |
-| `python scripts/validation_cifar_results.py` | Separate CIFAR validation comparisons in `runs/confidence/` |
-| `python scripts/plot_paper_results.py` | CIFAR curves and sweeps in `manuscript/figures/experiments/` |
-| `python scripts/plot_sliding_block.py` | Block-position figure in `manuscript/figures/experiments/mlp/` |
-| `python scripts/plot_cifar_correlations.py` | Correlation figure in `manuscript/figures/experiments/mlp/` |
-| `python scripts/plot_benchmarks.py` | Additional-dataset curves in `runs/figures/benchmarks/` |
-| `python scripts/plot_mean_field.py` | Critical exponents, scaling collapse, and Hermite figures in `runs/mean_field/` |
+```bash
+python scripts/build_figures.py
+python scripts/confidence_intervals.py
+```
 
-The [paired measurements](../results/confidence_seed_metrics.json) supply both
-main tables. The benchmark exporter groups MLP and transformer panels by dataset;
-use `--individual` for separate cohorts. It retains the original seed counts in
-the archived curves; the main tables include the later seed extensions.
-All figure exporters share `utils/plot_style.py`.
+Figures go into `runs/figures/`; tables and intervals go into `runs/confidence/`.
+To replace the manuscript's figure files deliberately, use
+`python scripts/build_figures.py --output-dir manuscript/figures` and rebuild
+the PDF. The supplied river and regularization-reach illustrations are retained.
 
-The two calculations carry different kinds of uncertainty: training seeds vary
-from run to run, while the mean-field curves are deterministic and their fit
-errors measure scatter around a fitted power law. The captions keep that
-distinction explicit.
+Training intervals describe variation across seeds. The mean-field curves
+are deterministic; their regression errors measure scatter around the fitted
+power law. The captions distinguish these quantities.

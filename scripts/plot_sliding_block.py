@@ -1,5 +1,6 @@
 """Plot final test performance as the fixed dropout block moves through the MLP."""
 
+import argparse
 import json
 from pathlib import Path
 import sys
@@ -17,6 +18,11 @@ from utils.plot_style import CLAY, FOREST, paper_style  # noqa: E402
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output-dir", type=Path, default=ROOT / "runs/figures/experiments/mlp")
+    parser.add_argument("--png", action="store_true", help="Also export a PNG preview")
+    args = parser.parse_args()
+    args.output_dir.mkdir(parents=True, exist_ok=True)
     evidence = json.loads((ROOT / "results/sliding_block.json").read_text())
     seeds = evidence["seeds"]
     positions = evidence["block_starts_zero_based"]
@@ -81,8 +87,8 @@ def main():
                 "ci95_lower": (mean - half_width).tolist(),
                 "ci95_upper": (mean + half_width).tolist(),
             }
-        output = ROOT / "manuscript/figures/experiments/mlp/sliding_block_position"
-        for extension in ("pdf", "png"):
+        output = args.output_dir / "sliding_block_position"
+        for extension in ("pdf", "png") if args.png else ("pdf",):
             fig.savefig(output.with_suffix(f".{extension}"))
         plt.close(fig)
     print(json.dumps(statistics, indent=2))

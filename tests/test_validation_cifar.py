@@ -14,7 +14,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_confirmation_pairs_cannot_be_reordered_silently():
-    evidence = json.loads((ROOT / "results/cifar_validation_evidence.json").read_text())
+    evidence = json.loads(
+        (ROOT / "results/supplementary/cifar_validation_evidence.json").read_text()
+    )
     changed = copy.deepcopy(evidence)
     changed["studies"][0]["recipes"]["tuned_frontloaded"]["seeds"].reverse()
     with pytest.raises(ValueError, match="matching ordered"):
@@ -35,7 +37,9 @@ def test_validation_cifar_export_reproduces_archived_followups(tmp_path):
         text=True,
     )
     for name in ("cifar_validation_intervals.json", "cifar_validation.md"):
-        assert (tmp_path / name).read_bytes() == (ROOT / "results" / name).read_bytes()
+        assert (tmp_path / name).read_bytes() == (
+            ROOT / "results/supplementary" / name
+        ).read_bytes()
     rows = json.loads((tmp_path / "cifar_validation_intervals.json").read_text())["comparisons"]
     assert [row["n"] for row in rows] == [10, 10, 3, 3]
     for row in rows:

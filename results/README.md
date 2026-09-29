@@ -7,39 +7,29 @@ of training.
 
 ## Main comparisons
 
-The archives retain the full experiment record, including Jannis. The current
-paper omits Jannis; its tables and default figure export exclude those cohorts.
+The table below covers the paper. [Supplementary results](supplementary/README.md)
+index the separate CIFAR tuning studies, Jannis and the FI-2010 linear follow-up.
+Shared measurement archives retain those runs without changing their contents.
 
 | File | Contents |
 |---|---|
-| [Confidence intervals](confidence_intervals.md) | Historical CIFAR and benchmark tables, endpoint definitions, and statistical assumptions |
+| [Confidence intervals](confidence_intervals.md) | CIFAR and benchmark tables, endpoint definitions, and statistical assumptions |
 | [Paired seed measurements](confidence_seed_metrics.json) | Uniform and selected-schedule results, seed pairing, and source hashes |
 | [Intervals, JSON](confidence_intervals.json) | Unrounded estimates and confidence bounds |
 | [Intervals, CSV](confidence_intervals.csv) | The same comparisons in a flat table |
-| [CIFAR validation followups](cifar_validation.md) | Fixed profiles, validation tuning, and fresh confirmation seeds |
-| [Followup measurements](cifar_validation_evidence.json) | Seed-level endpoints, search grids, selected recipes, and provenance |
-| [Followup intervals](cifar_validation_intervals.json) | Full-precision estimates and paired confidence intervals |
-| [Frozen followup source](cifar_validation_source.tar.gz) | Exact scientific snapshots, shared source files, and verified reconstruction manifests |
-| [Seed extension](seed_extension.md) | New run counts, frozen settings, and reproduction instructions |
+| [Seed extension](seed_extension.md) | New run counts, settings kept unchanged, and reproduction instructions |
 | [Extension measurements](seed_extension.npz) | All 114 new fits: learning curves, endpoints, specifications, and source/data hashes |
 
 The [analysis script](../scripts/confidence_intervals.py) computes the intervals
 with the recorded schedules held fixed. The September 22 update adds 114 fits
-across eleven comparisons. Profiles and hyperparameters were frozen before
-these new seeds; the main tables pool historical and new measurements. The
+across eleven comparisons. Profiles and hyperparameters were fixed before
+these new seeds; the main tables pool earlier and new measurements. The
 intervals describe seed variation on that split and do not account for the
 earlier choice of schedule or hyperparameters. Each endpoint in
 `confidence_seed_metrics.json` lists its own seed IDs, so a five-pair final
 measurement cannot be mistaken for a ten-pair checkpoint measurement.
 
-The [CIFAR source capsule](cifar_validation_source.tar.gz) reconstructs the
-original ViT-pilot and expanded-MLP scientific source in separate directories,
-without adding another training framework to this repository. Its internal
-README and standard-library reconstruction helper verify every file and the
-recorded source fingerprints. It contains scientific Python only, plus the
-reconstruction metadata; data and checkpoint weights are not included.
-
-The historical Speech Commands records contain checkpoint test measurements
+The earlier Speech Commands records contain checkpoint test measurements
 but no complete paired final test measurements. Their final learning-curve
 values are validation losses and cannot fill that gap. The five new pairs
 retain both test endpoints: the pooled checkpoint comparison has ten pairs,
@@ -95,18 +85,18 @@ The original MLP and ViT runs record test loss every epoch, which lets us ask bo
 well the model finishes and how low its test loss ever gets. The second question
 uses the test set to choose an epoch; there are no separate validation histories
 in these files. That is why the paper distinguishes these results from the
-validation-selected comparisons above.
+comparisons using validation loss above.
 
-These multi-profile archives remain the historical measurements. The new
+These multi-profile archives remain the earlier measurements. The new
 ReLU and both-block ViT pairs live in [seed_extension.npz](seed_extension.npz);
-the main confidence tables combine the two cohorts, while historical plots
+the main confidence tables combine the two cohorts, while earlier plots
 retain their original counts.
 
-Run `python scripts/plot_results.py` from the repository root for the learning
-curves. Notebook reruns write into `runs/`.
+Run `python scripts/plot_results.py` from the repository root for additional
+learning curves in `runs/figures/exploratory/`. Notebook reruns write into `runs/`.
 
 Run `python scripts/plot_sliding_block.py` to regenerate the block-position
-figure in `manuscript/figures/experiments/mlp/`. Its JSON contains the frozen
+figure in `runs/figures/experiments/mlp/`. Its JSON contains the recorded
 recipe, split hashes and 20 per-seed final measurements. All four positions use
 dropout 0.2 in three of six layers, mean dropout 0.1, and the same learning rate.
 The plotted endpoint is epoch 75, with no checkpoint or position selection.
@@ -125,11 +115,11 @@ each measured input correlation before averaging. Fixed-point predictions appear
 only in the initialization panel. The second panel uses fixed epoch-35 weights;
 minimum-validation-loss checkpoint measurements remain in the archive.
 
-## Historical benchmark curves
+## Benchmark curves
 
 [benchmark_curves.npz](benchmark_curves.npz) contains the exact training and
 validation arrays originally shown in thirteen multi-panel figures: 350 runs
-from twelve historical benchmark cohorts, plus the 30-run profile-geometry pilot.
+from twelve earlier benchmark cohorts, plus the 30-run profile-geometry pilot.
 It preserves run IDs, per-run configurations, seed order, and the source archive
 hashes. The confirmation records came from the September 15 W&B export;
 excluded Amazon Reviews and zero-weight-decay FI-2010 Transformer cohorts are
@@ -139,11 +129,11 @@ Each profile stores one row per seed and one column per zero-based epoch.
 Accuracies are fractions in the archive and percentages in the figures.
 Shaded bands are the sample standard deviation divided by the square root of
 the seed count. Only training loss uses a logarithmic axis. These curves remain
-the historical five- or ten-seed cohorts (three seeds for the pilot); they do
+the earlier five- or ten-seed cohorts (three seeds for the pilot); they do
 not pool in the later extension or substitute validation loss for test loss.
 
 Run `python scripts/plot_benchmarks.py` to reproduce the paper's figures in
-`runs/figures/benchmarks/`, grouping the MLP and Transformer curves by dataset.
+`runs/figures/experiments/benchmarks/`, grouping the MLP and Transformer curves by dataset.
 Use `--individual` for separate cohort figures. The exporter uses the same
 schedule colors as the presentation and the other paper figures.
 
@@ -161,7 +151,8 @@ baseline, so the paper gives only a short summary of that comparison.
 | [scaling_collapse.json](scaling_collapse.json) | Array columns, source hash, and parameter conventions |
 | [hermite_coefficients.json](hermite_coefficients.json) | Exact ReLU coefficients and tanh quadrature values |
 
-Run `python scripts/plot_mean_field.py` to recompute these files and figures.
+Run `python scripts/plot_mean_field.py` to recompute these files and figures
+in `runs/figures/theory/`. The saved copies in `results/` are kept unchanged.
 Here the curves are deterministic, and a small regression error only means
 that the chosen points sit close to a power law. Quadrature error, finite
 iteration counts, and distance from the asymptotic limit can still shift the

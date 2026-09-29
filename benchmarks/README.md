@@ -1,10 +1,10 @@
 # Retained cross-dataset benchmarks
 
-This package runs the frozen confirmation configurations for FI-2010,
-Speech Commands, and Tiny ImageNet, with MLPs and transformers. It also retains
-the historical Jannis configurations, which are no longer included in the paper.
+This package runs the paper’s FI-2010,
+Speech Commands and Tiny ImageNet comparisons, with MLPs and transformers. It also retains
+the earlier Jannis configurations, which are no longer included in the paper.
 [protocols.json](protocols.json) contains the exact per-arm specifications,
-dropout vectors, historical seeds, configuration hashes, and data-split hashes.
+dropout vectors, earlier seeds, configuration hashes, and data-split hashes.
 The separate [standalone vanilla-MLP instructions](VANILLA.md) cover the four
 financial architecture comparisons, which use a different data protocol.
 
@@ -17,12 +17,15 @@ the official validation/test speakers, with audited metadata and runnable
 commands for ten paired seeds per model. Its results must remain separate
 from the saved random-clip results.
 
+For the CIFAR block-position and correlation studies, see the
+[recovered source and commands](CIFAR.md).
+
 ## Code map
 
-- `prepare.py` builds caches; `data.py` loads and verifies the frozen splits.
+- `prepare.py` builds caches; `data.py` loads and verifies the recorded splits.
 - `models.py` defines the retained networks; `training.py` fits and evaluates them.
-- `run.py` connects the frozen protocol, data, model, and saved checkpoints.
-- `run_original.py` extends the historical CIFAR notebook comparisons.
+- `run.py` connects the recorded protocol, data, model, and saved checkpoints.
+- `run_original.py` extends the earlier CIFAR notebook comparisons.
 - `vanilla.py` and `run_vanilla.py` implement the separate financial MLP protocol.
 
 The sweep notebooks import their shared schedules and training functions from
@@ -30,7 +33,7 @@ The sweep notebooks import their shared schedules and training functions from
 loader lives in `utils/cifar.py`.
 
 The runners remain separate because their data, checkpoint, and test policies differ.
-Historical hashes in the provenance files describe the archived sources. New runs
+Earlier hashes in the provenance files describe the archived sources. New runs
 record the current source hashes; use the original checkout to resume an old run.
 
 ## Install and check
@@ -51,9 +54,9 @@ final epoch. It reloads both saved checkpoints, reproduces their reported test
 metrics, and verifies that their weights differ. This checks execution and
 checkpoint selection; it is not a paper result. Output directories must be new.
 
-## Run frozen paper settings
+## Run recorded paper settings
 
-Prepared caches belong at `DATA_ROOT/benchmarks/DATASET.npz`. Inspect a frozen
+Prepared caches belong at `DATA_ROOT/benchmarks/DATASET.npz`. Inspect a recorded
 setting without loading any data:
 
 ```sh
@@ -75,15 +78,15 @@ python -m benchmarks.run train \
 `big_step`, `linear_early`, `linear_late`, and `none_tuned`, where available.
 `frontloaded` resolves to the cohort's explicitly recorded main-table
 frontloaded comparison; it fails if that comparison is absent. The broader
-historical comparison can select a different profile from the frontloaded one.
-Omitting `--seed` runs every historical seed for each selected arm. Other
+earlier comparison can select a different profile from the frontloaded one.
+Omitting `--seed` runs every earlier seed for each selected arm. Other
 nonnegative seeds are allowed and recorded as new seeds in the manifest.
 `--device cpu` is supported; `auto` selects CUDA if available, otherwise CPU.
 
 The [September 22 extension](../results/seed_extension.md) adds seeds 105–109
 for the seven current main-table benchmark comparisons that previously had five pairs,
 as well as two archived Jannis comparisons.
-Pass those seed IDs with `--profile uniform frontloaded` to repeat the frozen
+Pass those seed IDs with `--profile uniform frontloaded` to repeat the recorded
 extension settings. Extended-search Jannis already had ten pairs and received
 no new runs. The [original CIFAR runner](original/README.md) covers the separate
 ReLU and both-block ViT extensions, which use the notebook training protocol.
@@ -129,7 +132,7 @@ RAW/BenchmarkDatasets/NoAuction/1.NoAuction_Zscore/
 Preparation refuses to replace an existing cache. Dataset archives, cached
 features, checkpoints, and generated training outputs are not distributed here.
 
-### Frozen preprocessing and splits
+### Preprocessing and splits
 
 | Dataset | Examples and model inputs | Split |
 | --- | --- | --- |
@@ -151,26 +154,26 @@ and `AmplitudeToDB(top_db=80)`. Processing batches contain 256 clips; the first
 coordinate is z-scored using **only the selected training examples**, replacing
 standard deviations below `1e-8` with one.
 
-The historical Tiny20 normalization computes mean and population standard
+The earlier Tiny20 normalization computes mean and population standard
 deviation in float32 (`float32_v15`). Tiny80 uses merged float64 moments with
 64 MiB input chunks, casts the moments to float32, and normalizes in place
 (`chunked_float64_v17`). These numerically distinct recipes are preserved.
-Other datasets retain the historical NumPy float32 train-only calculation.
+Other datasets retain the earlier NumPy float32 train-only calculation.
 
 Caches contain numeric arrays `features_mlp`, `features_sequence`, `labels`,
 and a `payload_sha256`. The runner recomputes the digest from the actual array
-bytes, dtype strings and shape strings, then verifies the frozen split hash.
+bytes, dtype strings and shape strings, then verifies the recorded split hash.
 It also records the whole-file SHA-256; `--cache-sha256` can check an independently
 recorded file checksum. A mismatch stops execution before training.
 
 ## Model and optimization details
 
-MLPs have the frozen number of affine/ReLU/dropout hidden blocks and a separate
+MLPs have the recorded number of affine/ReLU/dropout hidden blocks and a separate
 linear readout. Every weight, including the readout, is initialized with
 Gaussian variance `sigma_w_sq / fan_in`; biases use variance `sigma_b_sq`.
 The retained values are 1.98 and 0.02. Initialization is fixed across profiles.
 
-Transformers use the frozen width, depth and head count, a learned class token
+Transformers use the recorded width, depth and head count, a learned class token
 and positional embeddings, pre-LayerNorm residual blocks, bias-free QKV
 projections, and ReLU feed-forward layers with expansion ratio four. The
 block's configured dropout is applied separately to attention and feed-forward
@@ -183,12 +186,12 @@ original PyTorch initialization. These transformer profiles are empirical
 extensions of the MLP allocation rule.
 
 Training uses AdamW with its PyTorch 2.1 defaults (`betas=(0.9,0.999)`,
-`eps=1e-8`) and the frozen per-arm learning rate and weight decay. A multiplicative
+`eps=1e-8`) and the recorded per-arm learning rate and weight decay. A multiplicative
 cosine schedule starts at the selected learning rate and reaches 0.001 times
 that rate during the final epoch. Batches shuffle using a dedicated seeded
 generator, keep the final partial batch, and use zero data-loader workers.
-Transformers clip gradients at the frozen norm (normally one); MLPs do not.
-CUDA training uses the historical AMP scaler and bfloat16 autocast where
+Transformers clip gradients at the recorded norm (normally one); MLPs do not.
+CUDA training uses the earlier AMP scaler and bfloat16 autocast where
 supported, otherwise float16; validation and test use full precision. CPU
 training uses float32.
 
@@ -199,8 +202,8 @@ Changing `cohort_id`, `0.0` to `0`, or another apparently cosmetic specification
 field can change the dropout stream. Configuration hashes are checked before
 execution. Display IDs and output paths do not alter that specification.
 
-The frozen learning rates/dropout budgets are those selected in the historical
-validation searches, separately per arm. This runner executes those frozen
+The recorded learning rates/dropout budgets are those selected in the earlier
+validation searches, separately per arm. This runner executes those recorded
 confirmation fits; it does not rerun hyperparameter search. Arms can have
 different selected budgets. Big-step and linear extensions use their recorded
 caps, which can exceed the primary cap-matched profile's cap. Linear-only
@@ -210,20 +213,20 @@ followups have no matched uniform arm in their cohort.
 
 [source_provenance.json](source_provenance.json) identifies the extracted source
 files by SHA-256 and retained definitions. The implementation preserves the
-historical model construction and training loop, including the recovered
+earlier model construction and training loop, including the recovered
 Tiny20 versus Tiny80 preprocessing difference. Unused orchestration,
 experiment families and optional parameterizations were removed. Per-cohort
-historical evidence is recorded in [protocols.json](protocols.json).
+earlier evidence is recorded in [protocols.json](protocols.json).
 
 The paper's saved summaries are evidence of the original runs. Executing this
 package produces new runs. Matching configuration, seeds and split hashes is
 necessary, but does not guarantee bitwise equality across GPUs, kernels or
 package versions. No complete original data/cache archive is distributed;
 rebuilding raw datasets with changed decoding or dataset-library behavior may
-produce a different payload and is rejected against the frozen cohort. The
+produce a different payload and is rejected against the recorded cohort. The
 optional preparation requirements pin the available reconstruction environment,
 not a claim that every original raw-data dependency was archived. The preserved
-historical split hashes are the acceptance check for rebuilt caches.
+earlier split hashes are the acceptance check for rebuilt caches.
 
 Run the benchmark-specific checks with:
 

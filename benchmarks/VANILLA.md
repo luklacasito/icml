@@ -5,12 +5,12 @@ the appendix. It uses the recovered original model and training definitions,
 including their random-number ordering. It is independent of the depth-12
 multi-dataset FI-2010 benchmark and its prepared cache.
 
-**Historical limit:** the retained standalone results contain aggregate curves,
+**Earlier limit:** the retained standalone results contain aggregate curves,
 test metrics and best epochs, but no original confirmation plans or selected
 learning rates. This code reruns the documented validation screen to select
 rates; it does not claim to replay those missing plans. New source and dataset
 fingerprints identify the new trials. The saved paper table still describes
-the historical runs.
+the earlier runs.
 
 ## Recipe
 
@@ -25,7 +25,7 @@ the historical runs.
 | Optimization | Adam, default betas `(0.9, 0.999)`, epsilon `1e-8`, zero weight decay; batch 128; gradient clipping at norm 1; float32, deterministic algorithms, TF32 disabled |
 | Learning rate | Cosine multiplier `0.01 + 0.99 * (1 + cos(pi * epoch / (epochs - 1))) / 2`, applied before training each epoch, with zero-based `epoch` |
 | Rate selection | Uniform dropout only; `{3e-5, 1e-4, 3e-4, 1e-3}`, seeds 0–2, 50 epochs; minimize mean best-validation log loss per architecture, ties choose lower rate |
-| Confirmation | Frozen rate shared by all seven profiles; seeds 100–104; 100 epochs |
+| Confirmation | Recorded rate shared by all seven profiles; seeds 100–104; 100 epochs |
 | Evaluation | Test once at each run's minimum-validation-loss checkpoint; log loss uses float64 softmax; accuracies in output JSON are fractions |
 
 Initialization and minibatch streams are shared across profiles within each
@@ -92,7 +92,7 @@ specification, runtime, history, best checkpoint and final metrics. Confirmation
 also saves test probabilities with stock/day/window coordinates. Resuming uses
 the identical command and output directory. Source or data changes reject the
 old plan. Test is excluded from screening; final-epoch and per-epoch test losses
-are not measured by this historical protocol.
+are not measured by this earlier protocol.
 
 ## CPU verification
 

@@ -1,5 +1,6 @@
 """Compare measured CIFAR image-pair correlations with initialization theory."""
 
+import argparse
 import json
 from pathlib import Path
 import sys
@@ -23,6 +24,11 @@ def kernel(c):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output-dir", type=Path, default=ROOT / "runs/figures/experiments/mlp")
+    parser.add_argument("--png", action="store_true", help="Also export a PNG preview")
+    args = parser.parse_args()
+    args.output_dir.mkdir(parents=True, exist_ok=True)
     data = json.loads((ROOT / "results/cifar_correlations.json").read_text())
     config = data["config"]
     rates, seeds = config["rates"], config["seeds"]
@@ -82,8 +88,8 @@ def main():
             columnspacing=1.35,
             handlelength=1.7,
         )
-        output = ROOT / "manuscript/figures/experiments/mlp/cifar_correlations"
-        for extension in ("pdf", "png"):
+        output = args.output_dir / "cifar_correlations"
+        for extension in ("pdf", "png") if args.png else ("pdf",):
             fig.savefig(output.with_suffix(f".{extension}"))
         plt.close(fig)
 

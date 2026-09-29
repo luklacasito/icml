@@ -3,7 +3,7 @@
 The archive keeps the original cohorts separate. Accuracy is stored as a
 fraction and plotted as a percentage; bands are sample SD / sqrt(seed count).
 These are training and validation curves, not per-epoch test evaluations.
-Use --individual to export every historical cohort separately.
+Use --individual to export every saved cohort separately.
 """
 
 from __future__ import annotations
@@ -193,7 +193,9 @@ def plot_grouped(cohorts, output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=ROOT / "results/benchmark_curves.npz")
-    parser.add_argument("--output-dir", type=Path, default=ROOT / "runs/figures/benchmarks")
+    parser.add_argument(
+        "--output-dir", type=Path, default=ROOT / "runs/figures/experiments/benchmarks"
+    )
     parser.add_argument(
         "--individual",
         action="store_true",
@@ -202,7 +204,7 @@ def main():
     args = parser.parse_args()
     archive = load_npz_result(args.data)
     if archive.get("schema_version") != 1:
-        raise ValueError("Unsupported historical curve archive")
+        raise ValueError("Unsupported curve archive")
     args.output_dir.mkdir(parents=True, exist_ok=True)
     with plt.rc_context(paper_style()):
         figures = archive["figures"]
@@ -226,7 +228,7 @@ def main():
                     validation_loss_max=5 if name == "fi2010-mlp" else None,
                 )
             count = len(GROUPED_COHORTS) + len(STANDALONE_COHORTS)
-    print(f"Wrote {count} historical figures to {args.output_dir}")
+    print(f"Wrote {count} figures to {args.output_dir}")
 
 
 if __name__ == "__main__":

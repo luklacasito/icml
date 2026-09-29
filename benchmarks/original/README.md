@@ -4,7 +4,7 @@ This runner reproduces the two fixed CIFAR-10 comparisons extended in September
 2026. It retains the completed fits' ReLU/ViT definitions and execution order,
 without validation selection or another profile search.
 
-| Study | Frozen comparison | Original seeds | Added seeds | Training |
+| Study | Recorded comparison | Original seeds | Added seeds | Training |
 |---|---|---|---|---|
 | `relu` | Uniform versus Big step, mean dropout 0.10 | 42–44 | **45–51**, both arms; 14 fits | 5,000 train / 5,000 test; 6 hidden layers, width 256; 125 epochs |
 | `vit` | Uniform versus Step early, dropout in both residual branches | 42–46 | **47–51**, both arms; 10 fits | 50,000 train / 10,000 test; 12 blocks, width 128, 16 heads; 75 epochs |
@@ -52,7 +52,7 @@ not the download archive's checksum.
 ReLU subsets use one `numpy.random.RandomState(0)`: choose training rows, then
 test rows, without replacement. The full-data ViT retains original row order.
 Both normalize channels with the recorded CIFAR means and standard deviations.
-ReLU inputs are made contiguous in NCHW order because its frozen model uses
+ReLU inputs are made contiguous in NCHW order because its recorded model uses
 `view(batch, -1)`; the adapter changes memory layout, not feature order.
 
 ## Outputs and endpoints
@@ -63,21 +63,21 @@ fingerprints, source hashes and runtime. `final.pt` contains the final model's
 weights and its endpoint/epoch identifiers. Accuracies are percentages.
 
 Test is evaluated every epoch. Minimum test loss is a retrospective test-selected
-summary, not a validation-selected checkpoint. Only final weights are retained;
+summary, not a model chosen by validation loss. Only final weights are retained;
 the minimum-test epoch has no separately saved checkpoint. Interrupted fits
 restart from the same seed; completed fits are reused only after their source,
 data, specification and final-checkpoint checksum match.
 
 ## Provenance
 
-[provenance.json](provenance.json) maps the completed execution's frozen files
+[provenance.json](provenance.json) maps the completed execution's recorded files
 and their hashes to these public definitions. `relu.py` and `vit.py` are retained
 verbatim. ViT training and schedules reuse `utils/training.py` and
 `utils/schedules.py`; their definitions match the completed execution's extracted
 support code exactly. The public runner removes cluster identifiers and adapts
 imports and source-hash collection; its training operations are unchanged.
 
-New runs hash the **public** runner, both frozen model files, recipes, provenance,
+New runs hash the **public** runner, both recorded model files, recipes, provenance,
 and imported utilities. Their source fingerprint is deliberately distinct from
 the archived execution fingerprint. Recorded original hashes describe the
 completed fits, not a claim that a new run used the old wrapper. Numerical

@@ -260,9 +260,15 @@ def plot_scaling_collapses(namespace, source, output):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=ROOT / "runs/mean_field")
+    parser.add_argument(
+        "--output-dir",
+        "--output",
+        dest="output_dir",
+        type=Path,
+        default=ROOT / "runs/figures/theory",
+    )
     args = parser.parse_args()
-    output = args.output.resolve()
+    output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
     notebook = json.loads(NOTEBOOK.read_text())
     sources = {}

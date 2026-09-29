@@ -127,7 +127,7 @@ def render_markdown(rows):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--data", type=Path, default=ROOT / "results/cifar_validation_evidence.json"
+        "--data", type=Path, default=ROOT / "results/supplementary/cifar_validation_evidence.json"
     )
     parser.add_argument("--output-dir", type=Path, default=ROOT / "runs/confidence")
     args = parser.parse_args()

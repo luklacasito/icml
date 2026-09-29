@@ -95,7 +95,13 @@ def plot_curves(results, title, output, shared_baseline=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=ROOT / "runs" / "figures")
+    parser.add_argument(
+        "--output-dir",
+        "--output",
+        dest="output_dir",
+        type=Path,
+        default=ROOT / "runs/figures/exploratory",
+    )
     parser.add_argument(
         "--sweeps", action="store_true", help="Include every saved MLP sweep condition"
     )
@@ -108,11 +114,11 @@ def main():
         ("mlp_budget_controls", "CIFAR-10 MLP: dropout budget controls"),
     ):
         saved = load_npz_result(results / f"{name}.npz")
-        plot_curves(saved["results"], title, args.output / name)
+        plot_curves(saved["results"], title, args.output_dir / name)
     plot_curves(
         load_json(results / "vit_schedules.json"),
         "CIFAR-100 ViT: dropout schedules",
-        args.output / "vit_schedules",
+        args.output_dir / "vit_schedules",
     )
     ablations = load_json(results / "vit_ablation.json")
     for mode, label in (
@@ -129,15 +135,15 @@ def main():
         plot_curves(
             profiles,
             f"CIFAR-10 ViT: dropout in {label}",
-            args.output / f"vit_ablation_{mode}",
+            args.output_dir / f"vit_ablation_{mode}",
             shared_baseline=True,
         )
 
     if args.sweeps:
         for name, title, parameter in (
-            ("mlp_dropout_sweep", "CIFAR-10 ReLU MLP", "mean dropout field"),
+            ("mlp_dropout_sweep", "CIFAR-10 ReLU MLP", "mean dropout probability"),
             ("mlp_width_sweep", "CIFAR-10 ReLU MLP", "width"),
-            ("mlp_gelu", "CIFAR-10 GELU MLP", "mean dropout field"),
+            ("mlp_gelu", "CIFAR-10 GELU MLP", "mean dropout probability"),
         ):
             saved = load_npz_result(results / f"{name}.npz")
             conditions = {}
@@ -148,7 +154,7 @@ def main():
                 plot_curves(
                     profiles,
                     f"{title}: {parameter} = {value:g}",
-                    args.output / name / f"value_{value:g}".replace(".", "_"),
+                    args.output_dir / name / f"value_{value:g}".replace(".", "_"),
                 )
 
 

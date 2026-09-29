@@ -37,7 +37,7 @@ from utils.plot_style import (  # noqa: E402
 )
 
 RESULTS = ROOT / "results"
-OUT = ROOT / "manuscript" / "figures" / "experiments"
+OUT = ROOT / "runs/figures/experiments"
 WRITE_PNG = False
 
 # Match the manuscript's schedule names and retain the historical marker shapes.
@@ -371,10 +371,10 @@ def make_component_ablations() -> None:
 def main():
     global OUT, WRITE_PNG
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=OUT)
+    parser.add_argument("--output-dir", "--output", dest="output_dir", type=Path, default=OUT)
     parser.add_argument("--png", action="store_true", help="Also export PNG previews")
     args = parser.parse_args()
-    OUT, WRITE_PNG = args.output, args.png
+    OUT, WRITE_PNG = args.output_dir, args.png
     plt.rcParams.update(paper_style())
     # Keep the original panel typography and dimensions for the paper layout.
     plt.rcParams.update(

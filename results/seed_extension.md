@@ -1,8 +1,8 @@
 # Additional seeds, September 22, 2026
 
 We ran 114 additional fits: 57 matched uniform/frontloaded seed pairs across
-eleven comparisons. Schedules and hyperparameters were frozen before these
-runs. The main tables combine the historical measurements with these new
+eleven comparisons. Schedules and hyperparameters were recorded before these
+runs. The main tables combine the earlier measurements with these new
 seeds; no profile was reselected from the new results.
 
 The current paper omits the Jannis comparisons, leaving 94 of these additional
@@ -11,7 +11,7 @@ the full extension.
 
 ## What changed
 
-| Comparison | Historical pairs | New seed IDs | Pooled pairs | Final-epoch pairs |
+| Comparison | Earlier pairs | New seed IDs | Pooled pairs | Final-epoch pairs |
 |---|---:|---|---:|---:|
 | CIFAR-10 ReLU, p=0.1 | 3 | 45–51 | 10 | 10 |
 | CIFAR-10 ViT, both-block ablation | 5 | 47–51 | 10 | 10 |
@@ -27,7 +27,7 @@ had ten. Those five rows did not receive new runs. The two 25-seed comparisons
 share their uniform runs. Extended-search Jannis still lacks final endpoints.
 
 For benchmarks, each run's checkpoint is its first minimum-validation-loss
-checkpoint. The final endpoint uses its last training epoch. Where historical
+checkpoint. The final endpoint uses its last training epoch. Where earlier
 final measurements are absent, the final comparison uses only the five fresh
 pairs. The original CIFAR runs evaluated test loss each epoch and have no
 validation split; their minimum test loss is retrospective.
@@ -52,7 +52,7 @@ Benchmark training and validation accuracies, and their saved test accuracies,
 are fractions. Original CIFAR accuracy curves explicitly use percent units.
 The combined [paired measurements](confidence_seed_metrics.json) convert all
 accuracy vectors to percentages. Each metric lists its own ordered seed IDs;
-the row also records historical and extension seed IDs, allowing either cohort
+the row also records earlier and extension seed IDs, allowing either cohort
 to be analyzed separately. Test loss was not measured each epoch for benchmarks.
 
 All fits completed successfully. The downloaded metric files were checked
@@ -73,7 +73,7 @@ in percentage points. They describe seed variation conditional on the recorded
 split and recipes, without adjustment for the earlier profile search or for
 multiple comparisons.
 
-## Repeat the frozen fits
+## Repeat the recorded fits
 
 The nine benchmark comparisons use the existing [benchmark runner](../benchmarks/README.md).
 For example, the new Speech MLP pairs can be repeated with:
@@ -88,7 +88,7 @@ python -m benchmarks.run train \
 Use `python -m benchmarks.run list` for the other cohort IDs. The extended-search
 Jannis cohort is separate from the standard zero-weight-decay comparison.
 The [original CIFAR extension runner](../benchmarks/original/README.md) provides
-the frozen ReLU and both-block ViT recipes and their new seed ranges.
+the recorded ReLU and both-block ViT recipes and their new seed ranges.
 
 The completed extensions used an NVIDIA H100, Python 3.11.15, PyTorch
 2.1.0+cu121, NumPy 1.24.3, and CUDA 12.1. Source checks and GPU validation
@@ -96,8 +96,8 @@ confirmed the recovered model/training arithmetic and all full cached splits.
 Tiny ImageNet 20k retains float32 normalization; 80k retains chunked float64
 moment accumulation followed by float32 normalization. The ReLU extension
 makes NCHW tensors contiguous before flattening, preserving feature order.
-These are fixed-recipe extensions, not claims of bitwise historical replay:
+These are fixed-recipe extensions, not claims of bitwise earlier replay:
 GPUs and kernels can differ from the earlier runs.
 
-The historical multi-profile archives and appendix figures keep their original
+The earlier multi-profile archives and appendix figures keep their original
 seed counts. The updated main tables explicitly include the additional pairs.

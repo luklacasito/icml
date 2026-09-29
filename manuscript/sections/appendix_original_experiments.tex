@@ -94,7 +94,7 @@ With six layers, uniform dropout at probability $0.1$ uses the same budget as dr
 If higher local dropout alone explains the gain, applying the same rate throughout should perform at least as well.
 Applying dropout at probability $0.3$ in the first two layers gives higher accuracy than applying $0.3$ throughout, despite using one-third as much dropout (Fig.~\ref{fig:triple_dropout} and Table~\ref{tab:triple_summary}). The corresponding comparison at $0.2$ gives the same ordering. Simply increasing dropout everywhere does not reproduce the benefit of placing it early.
 
-These controls do not establish a monotonic relationship between reference correlation length and generalization: the no-dropout control has infinite reference length and lower accuracy, and early and late steps share a reference length.
+Early and late steps have the same reference correlation length but different accuracies, while no dropout has infinite reference length and lower accuracy. Correlation length alone therefore does not determine performance.
 
 Higher-order terms become relevant as dropout increases. The tested probabilities up to $0.3$ probe beyond the strictly weak-dropout limit; the theory does not set a validity threshold at this value. The lower-probability comparisons are reported in the budget sweep below.
 
@@ -261,9 +261,7 @@ Table~\ref{tab:vit_config} gives the architecture and training settings for the 
  \end{tabular}
 \end{table}
 
-Accuracy curves are shown in Fig.~\ref{fig:dropout_regimes_transformer}, with explicit results in Table~\ref{tab:schedule_comparison_cifar_100}. Errors in this accuracy table and its accompanying curves are SEM. On CIFAR-100 (and similarly on CIFAR-10), concentrating dropout earlier consistently improved accuracy and reduced overfitting. Interestingly, linear decreasing schedules, which put more dropout in early layers, often performed especially well in transformers; residual connections were introduced in \cite{he2016resnet}, and mean-field analyses show that they ease information propagation \cite{yang2017meanfieldresnets}. We suspect this makes distributing regularization early preferable empirically, though both early weighted and step-like schedules outperformed the constant baseline.
-
-These experiments test a scheduling idea motivated by MLP initialization theory. Attention, residual connections, and feature learning are outside the derived model, so the observed Transformer gains are empirical evidence for transfer of the schedule, not a verification of its mean-field mechanism. We leave ImageNet-scale evaluation \cite{imagenet} to future work.
+On CIFAR-100, linearly decreasing dropout raises mean final accuracy from $48.61\%$ under uniform dropout to $49.27\%$, while early-step dropout reaches $49.01\%$ (Table~\ref{tab:schedule_comparison_cifar_100}, Fig.~\ref{fig:dropout_regimes_transformer}). Errors and curve bands show SEM. These comparisons test the schedules empirically on Transformers; the propagation calculation covers MLPs.
 
 \begin{table}[H]
  \caption{Test accuracy across different dropout schedules for ViT architecture on CIFAR-100, corresponding to Fig.~\ref{fig:dropout_regimes_transformer}.}

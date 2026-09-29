@@ -138,7 +138,7 @@ so the smooth exponent \(\delta=2\) is replaced by
 m \propto h^{1/\delta_{\mathrm{kink}}}, \qquad \delta_{\mathrm{kink}}=\frac{3}{2}.
 \label{eq:kink_delta}
 \end{equation}
-And with this we immediately find the smoking gun telling us that kinked and smooth activations fall into distinct mean-field universality classes under the dropout deformation. As before, the depth scale follows from linearizing the correlation dynamics around \(c^*\). Differentiating \eqref{eq:relu_expand} gives
+The change from $\delta=2$ to $\delta=3/2$ separates smooth and kinked activations into different mean-field universality classes. The depth scale follows from linearizing the correlation dynamics around \(c^*\). Differentiating \eqref{eq:relu_expand} gives
 \begin{equation}
 \lambda \equiv \bar F_\rho'(c^*) \simeq 1+t-\frac{3\kappa}{2}\sqrt{m^*}.
 \label{eq:kink_slope}
@@ -180,7 +180,7 @@ The pseudo-free-energy corresponding to \eqref{eq:eos_kink_correct} is
 f_{\mathrm{kink}}(t,m;h) \;=\; -\frac{t}{2} m^2 + \frac{2\kappa}{5} m^{5/2} - h m,
 \label{eq:free_energy_kink}
 \end{equation}
-since $\partial f_{\mathrm{kink}}/\partial m=0$ gives $h=\kappa m^{3/2}-tm$ at leading order. In the effective-action language, the \(m^{5/2}\) term is the pseudo-free-energy avatar of the branch point in the \relu{} correlation map; this is precisely where the kinked universality class departs from the analytic Landau polynomial above.\footnote{
+since $\partial f_{\mathrm{kink}}/\partial m=0$ gives $h=\kappa m^{3/2}-tm$ at leading order. Integrating the $m^{3/2}$ term in the equation of state gives the $m^{5/2}$ term in this potential.\footnote{
 As before, $f_{\mathrm{kink}}$ is defined only up to addition of an $m$-independent analytic background $f_0(t,h)$, which does not affect the equation of state.
 }
 At zero field the physical branch is $m=0$ for $t\le 0$ and $m=(t/\kappa)^2$ for $t\ge 0$, so the on-shell free energy behaves as

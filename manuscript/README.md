@@ -2,9 +2,10 @@
 
 **[Read the paper](../paper.pdf).**
 
-This is the source for the expanded September 28, 2026 version, including the
-additional experiments, the 94 additional fits for the retained comparisons, and confidence intervals
-with separate checkpoint/final seed counts. The original camera-ready
+This is the source for the revised September 29, 2026 paper, including the
+additional experiments, 94 additional fits for the retained comparisons, and
+confidence intervals with separate seed counts for the models chosen by
+validation loss and the final models. The original camera-ready
 version is on [arXiv](https://arxiv.org/pdf/2605.21648v2).
 
 ## Build
@@ -28,20 +29,30 @@ experiments.
 |---|---|
 | `introduction.tex`, `background.tex`, `theory.tex` | The question, mean-field assumptions, critical scaling, and scheduling argument |
 | `experiments.tex`, `discussion.tex` | Main comparisons, uncertainty, conclusions, and limitations |
-| `original_results_table.tex`, `frontloaded_table.tex` | Tables computed from paired seed measurements |
+| `original_results_table.tex`, `frontloaded_table.tex` | Tables computed from paired seed measurements, with each endpoint defined separately |
 | `appendix_mean_field.tex`, `appendix_critical_scaling.tex`, `appendix_hermite.tex` | Dropout recursions, critical-exponent derivations, and the Hermite spectral interpretation |
 | `appendix_original_experiments.tex` | CIFAR experiments and numerical fits |
 | `experimental_appendix.tex`, `benchmark_methods.tex`, `fi2010_comparison_table.tex` | Additional datasets, reproducible protocols, and the standalone FI-2010 comparison |
 
-The [confidence-interval script](../scripts/confidence_intervals.py) computes
-both main tables from the [paired seed measurements](../results/confidence_seed_metrics.json).
-For the critical-exponent, scaling-collapse, and Hermite figures, run
-`python scripts/plot_mean_field.py` from the repository root.
-`python scripts/plot_paper_results.py` rebuilds the CIFAR curves and dropout-sweep
-figures, including the main-body test curves in `figures/experiments/mlp/cifar_test_curves.pdf`. `python scripts/plot_benchmarks.py` exports the
-historical appendix curves from the archived seed histories, with MLP and
-Transformer panels grouped by dataset. Use `--individual` for separate cohort
-figures. The exporters share `utils/plot_style.py` for the presentation's colors on a white background.
+## Rebuild figures and tables
+
+Run these commands from the repository root:
+
+| Command | Output |
+|---|---|
+| `python scripts/confidence_intervals.py` | Main tables and paired intervals in `runs/confidence/` |
+| `python scripts/validation_cifar_results.py` | Separate CIFAR validation comparisons in `runs/confidence/` |
+| `python scripts/plot_paper_results.py` | CIFAR curves and sweeps in `manuscript/figures/experiments/` |
+| `python scripts/plot_sliding_block.py` | Block-position figure in `manuscript/figures/experiments/mlp/` |
+| `python scripts/plot_cifar_correlations.py` | Correlation figure in `manuscript/figures/experiments/mlp/` |
+| `python scripts/plot_benchmarks.py` | Additional-dataset curves in `runs/figures/benchmarks/` |
+| `python scripts/plot_mean_field.py` | Critical exponents, scaling collapse, and Hermite figures in `runs/mean_field/` |
+
+The [paired measurements](../results/confidence_seed_metrics.json) supply both
+main tables. The benchmark exporter groups MLP and transformer panels by dataset;
+use `--individual` for separate cohorts. It retains the original seed counts in
+the archived curves; the main tables include the later seed extensions.
+All figure exporters share `utils/plot_style.py`.
 
 The two calculations carry different kinds of uncertainty: training seeds vary
 from run to run, while the mean-field curves are deterministic and their fit

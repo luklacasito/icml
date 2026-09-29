@@ -8,9 +8,7 @@ p^{(\ell)}_{j} \sim \mathrm{Bernoulli}(\rho), \qquad y^{(\ell)}_j \;\mapsto\; \t
 \end{equation}
 i.e.\ the standard inverted-dropout convention in which $\mathbb E_p[\tilde y^{(\ell)}_j]=y^{(\ell)}_j$, and hence $\mathbb E_p[\tilde z^{\ell+1}_i\mid W,b,y^\ell]=z^{\ell+1}_i$, so the mean preactivation is invariant to the dropout rate \cite{schoenholz2017deepinformationpropagation}. Throughout, $\rho$ is the keep probability. When comparing two inputs, we draw the dropout masks independently for each input\footnote{If the two inputs share a mask, the same coordinates are removed, so identical representations remain identical and $c=1$ is preserved. Here we consider independently sampled masks.}; this independence is the source of the decorrelation effect analyzed below.
 
-The smooth/kinked distinction also appears in the Hermite expansion of the activation: $\tanh$ has rapidly decaying coefficients, while \relu{} has a power-law tail. These coefficients determine which derivatives of the correlation map remain finite near perfect alignment, connecting activation regularity to the dropout scaling laws (App.~\ref{sec:var-opt-act}).
-
-Our classification differs from the distinction between scale-invariant and non-scale-invariant activations in \cite{roberts2022principlesdeeplearningtheory}: the decay of the Hermite coefficients depends primarily on analytic structure rather than scale invariance. We distinguish the two classes because (a) near-critical scaling laws differ between smooth and kinked activations, and (b) ordinary kinks produce power-law Hermite tails, whereas the smooth examples considered here have much faster decay (Apps.~\ref{ap:exponent_derivations} and~\ref{sec:var-opt-act}).
+Tanh has rapidly decaying Hermite coefficients, whereas \relu{} has a power-law tail. The tails determine which derivatives of the correlation map remain finite at perfect alignment and thus the dropout scaling laws (App.~\ref{sec:var-opt-act}). This classification concerns regularity, rather than the scale invariance considered by \citet{roberts2022principlesdeeplearningtheory}.
 
 Consider sending exactly the same input through the network twice. Without dropout, its representations remain identical at every layer, whereas independent masks remove different coordinates on the two passes and break this alignment. Rescaling the surviving activations preserves their mean over masks, but does not restore the agreement between the two representations. Perfect alignment therefore ceases to be a fixed point, cutting off the divergence of the depth correlation length at the edge \cite{schoenholz2017deepinformationpropagation}. For a single input, the corresponding variance increase can instead be absorbed into an effective weight variance, $\sigma_w^2\mapsto\sigma_w^2/\rho$.
 
@@ -83,7 +81,7 @@ h=\kappa m^{3/2}-tm+\mathcal O(m^2),
 \end{equation}
 where $\kappa>0$ is the kink coefficient; for the normalized bias-free \relu{} map at the zero-dropout edge, $\kappa=2\sqrt{2}/(3\pi)$ (App.~\ref{app:tube_argument_kink}). At $t=0$, the two balances give $m\sim h^{1/2}$ for smooth activations and $m\sim h^{2/3}$ for kinked activations.
 
-To see what this changes in propagation, let $\lambda\equiv\bar F_\rho'(c^*)$ be the slope at the displaced fixed point. For $0<\lambda<1$, small correlation perturbations decay over the depth scale $\xi_{c,\rho}\equiv-1/\log\lambda$. At $t=0$, linearizing the two maps gives
+Let $\lambda\equiv\bar F_\rho'(c^*)$ be the slope at the displaced fixed point. For $0<\lambda<1$, small correlation perturbations decay over the depth scale $\xi_{c,\rho}\equiv-1/\log\lambda$. At $t=0$, linearizing the two maps gives
 \begin{equation}
 \xi_{c,\rho}(0,h)\sim
 \begin{cases}
@@ -93,7 +91,7 @@ h^{-1/3}, & \text{kinked activations}.
 \end{equation}
 Independent dropout therefore makes the propagation length finite at the edge, and whether the activation is smooth or kinked determines how this length depends on dropout. It measures how quickly the network loses sensitivity to input correlations at initialization, which we use below to compare dropout schedules.
 
-Table~\ref{tab:critical_exponents} collects our exponents: $\xi(t,0)\sim|t|^{-\nu_t}$, $\xi(0,h)\sim h^{-\nu_\rho}$, $m(t,0)\sim t^\beta$ for $t>0$, $m(0,h)\sim h^{1/\delta}$, and $\left.\partial_hm\right|_{h\to0}\sim|t|^{-\gamma}$, with $\xi$ denoting $\xi_{c,\rho}$. At $t=h=0$, $m_\ell\equiv1-c_\ell\sim\ell^{-\theta_{\rm rel}}$ defines the relaxation exponent. For completeness, $\alpha$ describes $f_{\rm sing,on}(t,0)\sim t^{2-\alpha}$ as $t\to0^+$, where $f_{\rm sing,on}$ is the singular stationary value of a potential obtained by integrating the equation of state. App.~\ref{ap:exponent_derivations} gives the definitions and derivations.
+Table~\ref{tab:critical_exponents} collects our exponents: $\xi(t,0)\sim|t|^{-\nu_t}$, $\xi(0,h)\sim h^{-\nu_\rho}$, $m(t,0)\sim t^\beta$ for $t>0$, $m(0,h)\sim h^{1/\delta}$, and $\left.\partial_hm\right|_{h\to0}\sim|t|^{-\gamma}$, with $\xi$ denoting $\xi_{c,\rho}$. At $t=h=0$, $m_\ell\equiv1-c_\ell\sim\ell^{-\theta_{\rm rel}}$ defines the relaxation exponent. The exponent $\alpha$ describes $f_{\rm sing,on}(t,0)\sim t^{2-\alpha}$ as $t\to0^+$, where $f_{\rm sing,on}$ is the singular stationary value of a potential obtained by integrating the equation of state. App.~\ref{ap:exponent_derivations} gives the definitions and derivations.
 
 \begin{table}[h]
 \caption{Critical exponents for the two activation classes at initialization. The $\nu$ exponents measure depth correlation length. Ordinary bias-free \relu{} dropout follows $t=-h$, retaining the leading $\xi\sim h^{-1/3}$ law of the kinked field direction (App.~\ref{ap:exponent_derivations}).}
@@ -208,7 +206,7 @@ Concentrating dropout therefore again maximizes the approximate $\xi_{\rm eff}$,
 \end{figure*}
 
 
-As an exercise to intuitively understand why this schedule makes sense without the need for MFT machinery, we consider the following thought experiment: dropout is used to ``corrupt'' the network so as to prevent it from memorizing certain ``paths'' from input to output. A toy model for understanding how to best corrupt every part of the network with a set amount of damage is to imagine a similar system: a river where a set amount of ink is to be distributed with the goal of corrupting every cross section as much as possible. Reframed this way, it is obvious that front-loading and letting the current propagate the ink forward is the way to go. While this serves as an intuitive explanation, the following regularization reach argument makes this intuition explicit mathematically.
+Dropout is used to ``corrupt'' the network so as to prevent it from memorizing certain ``paths'' from input to output. Imagine a river where a fixed amount of ink is to be distributed to corrupt every cross section as much as possible. Reframed this way, front-loading lets the current carry the ink through the rest of the river. Regularization reach makes this intuition explicit.
 
 Let us normalize depth $x=\ell/L$ and write $j(x)=h(x)/\bar h$ for the injection density, with $\bar h>0$ and $\int_0^1j(x)\,dx=1$. For the river in Fig.~\ref{fig:river_reach}, where the ink does not fade as it travels downstream, the accumulated exposure at $x$ and its average along the river are
 \begin{align}
@@ -224,7 +222,7 @@ Uniform injection has $j=1$ throughout; early and late injection have $j=2$ over
 \end{equation}
 All three schedules deliver the same total ink to the outlet, but expose different amounts of the river along the way.
 
-An early mask affects many later layers, even as its influence fades; a late mask has fewer layers left to regularize. To quantify this, compare the same signal with and without a mask at layer $\ell$, writing $c_k$ for their normalized second-moment overlap at layer $k$ and $\eta_k=1-c_k$. Inverted dropout preserves the cross moment but multiplies the masked second moment by $1/\rho_\ell$, so
+An early mask affects many later layers, even as its influence fades; a late mask has fewer layers left to regularize. Compare the same signal with and without a mask at layer $\ell$, writing $c_k$ for their normalized second-moment overlap at layer $k$ and $\eta_k=1-c_k$. Inverted dropout preserves the cross moment but multiplies the masked second moment by $1/\rho_\ell$, so
 \begin{equation}
 \eta_\ell=1-\sqrt{\rho_\ell}
 =\frac{1-\rho_\ell}{2}+\mathcal O((1-\rho_\ell)^2).

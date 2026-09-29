@@ -1,7 +1,7 @@
 
 \documentclass{article}
 
-\providecommand{\PaperRoot}{.}
+\newcommand{\PaperRoot}{.}
 
 \usepackage{microtype}
 \usepackage{graphicx}
@@ -65,7 +65,7 @@
 \printAffiliationsAndNotice{}
 
 \begin{abstract}
-We develop a mean-field theory of dropout near the edge of chaos, identifying distinct universality classes for smooth and kinked activations, together with their scaling exponents. The resulting propagation theory, combined with our heuristic for regularization reach, motivates concentrating dropout near the input. Experiments on vision, speech and financial time series show gains most consistently in MLPs, with more mixed results in Transformers. On Speech Commands with randomly held-out clips, both architectures improve at the epoch with the lowest validation loss. In the CIFAR-10 budget comparison, front-loading also limits the late rise in test loss while accuracy continues to improve.
+We ask whether the standard treatment of dropout as a static hyperparameter is optimal, or whether its utility can be improved by letting it vary over depth. We answer this by developing a mean-field theory of dropout near the edge of chaos, identifying distinct universality classes for smooth and kinked activations, together with their scaling exponents. The resulting propagation theory, constrained by maximizing the regularization delivered by dropout, motivates concentrating dropout near the input. Experiments on vision, speech and financial time series show gains most consistently in MLPs, with smaller gains in Transformers.
 \end{abstract}
 
 \input{\PaperRoot/sections/introduction}

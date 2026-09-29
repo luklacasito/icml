@@ -1,14 +1,12 @@
-# OS
+# macOS
 .DS_Store
 
 # Jupyter
 .ipynb_checkpoints/
 
-# Python
+# Python caches and compiled modules
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
 *.so
 
 # Environments
@@ -18,10 +16,12 @@ __pycache__/
 venv/
 ENV/
 
-# Local experiment artifacts
+# Downloaded data and local experiment outputs
 data/
 wandb/
 runs/
+
+# LaTeX builds and figure previews
 manuscript/build/
 manuscript/figures/**/*.png
 

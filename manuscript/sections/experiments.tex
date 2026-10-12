@@ -1,0 +1,47 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\input{\PaperRoot/sections/original_results_table}
+
+Our propagation calculation favours concentrating dropout in fewer layers, while regularization reach favours placing those layers near the input, where more of the network is exposed to each mask. We test this by sliding a dropout block from front-loaded to back-loaded, redistributing the same average dropout on CIFAR, and tuning uniform and front-loaded networks independently on speech, image and financial data.
+
+We compare uniform dropout with three front-loaded profiles. At mean dropout $\bar p=0.1$, \emph{step early} applies $p=0.2$ to the first half of the layers, \emph{big step} applies $p=0.3$ to the first third, and \emph{linear decreasing} de-ramps from $0.2$ to $0$. Apps.~\ref{app:experimental_info} and~\ref{app:benchmark_protocols} specify the profiles at other dropout budgets. On CIFAR we hold $\bar p$ fixed, so only its placement changes; profiles were chosen by mean final test loss and kept unchanged when adding seeds, while the epoch with the lowest loss is also chosen using test data. On Speech Commands \cite{warden2018speechcommands}, Tiny ImageNet \cite{le2015tinyimagenet} and FI-2010 \cite{ntakaris2018benchmark}, validation loss determines the dropout profile, learning rate, mean dropout and epoch used for test evaluation. Runs are paired by seed. The CIFAR tables and the comparisons at the best validation epoch use at least ten pairs; final evaluations on Speech Commands, Tiny ImageNet and FI-2010 use five or ten, while the block-placement and correlation experiments use five. We report nominal $95\%$ Fieller intervals for relative loss reductions \cite{fieller1954interval} and Student-$t$ intervals for accuracy differences, conditional on the split and settings and without correction for selection (App.~\ref{app:benchmark_protocols}).
+
+\paragraph{Dropout block placement}
+We show a monotonic effect of dropout-block placement by sliding the same block from front-loaded to back-loaded, with mean final test loss and accuracy improving monotonically as we approach our proposed front-loaded placement. We slide a three-layer block of $p=0.2$ dropout through a six-layer CIFAR-10 MLP, keeping the network, learning rate and $\bar p=0.1$ fixed (Fig.~\ref{fig:sliding_block}). In all five seeds, final test loss rises with every move towards the output; the mean rises from $1.82$ with the block at layers 1--3 to $3.62$ at layers 4--6. Over the same range, mean accuracy falls from $43.1\%$ to $39.5\%$.
+
+\begin{figure*}[tp]
+ \centering
+ \includegraphics[width=0.95\textwidth]{\PaperRoot/figures/experiments/mlp/sliding_block_position.pdf}
+ \caption{The same dropout block, moved from the input towards the output of a six-layer CIFAR-10 MLP. Three consecutive layers use $p=0.2$, with zero elsewhere, keeping average dropout at $0.1$. Faint lines follow the five seeds; thick lines and bars give means and pointwise $95\%$ Student-$t$ confidence intervals at epoch 75. App.~\ref{app:mlps} gives the protocol.}
+ \label{fig:sliding_block}
+\end{figure*}
+
+\begin{figure*}[tp]
+ \centering
+ \includegraphics[width=0.95\textwidth]{\PaperRoot/figures/experiments/mlp/cifar_test_curves.pdf}
+ \caption{Test loss and accuracy during 75 epochs of CIFAR-10 training with a six-layer, width-256 ReLU MLP. Uniform dropout uses $p=0.1$ throughout; early step uses $p=0.2$ in the first three layers, and big step uses $p=0.3$ in the first two, with zero elsewhere. All three keep average dropout at $0.1$. Lines give means over 25 seeds and shading gives pointwise $95\%$ Student-$t$ confidence intervals. App.~\ref{app:mlps} gives the protocol and Fig.~\ref{fig:triple_dropout} includes the training curves and additional controls.}
+ \label{fig:cifar_test_curves}
+\end{figure*}
+
+\begin{figure*}[tp]
+ \centering
+ \includegraphics[width=\textwidth]{\PaperRoot/figures/experiments/mlp/cifar_correlations.pdf}
+ \caption{Correlations between distinct CIFAR-10 images before and after 35 training epochs in a twelve-layer \relu{} MLP with uniform dropout. Solid curves give five-seed means and shading gives pointwise $95\%$ confidence intervals. In (a), dotted curves give the initialization recursion and dashed lines its infinite-depth fixed points; at small dropout, the longer correlation length means that twelve layers are not enough to reach these values. Dropout is active in both panels. App.~\ref{app:cifar_correlations} gives the definition and protocol.}
+ \label{fig:cifar_correlations}
+\end{figure*}
+
+\input{\PaperRoot/sections/frontloaded_table}
+
+\paragraph{CIFAR at fixed average dropout.}
+Redistributing the same budget towards the input lowers final test loss by $18$--$35\%$ for MLPs and $4$--$7\%$ for Vision Transformers \cite{dosovitskiy2021vit}, and raises final accuracy by $0.6$--$1.6$ percentage points (Table~\ref{tab:loss_improvements}). At the epoch where each run reaches its lowest test loss, the gap shrinks to $1.4$--$2.5\%$, so much of the benefit shows up late in training. GELU also benefits, with final test loss falling by $30\%$ versus $35\%$ for \relu{} at $\bar p=0.1$. In the \relu{} width sweep, both early schedules improve mean best test accuracy at widths 128--1024, where the large-$N$ approximation is better justified, while their differences from uniform are small at width 64. In the GELU sweep, the ordering by best test accuracy reverses at $\bar p=0.15$, where the local rates reach $0.30$ and $0.45$ (Figs.~\ref{fig:mlp_sweeps} and~\ref{fig:gelu_h_sweep}; App.~\ref{app:sweeps}). The theory covers MLPs only, yet front-loading also helps the tested Transformers. On CIFAR-100, linearly decreasing dropout raises final ViT accuracy from $48.6\%$ to $49.3\%$ (Fig.~\ref{fig:dropout_regimes_transformer}). On CIFAR-10, an early step in the attention block, the MLP block, or both gives higher mean final accuracy than uniform in each case (Fig.~\ref{fig:ablations}).
+
+\paragraph{Speech Commands, Tiny ImageNet and FI-2010.}
+\label{sec:extended_benchmarks}
+On these datasets we use twelve-layer, width-256 models (App.~\ref{app:extended_experiments}). Table~\ref{tab:frontloaded_results} reports test loss and accuracy at the epoch with the lowest validation loss and at the final epoch. At the epoch with the lowest validation loss, Speech Commands gives the largest reductions in test loss, on a random clip split in which speakers overlap between training and test (App.~\ref{app:benchmark_methods}). In the five-seed MLP comparison, uniform dropout already lowers test loss by $11\%$ relative to no dropout. Across ten seed pairs, front-loading lowers test loss relative to uniform by $12.6\%$ for the MLP and $9.0\%$ for the Transformer, with accuracy gains of $1.7$ and $2.1$ percentage points. On Tiny ImageNet, test loss falls by around $2\%$ with 20,000 training examples and $1\%$ with 80,000. The ViT trained on 80,000 images is the only configuration in this table whose interval for the reduction in test loss includes zero. On FI-2010, the MLP's test loss improves by $4.3\%$ and its accuracy by $0.8$ percentage points.
+
+\paragraph{Loss and accuracy late in training.}
+The largest differences appear after the loss minimum. In the 25-seed CIFAR-10 budget comparison, uniform dropout's mean test loss rises $32\%$ from its minimum to the final epoch, against $4\%$ for big step (Fig.~\ref{fig:cifar_test_curves}). Meanwhile, big step's mean accuracy keeps improving, from $41.9\%$ at epoch 29 to $42.9\%$ at epoch 75. At the final epoch, the reduction in test loss also reaches $21\%$ on Tiny ImageNet with 20,000 training examples (Table~\ref{tab:frontloaded_results}). Loss and accuracy can also disagree: on FI-2010, front-loading cuts final loss by $68\%$ but lowers accuracy by $2.5$ percentage points.
+
+\paragraph{Correlations before and after training.}
+The theory describes networks at initialization. We therefore measure correlations between distinct CIFAR-10 images in a twelve-layer MLP before and after training, with dropout active in both measurements (Fig.~\ref{fig:cifar_correlations}). At initialization, the curves follow the mean-field recursion. At small $p$, the longer correlation length means that twelve layers are not enough to reach the predicted fixed point. With the dropout rate held at $p=0.001$, training lowers the mean correlation at layer 12 from $0.90$ to $0.76$ after 35 epochs, moving it further from the initialization prediction of $0.98$.

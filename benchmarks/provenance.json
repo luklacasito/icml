@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "scope": "Evidence references use logical file names and digests; no private paths, account names, remote job or run IDs. Historical source revisions are snapshot tags, not Git commit claims.",
+  "evidence": {
+    "confirmation_export": {
+      "file": "results/benchmarks/confirmation.json.gz",
+      "sha256": "a38b3e751dac74bb4d90ee0a88b666a071ace6562c1593ced5240c034fa531d1",
+      "description": "Historical confirmation export; public protocol manifest retains only manuscript cohorts."
+    },
+    "headline_inventory": {
+      "file": "source/inventory.json",
+      "sha256": "626bd2df9ed69b288f57186f33e71276aa92911a1032d2ed773a5c6fa2b64fbf",
+      "description": "Prior reconstruction of selected headline arm specs; provides exact typed scientific configs."
+    },
+    "cache_checksums": {
+      "file": "source/data_checksums.json",
+      "sha256": "173446fbdc64ca05dac66604e24a5f4c2d69ac93903927558866ffbe9231cc12",
+      "description": "Recovered cache checksum ledger; no raw dataset redistributed."
+    },
+    "source_compatibility": {
+      "file": "recovery/remote-recovery-and-compatibility.json",
+      "sha256": "fd01d1b13fcbd800926f422178322c9b2ac66afe22cd7bb48ab7db61a612c0d3",
+      "description": "Read-only source/version audit and compatibility checks; private metadata omitted from public manifest."
+    },
+    "historical_v9": {
+      "revision": "v9",
+      "git_commit": null,
+      "files": {
+        "benchmark_suite.py": "3ddead1469027ded75ee005159cac9cb87248b1443e8be304913c2a5bd9eb906",
+        "benchmarks.py": "35209f7fc0967d6631824aac53050f81188fc6fd7092c4d54c1ea1ab26039fc6",
+        "models.py": "25ccabbfbd895419b8eb24069061aaff64cfad3260ec894710440e78620cebae",
+        "training.py": "43271df5093370df35d639501882bbd109c4f624c14dcac100e9711689e65a49",
+        "schedules.py": "cbf7ef7c0f195cef3a28acb7c56acc76ef7dce996440c4e7ea9d3debab0cc484",
+        "scale_transfer.py": "c5628cc283ab03b4bd954e074975a25867f9d8301c6984a6273333c1e27326b7"
+      }
+    },
+    "historical_v10": {
+      "revision": "v10",
+      "git_commit": null,
+      "files": {
+        "benchmark_suite.py": "3ddead1469027ded75ee005159cac9cb87248b1443e8be304913c2a5bd9eb906",
+        "benchmarks.py": "35209f7fc0967d6631824aac53050f81188fc6fd7092c4d54c1ea1ab26039fc6",
+        "models.py": "25ccabbfbd895419b8eb24069061aaff64cfad3260ec894710440e78620cebae",
+        "training.py": "43271df5093370df35d639501882bbd109c4f624c14dcac100e9711689e65a49",
+        "schedules.py": "cbf7ef7c0f195cef3a28acb7c56acc76ef7dce996440c4e7ea9d3debab0cc484",
+        "scale_transfer.py": "c5628cc283ab03b4bd954e074975a25867f9d8301c6984a6273333c1e27326b7"
+      }
+    },
+    "historical_v14": {
+      "revision": "v14",
+      "git_commit": null,
+      "files": {
+        "benchmark_suite.py": "3ddead1469027ded75ee005159cac9cb87248b1443e8be304913c2a5bd9eb906",
+        "benchmarks.py": "b1c2751920d9291efc026bb26dcaf3aab4c795aea057528cf6a4215cb21abb04",
+        "models.py": "25ccabbfbd895419b8eb24069061aaff64cfad3260ec894710440e78620cebae",
+        "training.py": "43271df5093370df35d639501882bbd109c4f624c14dcac100e9711689e65a49",
+        "schedules.py": "cbf7ef7c0f195cef3a28acb7c56acc76ef7dce996440c4e7ea9d3debab0cc484",
+        "scale_transfer.py": "c5628cc283ab03b4bd954e074975a25867f9d8301c6984a6273333c1e27326b7"
+      }
+    },
+    "historical_v15": {
+      "revision": "v15",
+      "git_commit": null,
+      "files": {
+        "benchmark_suite.py": "3ddead1469027ded75ee005159cac9cb87248b1443e8be304913c2a5bd9eb906",
+        "benchmarks.py": "229fbcb7a972d7d69dedc53f099a21031db318666208d6454ba597cc1244007b",
+        "models.py": "25ccabbfbd895419b8eb24069061aaff64cfad3260ec894710440e78620cebae",
+        "training.py": "43271df5093370df35d639501882bbd109c4f624c14dcac100e9711689e65a49",
+        "schedules.py": "cbf7ef7c0f195cef3a28acb7c56acc76ef7dce996440c4e7ea9d3debab0cc484",
+        "scale_transfer.py": "c5628cc283ab03b4bd954e074975a25867f9d8301c6984a6273333c1e27326b7"
+      }
+    },
+    "historical_v17": {
+      "revision": "v17",
+      "git_commit": null,
+      "files": {
+        "benchmark_suite.py": "91b30de08709d73ebd0cab58793f67f1a20ed430818d1acb716c3b0213013143",
+        "benchmarks.py": "42bfec5f717d4c923d0db03a88e7ebe89e05d48010ba568beb2fcec92f4d69e3",
+        "models.py": "25ccabbfbd895419b8eb24069061aaff64cfad3260ec894710440e78620cebae",
+        "training.py": "98d790fc6acb39f6bc881c7111dba431e909d170c7186870968c4f79511046ee",
+        "schedules.py": "cbf7ef7c0f195cef3a28acb7c56acc76ef7dce996440c4e7ea9d3debab0cc484",
+        "scale_transfer.py": "c5628cc283ab03b4bd954e074975a25867f9d8301c6984a6273333c1e27326b7"
+      }
+    },
+    "recipe_protocol": {
+      "file": "src/dropout_mft/experiments/benchmark/protocol.py",
+      "sha256": "813ceb21c0196ffa645a39d2ff4f27978dc8cb42d00c57529fcc476e43e189c9",
+      "description": "Recovered recipe source for grids, seeds and selection rules; not a full historical tuning-result ledger."
+    },
+    "recipe_zero_decay": {
+      "file": "src/dropout_mft/experiments/benchmark/zero_decay.py",
+      "sha256": "b04e1095300f793172aa87a5aa94e45f4e7db362695f49f2c788efaa4773c643",
+      "description": "Recovered recipe source for grids, seeds and selection rules; not a full historical tuning-result ledger."
+    },
+    "recipe_sidecar": {
+      "file": "src/dropout_mft/experiments/benchmark/sidecar.py",
+      "sha256": "025b5c26c5b70b8eaec3d3f9c8f6f62ab3a459f7bc573df9aec6a93b60d7cd33",
+      "description": "Recovered recipe source for grids, seeds and selection rules; not a full historical tuning-result ledger."
+    },
+    "recipe_jannis_100": {
+      "file": "src/dropout_mft/experiments/benchmark/jannis_100.py",
+      "sha256": "ec8935cac18980eaada756893a8d02bc18b04225073526063644045988d7fe73",
+      "description": "Recovered recipe source for grids, seeds and selection rules; not a full historical tuning-result ledger."
+    },
+    "recipe_data_regimes": {
+      "file": "src/dropout_mft/experiments/benchmark/data_regimes.py",
+      "sha256": "d52f882895dd37c8df06a19a5cac3f5838fffe4fde28ea6ee466451a3ac01a41",
+      "description": "Recovered recipe source for grids, seeds and selection rules; not a full historical tuning-result ledger."
+    },
+    "recipe_workflow": {
+      "file": "src/dropout_mft/experiments/benchmark/workflow.py",
+      "sha256": "0136b0bf140dd0ac00fe37a5fd3740cc7a95f6ae3b3f1f3c69f3e9f49a82bad2",
+      "description": "Recovered recipe source for grids, seeds and selection rules; not a full historical tuning-result ledger."
+    },
+    "benchmark_preparation": {
+      "file": "experiments/benchmark/prepare_data.py",
+      "sha256": "16c481286ce0ed20cf8246b494a8c8d4b771b0e69c42f919749c1e00ca1dc3ef",
+      "description": "Available preparation implementation; frozen historical split hash is required to establish identical data."
+    },
+    "available_recipe_checkout": {
+      "git_commit": "9806b6369d718df6666918581012aa402574bc8b",
+      "note": "Current available recipe checkout identity, not asserted as historical run commit."
+    },
+    "vanilla_source": {
+      "revision": "fi2010-vanilla-mlp-20260916",
+      "historical_plan_source_sha256": null,
+      "files": {
+        "study/protocol.py": "3847a714cd2675ec2a5da8e7ec902680742e988cf44ae1dbfd33aec715b8c559",
+        "study/data.py": "be16203494c514b2baaa95eafa750f0c2826ba9f46fcc472623b573df4a6b21f",
+        "study/model.py": "9254d4719c96272061bd8a388864ef98b0da6ab6c5bc0fdae1fb9a2fec529e86",
+        "study/run.py": "cdc12ce9805f4fe417a0856c9edf00865ce467c029cd93c0cedbe8effb16447b",
+        "study/plan.py": "ca87c7bd21f17c76b0c70aad7dbbb7bd0f7072e14d68076d5f6a25e65e3b2db5",
+        "study/select.py": "042e3b968bc2f3ce3bc473d4fc18762b8944e7f42cf615a48023f13e25c9cf52",
+        "study/schedules.py": "850dca9f19d8a394ac137adc8521da63bdbeb03ac3470f1598dd17adc7182955"
+      }
+    },
+    "vanilla_aggregate": {
+      "file": "results/financial/vanilla_mlp.json",
+      "sha256": "bab66f8396c974883e7fa898b4fee21f895190b17f2684872908bacd92ca3849",
+      "description": "Aggregate test metrics and best epochs; no selected LRs or per-seed test values."
+    },
+    "vanilla_available_data_manifest": {
+      "file": "fi2010-segments-v1/manifest.json",
+      "sha256": "457816319672fa48b12017afa5687b2e304c8b312887f5815543621d42dbc42c",
+      "description": "Available audited segment manifest; match to original vanilla trial manifest is unverified."
+    },
+    "vanilla_segment_preparation": {
+      "file": "study/prepare_data.py",
+      "sha256": "3b9ea9460129dfb6013d0e4800b1825d6b28ef4e168cd577582e189f09adc456",
+      "description": "Shared FI-2010 stock/day segment preparation used by standalone vanilla study; imported into public code without remote orchestration."
+    },
+    "geometry_pilot": {
+      "file": "results/profiles/geometry_pilot.npz",
+      "sha256": "aaa2ea02bd34b3b9975bc1485ec9f27befcbca79cbf2efeeec061437776bf897",
+      "description": "30 exact saved factor dictionaries, dropout arrays, RNG/split identities, runtime and source provenance; public manifest does not ship pilot training CLI."
+    },
+    "geometry_available_recipe": {
+      "file": "src/dropout_mft/experiments/scale_transfer/protocol.py",
+      "sha256": "9de92abf4b20fb850f764ae0a9723fa9afaca872f60b9efd9e2468af9c1f34c6"
+    }
+  },
+  "conflicts_and_limits": [
+    {
+      "topic": "Tiny preprocessing",
+      "finding": "v15 20k float32 mean/std differs from v17 80k chunked float64 moments; source/dtype mode frozen separately; split hashes also differ."
+    },
+    {
+      "topic": "Jannis duration",
+      "finding": "Both zero-decay Jannis architectures have100 epochs in saved configs. Extended ten-seed Transformer also has100 epochs but weight decay1e-7 and fixed mean dropout. They are separate protocols."
+    },
+    {
+      "topic": "Archive numeric serialization",
+      "finding": "Export stores integer-looking float fields and rounds0.44999999999999996 to0.45. Restoring dataclass float fields and historical cap arithmetic reproduces all64 stored config hashes exactly. Layer arrays reconstructed from recovered schedule code agree with export within1e-15."
+    },
+    {
+      "topic": "Linear followup source attribution",
+      "finding": "Historical source revision not recovered for the two followups; their frozen config hashes/split IDs and dedicated protocol recipe are available. Missing matching uniform arms remain missing."
+    },
+    {
+      "topic": "Tuning execution",
+      "finding": "Search grids/seeds/selection rules recovered from protocol source; full completed tuning records were not recovered here. Selected confirmation configs are recorded evidence."
+    },
+    {
+      "topic": "Standalone vanilla replay",
+      "finding": "Source recipe and aggregate results available, plus a current matching-schema data manifest. Original selected LR, original trial/source/data fingerprints and per-seed results remain unrecovered. Recipe reruns must repeat selection and cannot be labeled exact historical replay."
+    },
+    {
+      "topic": "Speech frames",
+      "finding": "Preparation comment says center crop, executable code takes the first64 time frames; manifest/methods follow executable slicing."
+    },
+    {
+      "topic": "FI horizons",
+      "finding": "Main benchmark uses zero-based label row148 (fifth horizon); standalone vanilla uses row144 (first horizon). Their windows, split units, normalization and data sources differ."
+    },
+    {
+      "topic": "Source reproducibility",
+      "finding": "Recovered source tags v9/v10/v14/v15/v17 and file SHA256 values identify code. A Git commit for those historical frozen sources was not recovered. Representative source metadata does not prove attribution for every arm."
+    }
+  ]
+}

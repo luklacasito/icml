@@ -1,0 +1,231 @@
+{
+  "description": "CIFAR-10 fixed-block position sweep; final epoch 75, no validation or test-based selection",
+  "seeds": [
+    47,
+    48,
+    49,
+    50,
+    51
+  ],
+  "block_starts_zero_based": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "recipe": {
+    "activation": "relu",
+    "batch_size": 100,
+    "block_width": 3,
+    "dataset": "cifar10",
+    "depth": 6,
+    "dropout_placement": "After ReLU at each hidden affine, before next affine",
+    "epochs": 75,
+    "hidden_affine_layers": 6,
+    "learning_rate": 0.0001,
+    "maximum_dropout": 0.2,
+    "mean_dropout": 0.1,
+    "normalization_mean": [
+      0.4914,
+      0.4822,
+      0.4465
+    ],
+    "normalization_std": [
+      0.247,
+      0.2435,
+      0.2616
+    ],
+    "optimizer": "AdamW",
+    "output_affine_layers": 1,
+    "precision": "CUDA autocast bfloat16 when supported, else float16; TF32 allowed; cudnn benchmark true",
+    "scheduler": "CosineAnnealingLR over epochs, eta_min=1e-7; step before test",
+    "sigma_b_sq": 0.02,
+    "sigma_w_sq": 1.98,
+    "split_seed": 0,
+    "subset_sampling": "numpy RandomState(0).choice train followed by test, both without replacement",
+    "test_size": 5000,
+    "train_size": 5000,
+    "weight_decay": 1e-07,
+    "width": 256
+  },
+  "data": {
+    "cache_files_sha256": {
+      "batches.meta": "f962466ef690d46b226450fb9aadc74ba4bc64a76aa526b5827fe4bc5c7125cb",
+      "data_batch_1": "54636561a3ce25bd3e19253c6b0d8538147b0ae398331ac4a2d86c6d987368cd",
+      "data_batch_2": "766b2cef9fbc745cf056b3152224f7cf77163b330ea9a15f9392beb8b89bc5a8",
+      "data_batch_3": "0f00d98ebfb30b3ec0ad19f9756dc2630b89003e10525f5e148445e82aa6a1f9",
+      "data_batch_4": "3f7bb240661948b8f4d53e36ec720d8306f5668bd0071dcb4e6c947f78e9682b",
+      "data_batch_5": "d91802434d8376bbaeeadf58a737e3a1b12ac839077e931237e0dcd43adcb154",
+      "test_batch": "f53d8d457504f7cff4ea9e021afcf0e0ad8e24a91f3fc42091b8adef61157831"
+    },
+    "cache_sha256": "579602704524087ce8f3746acfd265c924a0c3ab99f01621cc1690dd5e58040a",
+    "sampling": "RandomState(seed).choice train then test; without replacement; full sets in original order",
+    "sha256": "d04e6c8116d75af15f9c7feea368002c71ae7abf6b640e5a18668d853e28a5c7",
+    "split_seed": 0,
+    "test_indices_sha256": "0f081ce099132bb6ff10c7df7e27e0086a2476bf67d3785c7700f97b802963bc",
+    "test_labels_sha256": "164d602cdcc7a96a8e41efcb83728548c798ecf4b100cde1992e98a808fffa20",
+    "test_size": 5000,
+    "train_indices_sha256": "535dce986f64725d3de46237221522a5892011c77c80b2750145d7a15ad48c46",
+    "train_labels_sha256": "2c09dbead1660a5e5e57f9cd82aa908a9b787a17ad2f775bcf63939d813665aa",
+    "train_size": 5000
+  },
+  "provenance": {
+    "source_file": "recovered-results-20260926.json",
+    "source_sha256": "4a2dcf665793b0ce6b099c5707ddaa0716352eb5672fe41b6c02145704273703",
+    "training_sources": {
+      "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49": {
+        "benchmarks/original/__init__.py": "c4d11a2c64e968cda5fddfa2f89482f8c11ed0c8f7491db39388f527423fccc0",
+        "benchmarks/original/provenance.json": "48d5eb6e2e772236a2c006546f71a078ccecf2997050ea281afb81d7c86d476a",
+        "benchmarks/original/recipes.json": "9bdccbc779e7f9a2892dca8ac4b540cd062f67ed24f4c748ddd7ff68f6d71395",
+        "benchmarks/original/relu.py": "cc1c840b199b4e269327ca4fe810b89cc386f8fdbe09b3e4830835da146e3ea6",
+        "benchmarks/original/slide.py": "f9ec4ffe3227635a58203f016131cf5043896c96f5916f739699bbef8ccc006f",
+        "benchmarks/original/vit.py": "a2418b391374082cfcb7f55cbec7c5f4414fe44c8590b9286ab422a7505db90b",
+        "benchmarks/run_original.py": "b25066aa750eeca3fc247461e20b1e3f8e2e040fccaf4840ed7cf475460f3e16",
+        "utils/schedules.py": "29cfcfcfe9ba871ca6bd94b50a3c7084ca1bdc6e0ccd464158394d036cbf7e12",
+        "utils/training.py": "a0906789f144e3799bf124a4c6da65c1c3553d37c306ded2ad66433c0867bca1"
+      }
+    }
+  },
+  "records": [
+    {
+      "block_start": 0,
+      "seed": 47,
+      "final_test_loss": 1.8447698068618774,
+      "final_test_accuracy_percent": 42.72,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 0,
+      "seed": 48,
+      "final_test_loss": 1.8299629735946654,
+      "final_test_accuracy_percent": 43.06,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 0,
+      "seed": 49,
+      "final_test_loss": 1.7836611437797547,
+      "final_test_accuracy_percent": 43.22,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 0,
+      "seed": 50,
+      "final_test_loss": 1.8104987573623657,
+      "final_test_accuracy_percent": 43.18,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 0,
+      "seed": 51,
+      "final_test_loss": 1.8154959964752198,
+      "final_test_accuracy_percent": 43.48,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 1,
+      "seed": 47,
+      "final_test_loss": 2.5267677974700926,
+      "final_test_accuracy_percent": 41.3,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 1,
+      "seed": 48,
+      "final_test_loss": 2.5588530611991884,
+      "final_test_accuracy_percent": 41.54,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 1,
+      "seed": 49,
+      "final_test_loss": 2.414101996421814,
+      "final_test_accuracy_percent": 41.72,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 1,
+      "seed": 50,
+      "final_test_loss": 2.4659885501861574,
+      "final_test_accuracy_percent": 41.18,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 1,
+      "seed": 51,
+      "final_test_loss": 2.4475027656555177,
+      "final_test_accuracy_percent": 41.52,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 2,
+      "seed": 47,
+      "final_test_loss": 3.270361428260803,
+      "final_test_accuracy_percent": 40.3,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 2,
+      "seed": 48,
+      "final_test_loss": 3.3152965974807738,
+      "final_test_accuracy_percent": 39.4,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 2,
+      "seed": 49,
+      "final_test_loss": 3.108622097969055,
+      "final_test_accuracy_percent": 39.96,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 2,
+      "seed": 50,
+      "final_test_loss": 3.2079194021224975,
+      "final_test_accuracy_percent": 39.9,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 2,
+      "seed": 51,
+      "final_test_loss": 3.1529737758636474,
+      "final_test_accuracy_percent": 40.2,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 3,
+      "seed": 47,
+      "final_test_loss": 3.650412039756775,
+      "final_test_accuracy_percent": 39.84,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 3,
+      "seed": 48,
+      "final_test_loss": 3.6793316793441773,
+      "final_test_accuracy_percent": 39.48,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 3,
+      "seed": 49,
+      "final_test_loss": 3.4885386657714843,
+      "final_test_accuracy_percent": 39.92,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 3,
+      "seed": 50,
+      "final_test_loss": 3.6855420684814453,
+      "final_test_accuracy_percent": 38.74,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    },
+    {
+      "block_start": 3,
+      "seed": 51,
+      "final_test_loss": 3.580423231124878,
+      "final_test_accuracy_percent": 39.48,
+      "source_sha256": "5417a6bde403347907de6c430a2c7d35271c3414bda12a89b7d41e38f7df9f49"
+    }
+  ]
+}

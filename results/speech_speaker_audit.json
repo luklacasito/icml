@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "dataset": "Speech Commands v0.02",
+  "method": "Reconstruct TorchAudio training-subset filename order, verify keyword labels against the saved cache, then reproduce the balanced split with numpy.random.default_rng(20260812). Speaker identity is the filename prefix before _nohash_.",
+  "original_cache_payload_sha256": "0dd9ebffc22bfe3a733b97e0bd672aedde4eea69ebab073b89c18bb66af8c9c0",
+  "original_split_hash": "30e95358a6f2810d2ae0e7c69fdf0538715f2cec4407047226ce753b37be587e",
+  "cache_labels_match_metadata": true,
+  "random_clip_split": {
+    "train": {
+      "clips": 20020,
+      "speakers": 2007,
+      "indices_sha256": "5815cc226e8cd73ce22a05f3813c50746f679ae6801f2dd2d1e3f15aa64c15ab"
+    },
+    "validation": {
+      "clips": 5005,
+      "speakers": 1636,
+      "indices_sha256": "be35ef929d096d5a637119c5f526a4a4314c55bfab7ea91cb7f30348b884857b"
+    },
+    "test": {
+      "clips": 10010,
+      "speakers": 1890,
+      "indices_sha256": "a057229fd80e7880ad484b7e4e457f350003bb56532d4c52ee73c0e0dda49cbf"
+    }
+  },
+  "random_clip_overlap": {
+    "train_validation": {
+      "shared_speakers": 1614,
+      "second_partition_clips_from_first_partition_speakers": 4979,
+      "second_partition_clips": 5005
+    },
+    "train_test": {
+      "shared_speakers": 1858,
+      "second_partition_clips_from_first_partition_speakers": 9967,
+      "second_partition_clips": 10010
+    },
+    "validation_test": {
+      "shared_speakers": 1560,
+      "second_partition_clips_from_first_partition_speakers": 8980,
+      "second_partition_clips": 10010
+    }
+  },
+  "official_partitions": {
+    "training": {
+      "clips": 84843,
+      "speakers": 2112,
+      "minimum_class_count": 1256,
+      "maximum_class_count": 3250
+    },
+    "validation": {
+      "clips": 9981,
+      "speakers": 256,
+      "minimum_class_count": 128,
+      "maximum_class_count": 406
+    },
+    "testing": {
+      "clips": 11005,
+      "speakers": 250,
+      "minimum_class_count": 155,
+      "maximum_class_count": 445
+    }
+  },
+  "official_speaker_overlap": {
+    "training_validation": 0,
+    "training_testing": 0,
+    "validation_testing": 0
+  },
+  "corrected_protocol": {
+    "dataset_id": "speech_commands_speakers",
+    "train_clips": 20020,
+    "validation_clips": 9981,
+    "test_clips": 11005,
+    "training_sample": "same filenames as the original 20,020-example training sample",
+    "evaluation_sample": "all official validation and testing clips; no balancing of these partitions",
+    "preprocessing_change": "80 dB cutoff computed separately for each clip; original preparation shared a cutoff across each 256-clip batch",
+    "results_status": "not yet trained; the existing paper results use the random-clip split"
+  }
+}

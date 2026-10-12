@@ -1,0 +1,28 @@
+\begin{table*}[t]
+\centering
+\caption{Improvement over uniform dropout on CIFAR, keeping mean dropout at $\bar p=0.1$. Positive values mean lower test loss or higher test accuracy. Loss is cross-entropy; brackets give nominal paired $95\%$ confidence intervals.}
+\label{tab:loss_improvements}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}lrrlrrr@{}}
+\toprule
+& & & & Lowest test loss & \multicolumn{2}{c}{End of training} \\
+\cmidrule(lr){5-5}\cmidrule(l){6-7}
+\shortstack[l]{Dataset /\\model} & Epochs & Seeds & \shortstack[l]{Dropout\\placement} & \shortstack{Loss reduction\\(\%)} & \shortstack{Loss reduction\\(\%)} & \shortstack{Accuracy gain\\(percentage points)} \\
+\midrule
+\shortstack[l]{CIFAR-10\\MLP (ReLU)} & 75 & 25 & \shortstack[l]{First 3 layers\\$p=0.2$} & \shortstack{$+1.42$\\[-1pt]{\scriptsize $[1.19, 1.65]$}} & \shortstack{$+17.86$\\[-1pt]{\scriptsize $[17.31, 18.41]$}} & \shortstack{$+0.83$\\[-1pt]{\scriptsize $[0.55, 1.11]$}} \\
+\addlinespace[4pt]
+\shortstack[l]{CIFAR-10\\MLP (ReLU)} & 75 & 25 & \shortstack[l]{First 2 layers\\$p=0.3$} & \shortstack{$+2.07$\\[-1pt]{\scriptsize $[1.80, 2.33]$}} & \shortstack{$+22.61$\\[-1pt]{\scriptsize $[22.06, 23.15]$}} & \shortstack{$+1.08$\\[-1pt]{\scriptsize $[0.85, 1.31]$}} \\
+\addlinespace[4pt]
+\shortstack[l]{CIFAR-10\\MLP (ReLU)} & 125 & 10 & \shortstack[l]{First 2 layers\\$p=0.3$} & \shortstack{$+2.54$\\[-1pt]{\scriptsize $[2.03, 3.06]$}} & \shortstack{$+34.90$\\[-1pt]{\scriptsize $[34.36, 35.44]$}} & \shortstack{$+1.56$\\[-1pt]{\scriptsize $[1.22, 1.89]$}} \\
+\addlinespace[4pt]
+\shortstack[l]{CIFAR-10\\MLP (GELU)} & 75 & 10 & \shortstack[l]{First 2 layers\\$p=0.3$} & \shortstack{$+2.45$\\[-1pt]{\scriptsize $[1.90, 3.00]$}} & \shortstack{$+29.79$\\[-1pt]{\scriptsize $[28.96, 30.61]$}} & \shortstack{$+0.62$\\[-1pt]{\scriptsize $[0.16, 1.08]$}} \\
+\addlinespace[4pt]
+\shortstack[l]{CIFAR-100\\ViT} & 75 & 10 & \shortstack[l]{Linear decrease\\$0.2\to0$} & \shortstack{$+1.39$\\[-1pt]{\scriptsize $[0.56, 2.21]$}} & \shortstack{$+4.15$\\[-1pt]{\scriptsize $[3.40, 4.90]$}} & \shortstack{$+0.66$\\[-1pt]{\scriptsize $[0.36, 0.96]$}} \\
+\addlinespace[4pt]
+\shortstack[l]{CIFAR-10\\ViT} & 75 & 10 & \shortstack[l]{First 6 blocks\\$p=0.2$} & \shortstack{$+1.51$\\[-1pt]{\scriptsize $[0.33, 2.68]$}} & \shortstack{$+7.40$\\[-1pt]{\scriptsize $[5.35, 9.41]$}} & \shortstack{$+0.68$\\[-1pt]{\scriptsize $[0.24, 1.12]$}} \\
+\bottomrule
+\end{tabular}
+\par\smallskip\begin{minipage}{\textwidth}\scriptsize Lowest test loss is the minimum reached by each run; final results use the epoch count shown. Loss reductions compare seed means, $100(L_U-L_F)/L_U$; accuracy gains are absolute differences. Profiles were chosen by mean final test loss and kept unchanged when adding seeds; the epochs with the lowest loss also use test data. Intervals use Fieller's method for loss and Student-$t$ for accuracy, without correction for selection.\\[3pt] All MLPs have six hidden layers of width 256. The first two rows share their uniform baseline. The 125-epoch ReLU comparison also changes initialization and batch size (App.~\ref{app:sweeps}). The CIFAR-10 ViT applies dropout to both attention and MLP branches.\end{minipage}
+\end{table*}

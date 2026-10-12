@@ -1,0 +1,35 @@
+# macOS
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python caches and compiled modules
+__pycache__/
+*.py[cod]
+*.so
+
+# Environments
+.env
+.venv/
+.venv-*/
+venv/
+ENV/
+
+# Downloaded data and local experiment outputs
+data/
+wandb/
+runs/
+
+# LaTeX builds and figure previews
+manuscript/build/
+manuscript/figures/**/*.png
+
+# Tooling
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/

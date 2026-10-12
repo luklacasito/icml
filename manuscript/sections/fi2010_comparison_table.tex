@@ -1,0 +1,18 @@
+\par\medskip
+\begingroup
+\centering
+\captionof{table}{Improvements over uniform dropout for the standalone FI-2010 MLPs, calculated from five paired seeds per architecture and using the same profile across each row. Test loss and accuracy are measured at the epoch with the lowest validation loss. The saved summaries lack validation losses, so the profile was chosen retrospectively by mean test loss. Loss reductions compare seed means; accuracy gains are percentage points. Final test results were not saved.}
+\label{tab:fi2010_standalone_comparison}
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{@{}rrlrr@{}}
+\toprule
+Depth & Width & Profile & \shortstack{Test loss reduction at\\best validation epoch (\%)} & \shortstack{Accuracy gain\\(pp)} \\
+\midrule
+6 & 256 & Step late & +1.32 & +0.02 \\
+6 & 512 & Linear decreasing & +0.62 & +0.01 \\
+12 & 256 & Linear decreasing & +0.43 & -0.06 \\
+12 & 512 & Step early & +0.81 & +0.02 \\
+\bottomrule
+\end{tabular}\par
+\endgroup\medskip

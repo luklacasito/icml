@@ -1,0 +1,64 @@
+{
+  "sliding-block": {
+    "recorded_training_hashes": {
+      "benchmarks/original/__init__.py": "c4d11a2c64e968cda5fddfa2f89482f8c11ed0c8f7491db39388f527423fccc0",
+      "benchmarks/original/provenance.json": "48d5eb6e2e772236a2c006546f71a078ccecf2997050ea281afb81d7c86d476a",
+      "benchmarks/original/recipes.json": "9bdccbc779e7f9a2892dca8ac4b540cd062f67ed24f4c748ddd7ff68f6d71395",
+      "benchmarks/original/relu.py": "cc1c840b199b4e269327ca4fe810b89cc386f8fdbe09b3e4830835da146e3ea6",
+      "benchmarks/original/slide.py": "f9ec4ffe3227635a58203f016131cf5043896c96f5916f739699bbef8ccc006f",
+      "benchmarks/original/vit.py": "a2418b391374082cfcb7f55cbec7c5f4414fe44c8590b9286ab422a7505db90b",
+      "benchmarks/run_original.py": "b25066aa750eeca3fc247461e20b1e3f8e2e040fccaf4840ed7cf475460f3e16",
+      "utils/schedules.py": "29cfcfcfe9ba871ca6bd94b50a3c7084ca1bdc6e0ccd464158394d036cbf7e12",
+      "utils/training.py": "a0906789f144e3799bf124a4c6da65c1c3553d37c306ded2ad66433c0867bca1"
+    },
+    "files": {
+      "benchmarks/__init__.py": "88e7194a2a29c0ce54a6b5043bc41da6938f471ea148d765d7be67b59035c112",
+      "benchmarks/original/__init__.py": "c4d11a2c64e968cda5fddfa2f89482f8c11ed0c8f7491db39388f527423fccc0",
+      "benchmarks/original/provenance.json": "48d5eb6e2e772236a2c006546f71a078ccecf2997050ea281afb81d7c86d476a",
+      "benchmarks/original/recipes.json": "9bdccbc779e7f9a2892dca8ac4b540cd062f67ed24f4c748ddd7ff68f6d71395",
+      "benchmarks/original/relu.py": "cc1c840b199b4e269327ca4fe810b89cc386f8fdbe09b3e4830835da146e3ea6",
+      "benchmarks/original/slide.py": "f9ec4ffe3227635a58203f016131cf5043896c96f5916f739699bbef8ccc006f",
+      "benchmarks/original/vit.py": "a2418b391374082cfcb7f55cbec7c5f4414fe44c8590b9286ab422a7505db90b",
+      "benchmarks/run_original.py": "b25066aa750eeca3fc247461e20b1e3f8e2e040fccaf4840ed7cf475460f3e16",
+      "requirements.txt": "74c05ed0beed36309eb2a3e5449b43ca016114137b8342a4a4301e13a4875d0f",
+      "utils/__init__.py": "8e16e160b8de5f0319adfe7716c8cd6f635106de5ab237b271a2f43b902fcdff",
+      "utils/schedules.py": "29cfcfcfe9ba871ca6bd94b50a3c7084ca1bdc6e0ccd464158394d036cbf7e12",
+      "utils/training.py": "a0906789f144e3799bf124a4c6da65c1c3553d37c306ded2ad66433c0867bca1"
+    }
+  },
+  "dropout-rates": {
+    "recorded_training_hashes": {
+      "benchmarks/original/__init__.py": "c4d11a2c64e968cda5fddfa2f89482f8c11ed0c8f7491db39388f527423fccc0",
+      "benchmarks/original/provenance.json": "48d5eb6e2e772236a2c006546f71a078ccecf2997050ea281afb81d7c86d476a",
+      "benchmarks/original/rate_sweep.py": "1a5a31e760e4979912477bd6f14e8e1203ac721015f52b07dda51202e6b0c0e9",
+      "benchmarks/original/recipes.json": "9bdccbc779e7f9a2892dca8ac4b540cd062f67ed24f4c748ddd7ff68f6d71395",
+      "benchmarks/original/relu.py": "30c36af4f3fe159f26c6db4a115656c6f1043ebb5a0cd23c054093abcc812f7d",
+      "benchmarks/original/slide.py": "24d0b56c4ae8a8aef374f65bcdde2517275d47535446535e1a8f0fb63caec9a3",
+      "benchmarks/original/validation.py": "9ac7a0af1b481bf95736469d7aca5a42a2f4d7f0875a875aef4a0e3882b91d47",
+      "benchmarks/original/vit.py": "a2418b391374082cfcb7f55cbec7c5f4414fe44c8590b9286ab422a7505db90b",
+      "benchmarks/run_original.py": "f2023045fa965bf7e2c9b253d982dbf6e7ffa52853c474262e551150e99b1d67",
+      "utils/schedules.py": "29cfcfcfe9ba871ca6bd94b50a3c7084ca1bdc6e0ccd464158394d036cbf7e12",
+      "utils/training.py": "a0906789f144e3799bf124a4c6da65c1c3553d37c306ded2ad66433c0867bca1"
+    },
+    "files": {
+      "benchmarks/__init__.py": "88e7194a2a29c0ce54a6b5043bc41da6938f471ea148d765d7be67b59035c112",
+      "benchmarks/original/__init__.py": "c4d11a2c64e968cda5fddfa2f89482f8c11ed0c8f7491db39388f527423fccc0",
+      "benchmarks/original/provenance.json": "48d5eb6e2e772236a2c006546f71a078ccecf2997050ea281afb81d7c86d476a",
+      "benchmarks/original/rate_sweep.py": "1a5a31e760e4979912477bd6f14e8e1203ac721015f52b07dda51202e6b0c0e9",
+      "benchmarks/original/recipes.json": "9bdccbc779e7f9a2892dca8ac4b540cd062f67ed24f4c748ddd7ff68f6d71395",
+      "benchmarks/original/relu.py": "30c36af4f3fe159f26c6db4a115656c6f1043ebb5a0cd23c054093abcc812f7d",
+      "benchmarks/original/slide.py": "24d0b56c4ae8a8aef374f65bcdde2517275d47535446535e1a8f0fb63caec9a3",
+      "benchmarks/original/validation.py": "9ac7a0af1b481bf95736469d7aca5a42a2f4d7f0875a875aef4a0e3882b91d47",
+      "benchmarks/original/vit.py": "a2418b391374082cfcb7f55cbec7c5f4414fe44c8590b9286ab422a7505db90b",
+      "benchmarks/run_original.py": "f2023045fa965bf7e2c9b253d982dbf6e7ffa52853c474262e551150e99b1d67",
+      "probe_rates.py": "a8e14c22af0bcf9371c14cfd5096b4cf3d03207dffe12790a3f6c5a4e4104cba",
+      "reference.json": "6d025963505a33e1b46b5bac1704e33330a94abaff41be0a7e363b8cc6711610",
+      "requirements.txt": "74c05ed0beed36309eb2a3e5449b43ca016114137b8342a4a4301e13a4875d0f",
+      "sweep.json": "424032a00df325563b4337f02bc6ed14e472683e57573075850091f18df56f55",
+      "test_rate_sweep.py": "608824109c9dbf252d5c2d9fa3ce4dcd8274320856b4b0e67110539048e04a68",
+      "utils/__init__.py": "8e16e160b8de5f0319adfe7716c8cd6f635106de5ab237b271a2f43b902fcdff",
+      "utils/schedules.py": "29cfcfcfe9ba871ca6bd94b50a3c7084ca1bdc6e0ccd464158394d036cbf7e12",
+      "utils/training.py": "a0906789f144e3799bf124a4c6da65c1c3553d37c306ded2ad66433c0867bca1"
+    }
+  }
+}
